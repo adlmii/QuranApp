@@ -1,0 +1,145 @@
+package com.example.quranapp.ui.screens.quran
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import com.example.quranapp.ui.screens.quran.components.JuzSurahCard
+import com.example.quranapp.ui.screens.quran.components.QuranTabSelector
+import com.example.quranapp.ui.screens.quran.components.SurahItem
+import com.example.quranapp.ui.theme.*
+
+@Composable
+fun QuranScreen(
+    navController: NavController,
+    viewModel: QuranViewModel = viewModel()
+) {
+    val surahList by viewModel.surahList.collectAsState()
+    val juzList by viewModel.juzList.collectAsState()
+    var selectedTab by remember { mutableStateOf(0) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(BackgroundWhite)
+    ) {
+        // ── Sticky Header ──
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Back button
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(LightEmerald)
+                    .clickable { navController.popBackStack() },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Back",
+                    tint = DeepEmerald,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+
+            // Title
+            Text(
+                text = "Al-Qur'an",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = DeepEmerald
+            )
+
+            // Search button
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(LightEmerald)
+                    .clickable { /* TODO: Open search */ },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = "Search",
+                    tint = DeepEmerald,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // ── Tab Selector ──
+        Box(modifier = Modifier.padding(horizontal = 20.dp)) {
+            QuranTabSelector(
+                selectedTab = selectedTab,
+                onTabSelected = { selectedTab = it }
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // ── Content ──
+        if (selectedTab == 0) {
+            LazyColumn(
+                modifier = Modifier.padding(horizontal = 20.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                contentPadding = PaddingValues(bottom = 24.dp)
+            ) {
+                items(surahList) { surah ->
+                    SurahItem(
+                        surah = surah,
+                        onClick = { navController.navigate("quran_detail/${surah.number}") }
+                    )
+                }
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier.padding(horizontal = 20.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                contentPadding = PaddingValues(bottom = 24.dp)
+            ) {
+                juzList.forEach { juz ->
+                    item {
+                        Text(
+                            text = "Juz ${juz.number}",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = DeepEmerald,
+                            modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
+                        )
+                    }
+                    items(juz.surahs) { entry ->
+                        JuzSurahCard(
+                            entry = entry,
+                            onClick = { navController.navigate("quran_detail/${entry.surahNumber}") }
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
