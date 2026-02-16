@@ -14,8 +14,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import com.example.quranapp.data.model.Surah
 import com.example.quranapp.ui.theme.*
+import com.example.quranapp.R
 
 // ─────────────────────────────────────────────
 // Tab Selector (Surah / Juz)
@@ -75,6 +79,8 @@ fun SurahItem(
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = LightEmerald)
     ) {
+        val arabicFont = FontFamily(Font(R.font.lpmq_isepmisbah))
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -93,7 +99,10 @@ fun SurahItem(
             // Arabic name
             Text(
                 text = surah.arabicName.replace("سُورَةُ", "").trim(),
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontFamily = arabicFont,
+                    letterSpacing = 3.sp
+                ),
                 fontWeight = FontWeight.Bold,
                 color = DeepEmerald.copy(alpha = 0.7f),
                 modifier = Modifier.width(80.dp)
@@ -129,6 +138,8 @@ fun JuzSurahCard(
     entry: com.example.quranapp.data.model.JuzSurahEntry,
     onClick: () -> Unit = {}
 ) {
+    val arabicFont = FontFamily(Font(R.font.lpmq_isepmisbah))
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -145,7 +156,10 @@ fun JuzSurahCard(
             // Arabic name (left side)
             Text(
                 text = entry.arabicName.replace("سُورَةُ", "").trim(),
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontFamily = arabicFont,
+                    letterSpacing = 3.sp
+                ),
                 fontWeight = FontWeight.Bold,
                 color = DeepEmerald.copy(alpha = 0.7f),
                 modifier = Modifier.width(80.dp)

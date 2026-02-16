@@ -147,7 +147,8 @@ fun MatsuratItem(item: AlMatsurat, arabicFont: FontFamily) {
                 text = item.arabic,
                 style = MaterialTheme.typography.headlineSmall.copy(
                     fontFamily = arabicFont,
-                    lineHeight = 60.sp
+                    lineHeight = 60.sp,
+                    letterSpacing = 3.sp 
                 ),
                 color = DeepEmerald,
                 textAlign = TextAlign.End,

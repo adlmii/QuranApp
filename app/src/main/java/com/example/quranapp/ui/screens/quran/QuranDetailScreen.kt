@@ -33,8 +33,10 @@ import com.example.quranapp.util.TajweedHelper
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.withStyle
+import com.example.quranapp.R
 
 @Composable
 fun QuranDetailScreen(
@@ -49,6 +51,8 @@ fun QuranDetailScreen(
     LaunchedEffect(surahNumber) {
         viewModel.loadSurah(surahNumber)
     }
+
+    val arabicFont = FontFamily(Font(R.font.lpmq_isepmisbah))
 
     Scaffold(
         topBar = {
@@ -96,7 +100,7 @@ fun QuranDetailScreen(
                                     )
                                 }
                                 items(pageAyahs) { ayah ->
-                                    AyahItem(ayah = ayah, surahNumber = surahNumber)
+                                    AyahItem(ayah = ayah, surahNumber = surahNumber, arabicFont = arabicFont)
                                 }
                             }
                         }
@@ -120,8 +124,10 @@ fun QuranDetailScreen(
                                 ) {
                                     Text(
                                         text = "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
-                                        style = MaterialTheme.typography.headlineMedium,
-                                        fontFamily = FontFamily.Serif, // Replace with specialized font if available
+                                        style = MaterialTheme.typography.headlineMedium.copy(
+                                            fontFamily = arabicFont,
+                                            letterSpacing = 3.sp
+                                        ), 
                                         textAlign = TextAlign.Center,
                                         color = DeepEmerald
                                     )
@@ -130,7 +136,7 @@ fun QuranDetailScreen(
                         }
 
                         items(surahDetail!!.ayahs) { ayah ->
-                            AyahItem(ayah = ayah, surahNumber = surahNumber)
+                            AyahItem(ayah = ayah, surahNumber = surahNumber, arabicFont = arabicFont)
                         }
                     }
                 }
@@ -199,7 +205,7 @@ fun DetailHeader(
 }
 
 @Composable
-fun AyahItem(ayah: Ayah, surahNumber: Int) {
+fun AyahItem(ayah: Ayah, surahNumber: Int, arabicFont: FontFamily) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -249,7 +255,11 @@ fun AyahItem(ayah: Ayah, surahNumber: Int) {
         
         Text(
             text = tajweedText,
-            style = MaterialTheme.typography.headlineMedium.copy(lineHeight = 50.sp),
+            style = MaterialTheme.typography.headlineSmall.copy(
+                fontFamily = arabicFont,
+                lineHeight = 60.sp,
+                letterSpacing = 3.sp
+            ),
             color = DeepEmerald,
             textAlign = TextAlign.End,
             modifier = Modifier.fillMaxWidth()
