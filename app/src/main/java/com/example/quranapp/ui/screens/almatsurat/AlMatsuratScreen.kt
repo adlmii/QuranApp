@@ -122,10 +122,7 @@ fun MatsuratItem(item: AlMatsurat, arabicFont: FontFamily) {
                     color = DeepEmerald,
                     modifier = Modifier.weight(1f)
                 )
-                
-                // Hide badge if count is 0 or 1 (assuming "0x" means count 0, user said "0x klo 0x dihapus aja")
-                // Typically count 1 is not shown either, but let's stick to user request "0x dihapus".
-                // If the data has "0x" string, I should check that. But `item.count` is Int.
+
                 if (item.count > 1) { 
                     Box(
                         modifier = Modifier
@@ -143,7 +140,7 @@ fun MatsuratItem(item: AlMatsurat, arabicFont: FontFamily) {
                 }
             }
             
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
             
             // Arabic Text with Custom Font
             Text(
