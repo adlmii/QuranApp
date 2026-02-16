@@ -36,11 +36,10 @@ fun AlMatsuratScreen(
     type: MatsuratType,
     viewModel: AlMatsuratViewModel = viewModel()
 ) {
-    val matsuratList by viewModel.matsuratList.collectAsState()
-    val currentType by viewModel.matsuratType.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
     
     // Load custom font
-    val arabicFont = FontFamily(Font(R.font.lpmq_isepmisbah)) // Assuming resource id will be generated or need to place in res/font
+    val arabicFont = FontFamily(Font(R.font.lpmq_isepmisbah))
 
     LaunchedEffect(type) {
         viewModel.loadMatsurat(type)
@@ -51,7 +50,6 @@ fun AlMatsuratScreen(
             .fillMaxSize()
             .background(BackgroundWhite)
     ) {
-        // ... (Header code remains same) ...
         // Header
         Box(
             modifier = Modifier
@@ -78,7 +76,7 @@ fun AlMatsuratScreen(
                         color = Color.White
                     )
                     Text(
-                        text = if (currentType == MatsuratType.MORNING) "Dzikir Pagi" else "Dzikir Petang",
+                        text = if (uiState.matsuratType == MatsuratType.MORNING) "Dzikir Pagi" else "Dzikir Petang",
                         style = MaterialTheme.typography.bodyMedium,
                         color = Color.White.copy(alpha = 0.8f)
                     )
@@ -87,13 +85,19 @@ fun AlMatsuratScreen(
         }
 
         // List
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            items(matsuratList) { item ->
-                MatsuratItem(item = item, arabicFont = arabicFont)
+        if (uiState.isLoading) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = DeepEmerald)
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                items(uiState.matsuratList) { item ->
+                    MatsuratItem(item = item, arabicFont = arabicFont)
+                }
             }
         }
     }

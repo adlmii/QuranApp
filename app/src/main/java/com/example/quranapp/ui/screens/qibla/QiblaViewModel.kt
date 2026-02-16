@@ -12,28 +12,26 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
+
+data class QiblaUiState(
+    val qiblaBearing: Double = 0.0,
+    val currentHeading: Float = 0f,
+    val hasLocationPermission: Boolean = false
+)
+
 class QiblaViewModel(application: Application) : AndroidViewModel(application) {
     
     private val sensorManager = QiblaSensorManager(application)
     private val fusedLocationClient = LocationServices.getFusedLocationProviderClient(application)
 
-    // Qibla Direction (Bearing from North)
-    private val _qiblaBearing = MutableStateFlow(0.0)
-    val qiblaBearing: StateFlow<Double> = _qiblaBearing.asStateFlow()
-
-    // Current Compass Heading (Azimuth)
-    private val _currentHeading = MutableStateFlow(0f)
-    val currentHeading: StateFlow<Float> = _currentHeading.asStateFlow()
-
-    // Location Permission Status
-    private val _hasLocationPermission = MutableStateFlow(false)
-    val hasLocationPermission: StateFlow<Boolean> = _hasLocationPermission.asStateFlow()
+    private val _uiState = MutableStateFlow(QiblaUiState())
+    val uiState: StateFlow<QiblaUiState> = _uiState.asStateFlow()
 
     init {
         // Start listening to compass
         viewModelScope.launch {
             sensorManager.getCompassOrientation().collect { azimuth ->
-                _currentHeading.value = azimuth
+                _uiState.value = _uiState.value.copy(currentHeading = azimuth)
             }
         }
         checkPermissionAndGetLocation()
@@ -48,15 +46,16 @@ class QiblaViewModel(application: Application) : AndroidViewModel(application) {
             android.Manifest.permission.ACCESS_COARSE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED
 
-        _hasLocationPermission.value = hasPermission
+        _uiState.value = _uiState.value.copy(hasLocationPermission = hasPermission)
 
         if (hasPermission) {
             fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
                 if (location != null) {
                     val bearing = QiblaUtils.calculateQiblaDirection(location.latitude, location.longitude)
-                    _qiblaBearing.value = bearing
+                    _uiState.value = _uiState.value.copy(qiblaBearing = bearing)
                 }
             }
         }
     }
 }
+

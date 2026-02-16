@@ -28,8 +28,7 @@ fun QuranScreen(
     navController: NavController,
     viewModel: QuranViewModel = viewModel()
 ) {
-    val surahList by viewModel.surahList.collectAsState()
-    val juzList by viewModel.juzList.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
     var selectedTab by remember { mutableStateOf(0) }
 
     Column(
@@ -103,40 +102,50 @@ fun QuranScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         // ── Content ──
-        if (selectedTab == 0) {
-            LazyColumn(
-                modifier = Modifier.padding(horizontal = 20.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-                contentPadding = PaddingValues(bottom = 24.dp)
-            ) {
-                items(surahList) { surah ->
-                    SurahItem(
-                        surah = surah,
-                        onClick = { navController.navigate("quran_detail/${surah.number}") }
-                    )
-                }
+        if (uiState.isLoading) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = DeepEmerald)
+            }
+        } else if (uiState.error != null) {
+             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(text = "Error: ${uiState.error}", color = Color.Red)
             }
         } else {
-            LazyColumn(
-                modifier = Modifier.padding(horizontal = 20.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-                contentPadding = PaddingValues(bottom = 24.dp)
-            ) {
-                juzList.forEach { juz ->
-                    item {
-                        Text(
-                            text = "Juz ${juz.number}",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = DeepEmerald,
-                            modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
+            if (selectedTab == 0) {
+                LazyColumn(
+                    modifier = Modifier.padding(horizontal = 20.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    contentPadding = PaddingValues(bottom = 24.dp)
+                ) {
+                    items(uiState.surahList) { surah ->
+                        SurahItem(
+                            surah = surah,
+                            onClick = { navController.navigate("quran_detail/${surah.number}") }
                         )
                     }
-                    items(juz.surahs) { entry ->
-                        JuzSurahCard(
-                            entry = entry,
-                            onClick = { navController.navigate("quran_detail/${entry.surahNumber}") }
-                        )
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.padding(horizontal = 20.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    contentPadding = PaddingValues(bottom = 24.dp)
+                ) {
+                    uiState.juzList.forEach { juz ->
+                        item {
+                            Text(
+                                text = "Juz ${juz.number}",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = DeepEmerald,
+                                modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
+                            )
+                        }
+                        items(juz.surahs) { entry ->
+                            JuzSurahCard(
+                                entry = entry,
+                                onClick = { navController.navigate("quran_detail/${entry.surahNumber}") }
+                            )
+                        }
                     }
                 }
             }

@@ -33,9 +33,7 @@ fun QiblaScreen(
     navController: NavController,
     viewModel: QiblaViewModel = viewModel()
 ) {
-    val qiblaBearing by viewModel.qiblaBearing.collectAsState()
-    val currentHeading by viewModel.currentHeading.collectAsState()
-    val hasPermission by viewModel.hasLocationPermission.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
 
     // Calculate rotation:
     // We want the Compass dial to rotate so that North points to actual North.
@@ -50,7 +48,7 @@ fun QiblaScreen(
     // Then Needle is drawn at QiblaBearing.
     
     val animatedHeading by animateFloatAsState(
-        targetValue = -currentHeading,
+        targetValue = -uiState.currentHeading,
         animationSpec = tween(durationMillis = 200), label = "CompassRotation"
     )
 
@@ -93,7 +91,7 @@ fun QiblaScreen(
 
         Spacer(modifier = Modifier.height(60.dp))
 
-        if (!hasPermission) {
+        if (!uiState.hasLocationPermission) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text("Location Permission Required", color = TextGray)
                 // TODO: Add Button to Request Permission
@@ -156,7 +154,7 @@ fun QiblaScreen(
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .rotate(qiblaBearing.toFloat()),
+                            .rotate(uiState.qiblaBearing.toFloat()),
                         contentAlignment = Alignment.Center
                     ) {
                         // Draw Needle (Kaaba direction)
@@ -192,13 +190,13 @@ fun QiblaScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Qibla: ${qiblaBearing.toInt()}°",
+                    text = "Qibla: ${uiState.qiblaBearing.toInt()}°",
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                     color = DeepEmerald
                 )
                 Text(
-                    text = "Current: ${currentHeading.toInt()}°",
+                    text = "Current: ${uiState.currentHeading.toInt()}°",
                     style = MaterialTheme.typography.bodyMedium,
                     color = TextGray
                 )

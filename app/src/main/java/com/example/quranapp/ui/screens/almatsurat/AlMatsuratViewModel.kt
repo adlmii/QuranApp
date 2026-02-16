@@ -11,20 +11,32 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
+
+data class AlMatsuratUiState(
+    val matsuratList: List<AlMatsurat> = emptyList(),
+    val matsuratType: MatsuratType = MatsuratType.MORNING,
+    val isLoading: Boolean = false
+)
+
 class AlMatsuratViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository = AlMatsuratRepository(application)
 
-    private val _matsuratList = MutableStateFlow<List<AlMatsurat>>(emptyList())
-    val matsuratList: StateFlow<List<AlMatsurat>> = _matsuratList.asStateFlow()
-
-    private val _matsuratType = MutableStateFlow(MatsuratType.MORNING)
-    val matsuratType: StateFlow<MatsuratType> = _matsuratType.asStateFlow()
+    private val _uiState = MutableStateFlow(AlMatsuratUiState())
+    val uiState: StateFlow<AlMatsuratUiState> = _uiState.asStateFlow()
 
     fun loadMatsurat(type: MatsuratType) {
         viewModelScope.launch {
-            _matsuratType.value = type
-            _matsuratList.value = repository.getMatsurat(type)
+            _uiState.value = _uiState.value.copy(
+                matsuratType = type,
+                isLoading = true
+            )
+            val list = repository.getMatsurat(type)
+            _uiState.value = _uiState.value.copy(
+                matsuratList = list,
+                isLoading = false
+            )
         }
     }
 }
+

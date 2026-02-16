@@ -12,30 +12,43 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
+
+data class QuranHomeUiState(
+    val surahList: List<Surah> = emptyList(),
+    val juzList: List<Juz> = emptyList(),
+    val isLoading: Boolean = false,
+    val error: String? = null
+)
+
 class QuranViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository = QuranRepository(application)
 
-    private val _surahList = MutableStateFlow<List<Surah>>(emptyList())
-    val surahList: StateFlow<List<Surah>> = _surahList.asStateFlow()
-
-    private val _juzList = MutableStateFlow<List<Juz>>(emptyList())
-    val juzList: StateFlow<List<Juz>> = _juzList.asStateFlow()
+    private val _uiState = MutableStateFlow(QuranHomeUiState())
+    val uiState: StateFlow<QuranHomeUiState> = _uiState.asStateFlow()
 
     init {
-        loadSurahData()
-        loadJuzData()
+        loadData()
     }
 
-    private fun loadSurahData() {
+    private fun loadData() {
         viewModelScope.launch {
-            _surahList.value = repository.getSurahList()
-        }
-    }
-
-    private fun loadJuzData() {
-        viewModelScope.launch {
-            _juzList.value = repository.getJuzList()
+            _uiState.value = _uiState.value.copy(isLoading = true)
+            try {
+                // Load both in parallel if needed, or sequentially
+                val surahs = repository.getSurahList()
+                val juzs = repository.getJuzList()
+                _uiState.value = _uiState.value.copy(
+                    surahList = surahs,
+                    juzList = juzs,
+                    isLoading = false
+                )
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    error = e.localizedMessage
+                )
+            }
         }
     }
 }

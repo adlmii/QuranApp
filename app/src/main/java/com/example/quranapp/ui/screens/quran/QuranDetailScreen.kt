@@ -44,9 +44,7 @@ fun QuranDetailScreen(
     surahNumber: Int,
     viewModel: QuranDetailViewModel = viewModel()
 ) {
-    val surahDetail by viewModel.surahDetail.collectAsState()
-    val pages by viewModel.pages.collectAsState()
-    var isPageMode by remember { mutableStateOf(false) } // False = Ayah Mode, True = Page Mode
+    val uiState by viewModel.uiState.collectAsState()
 
     LaunchedEffect(surahNumber) {
         viewModel.loadSurah(surahNumber)
@@ -57,10 +55,10 @@ fun QuranDetailScreen(
     Scaffold(
         topBar = {
             DetailHeader(
-                title = surahDetail?.name ?: "Loading...",
+                title = uiState.surahDetail?.name ?: "Loading...",
                 onBack = { navController.popBackStack() },
-                isPageMode = isPageMode,
-                onToggleMode = { isPageMode = !isPageMode }
+                isPageMode = uiState.isPageMode,
+                onToggleMode = { viewModel.toggleViewMode() }
             )
         },
         containerColor = BackgroundWhite
@@ -70,73 +68,81 @@ fun QuranDetailScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            if (surahDetail == null) {
+            if (uiState.isLoading) {
                 CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center),
                     color = DeepEmerald
                 )
+            } else if (uiState.error != null) {
+                Text(
+                    text = "Error: ${uiState.error}",
+                    color = Color.Red,
+                    modifier = Modifier.align(Alignment.Center)
+                )
             } else {
-                if (isPageMode) {
-                    // Page Mode
-                    if (pages.isNotEmpty()) {
-                        val pagerState = rememberPagerState(pageCount = { pages.size })
-                        HorizontalPager(
-                            state = pagerState,
-                            modifier = Modifier.fillMaxSize()
-                        ) { pageIndex ->
-                            val pageAyahs = pages[pageIndex]
-                            LazyColumn(
-                                modifier = Modifier.fillMaxSize(),
-                                contentPadding = PaddingValues(16.dp),
-                                verticalArrangement = Arrangement.spacedBy(16.dp)
-                            ) {
-                                item {
-                                    Text(
-                                        text = "Page ${pageAyahs.firstOrNull()?.page ?: "-"}",
-                                        style = MaterialTheme.typography.labelMedium,
-                                        color = TextGray,
-                                        modifier = Modifier.fillMaxWidth(),
-                                        textAlign = TextAlign.Center
-                                    )
+                uiState.surahDetail?.let { detail ->
+                    if (uiState.isPageMode) {
+                        // Page Mode
+                        if (uiState.pages.isNotEmpty()) {
+                            val pagerState = rememberPagerState(pageCount = { uiState.pages.size })
+                            HorizontalPager(
+                                state = pagerState,
+                                modifier = Modifier.fillMaxSize()
+                            ) { pageIndex ->
+                                val pageAyahs = uiState.pages[pageIndex]
+                                LazyColumn(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentPadding = PaddingValues(16.dp),
+                                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                                ) {
+                                    item {
+                                        Text(
+                                            text = "Page ${pageAyahs.firstOrNull()?.page ?: "-"}",
+                                            style = MaterialTheme.typography.labelMedium,
+                                            color = TextGray,
+                                            modifier = Modifier.fillMaxWidth(),
+                                            textAlign = TextAlign.Center
+                                        )
+                                    }
+                                    items(pageAyahs) { ayah ->
+                                        AyahItem(ayah = ayah, surahNumber = surahNumber, arabicFont = arabicFont)
+                                    }
                                 }
-                                items(pageAyahs) { ayah ->
-                                    AyahItem(ayah = ayah, surahNumber = surahNumber, arabicFont = arabicFont)
-                                }
+                            }
+                        } else {
+                            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                                Text("No pages available")
                             }
                         }
                     } else {
-                        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                            Text("No pages available")
-                        }
-                    }
-                } else {
-                    // Ayah Mode
-                    LazyColumn(
-                        contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        // Basmalah except for Surah 1 (it's part of ayahs) and Surah 9
-                        if (surahNumber != 1 && surahNumber != 9) {
-                            item {
-                                Box(
-                                    modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
-                                        style = MaterialTheme.typography.headlineMedium.copy(
-                                            fontFamily = arabicFont,
-                                            letterSpacing = 3.sp
-                                        ), 
-                                        textAlign = TextAlign.Center,
-                                        color = DeepEmerald
-                                    )
+                        // Ayah Mode
+                        LazyColumn(
+                            contentPadding = PaddingValues(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            // Basmalah except for Surah 1 (it's part of ayahs) and Surah 9
+                            if (surahNumber != 1 && surahNumber != 9) {
+                                item {
+                                    Box(
+                                        modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
+                                            style = MaterialTheme.typography.headlineMedium.copy(
+                                                fontFamily = arabicFont,
+                                                letterSpacing = 3.sp
+                                            ), 
+                                            textAlign = TextAlign.Center,
+                                            color = DeepEmerald
+                                        )
+                                    }
                                 }
                             }
-                        }
 
-                        items(surahDetail!!.ayahs) { ayah ->
-                            AyahItem(ayah = ayah, surahNumber = surahNumber, arabicFont = arabicFont)
+                            items(detail.ayahs) { ayah ->
+                                AyahItem(ayah = ayah, surahNumber = surahNumber, arabicFont = arabicFont)
+                            }
                         }
                     }
                 }
