@@ -13,6 +13,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -116,7 +117,8 @@ fun PrayerItem(
     onCheckClick: () -> Unit
 ) {
     val containerColor = if (isNext) DeepEmerald else DeepEmerald
-    val contentAlpha = if (isPassed || isNext) 1f else 0.35f // More transparent for future items
+    // User requested 0.7f alpha for prayed items
+    val contentAlpha = if (isPrayed) 0.7f else if (isPassed || isNext) 1f else 0.35f 
 
     val borderStroke = if (isNext) {
         androidx.compose.foundation.BorderStroke(2.dp, MediumEmerald) // Thicker, solid border for Next
@@ -125,7 +127,11 @@ fun PrayerItem(
     }
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().run {
+             // Optional: apply alpha to the whole card if prayed?
+             // User said "buat kartunya sedikit lebih transparan"
+             if(isPrayed) this.alpha(0.7f) else this
+        },
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = containerColor),
         border = borderStroke,
@@ -145,7 +151,7 @@ fun PrayerItem(
                     .background(
                         if (isPrayed) MediumEmerald else White.copy(alpha = if (isPassed) 0.12f else 0.05f)
                     )
-                    .clickable(enabled = isPassed) { onCheckClick() },
+                    .clickable(enabled = isPassed || isNext) { onCheckClick() }, // Allow checking if passed or next
                 contentAlignment = Alignment.Center
             ) {
                 if (isPrayed) {
@@ -190,11 +196,14 @@ fun PrayerItem(
             Spacer(modifier = Modifier.width(10.dp))
 
             // Time
+            // User: "ganti warna teks jam-nya jadi abu-abu" if prayed
+            val timeColor = if (isPrayed) TextGray else White.copy(alpha = if (isNext) 1f else contentAlpha * 0.7f)
+            
             Text(
                 text = time,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Medium,
-                color = White.copy(alpha = if (isNext) 1f else contentAlpha * 0.7f)
+                color = timeColor
             )
 
             Spacer(modifier = Modifier.width(12.dp))

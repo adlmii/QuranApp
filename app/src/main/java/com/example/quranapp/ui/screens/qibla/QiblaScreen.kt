@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.quranapp.ui.theme.*
+import com.example.quranapp.ui.components.AppHeader
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -52,42 +53,31 @@ fun QiblaScreen(
         animationSpec = tween(durationMillis = 200), label = "CompassRotation"
     )
 
+    // Haptic Feedback Logic
+    val view = androidx.compose.ui.platform.LocalView.current
+    val diff = kotlin.math.abs(uiState.currentHeading - uiState.qiblaBearing) % 360
+    val minDiff = if (diff > 180) 360 - diff else diff
+    val isAligned = minDiff < 2
+    
+    LaunchedEffect(isAligned) {
+        if (isAligned) {
+            view.performHapticFeedback(android.view.HapticFeedbackConstants.CLOCK_TICK)
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundWhite)
+            .background(CreamBackground)
     ) {
          // ── Header ──
         Spacer(modifier = Modifier.height(24.dp))
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .background(LightEmerald)
-                    .clickable { navController.popBackStack() },
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back",
-                    tint = DeepEmerald,
-                    modifier = Modifier.size(20.dp)
-                )
-            }
-            Spacer(modifier = Modifier.width(16.dp))
-            Text(
-                text = "Qibla Finder",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                color = DeepEmerald
-            )
-        }
+        AppHeader(
+            title = "Qibla Finder",
+            onBackClick = { navController.popBackStack() },
+            backgroundColor = CreamBackground,
+            contentColor = DeepEmerald
+        )
 
         Spacer(modifier = Modifier.height(60.dp))
 
@@ -151,30 +141,38 @@ fun QiblaScreen(
 
                     // 3. Qibla Needle (The Goal)
                     // This needle stays fixed at 'qiblaBearing' degrees relative to North (which is at top of this rotated box)
+                    // 3. Qibla Direction (Kaaba Icon)
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
                             .rotate(uiState.qiblaBearing.toFloat()),
-                        contentAlignment = Alignment.Center
+                        contentAlignment = Alignment.TopCenter
                     ) {
-                        // Draw Needle (Kaaba direction)
-                         Canvas(modifier = Modifier.fillMaxSize()) {
-                             val radius = size.minDimension / 2 - 40
-                             val angle = Math.toRadians(-90.0) // Up
-                             val endX = center.x + radius * cos(angle).toFloat()
-                             val endY = center.y + radius * sin(angle).toFloat()
-                             
-                             // Draw Arrow
-                             val path = Path().apply {
-                                 moveTo(center.x, center.y)
-                                 lineTo(center.x - 15, center.y - 15)
-                                 lineTo(endX, endY) // Tip
-                                 lineTo(center.x + 15, center.y - 15)
-                                 close()
-                             }
-                             drawPath(path, color = Color(0xFFD4AF37)) // Gold color for Kaaba
-                             drawCircle(Color(0xFFD4AF37), 10f)
-                         }
+                        // Draw Kaaba at the "Top" (which corresponds to Qibla Bearing)
+                        // We offset it slightly so it sits on the compass rim
+                        Canvas(modifier = Modifier.padding(top = 20.dp).size(24.dp)) {
+                            // Cube Body
+                            drawRect(color = Color.Black)
+                            
+                            // Gold Band
+                            drawLine(
+                                color = Color(0xFFD4AF37),
+                                start = Offset(0f, size.height * 0.3f),
+                                end = Offset(size.width, size.height * 0.3f),
+                                strokeWidth = 3.dp.toPx()
+                            )
+                        }
+                        
+                        // Direction Line
+                        Canvas(modifier = Modifier.fillMaxSize()) {
+                            drawLine(
+                                color = Color(0xFFD4AF37).copy(alpha = 0.5f),
+                                start = center,
+                                end = Offset(center.x, 40f), // Point to Kaaba
+                                strokeWidth = 2.dp.toPx(),
+                                pathEffect = androidx.compose.ui.graphics.PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
+                            )
+                        }
                     }
                 }
                 

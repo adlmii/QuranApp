@@ -21,8 +21,7 @@ fun AppHeader(
     onBackClick: (() -> Unit)? = null,
     backgroundColor: Color = DeepEmerald,
     contentColor: Color = Color.White,
-    actionIcon: ImageVector? = null,
-    onActionClick: (() -> Unit)? = null
+    actions: @Composable RowScope.() -> Unit = {}
 ) {
     Box(
         modifier = Modifier
@@ -60,15 +59,7 @@ fun AppHeader(
                 }
             }
             
-            if (actionIcon != null && onActionClick != null) {
-                 IconButton(onClick = onActionClick) {
-                    Icon(
-                        imageVector = actionIcon,
-                        contentDescription = "Action",
-                        tint = contentColor
-                    )
-                }
-            }
+            actions()
         }
     }
 }

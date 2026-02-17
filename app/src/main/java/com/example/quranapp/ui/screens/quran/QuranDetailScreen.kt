@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import com.example.quranapp.ui.theme.UthmaniHafs
+import com.example.quranapp.ui.theme.CreamBackground
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
@@ -29,6 +30,7 @@ import androidx.navigation.NavController
 import com.example.quranapp.data.model.Ayah
 import com.example.quranapp.R
 import com.example.quranapp.ui.components.AppHeader
+import com.example.quranapp.ui.screens.quran.components.Fireworks
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Menu
 import com.example.quranapp.ui.theme.*
@@ -54,94 +56,115 @@ fun QuranDetailScreen(
                 title = uiState.surahDetail?.name ?: "Loading...",
                 onBack = { navController.popBackStack() },
                 isPageMode = uiState.isPageMode,
-                onToggleMode = { viewModel.toggleViewMode() }
+                onToggleMode = { viewModel.toggleViewMode() },
+                sessionProgress = uiState.sessionProgress
             )
         },
-        containerColor = BackgroundWhite
+        containerColor = CreamBackground
     ) { padding ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            if (uiState.isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center),
-                    color = DeepEmerald
-                )
-            } else if (uiState.error != null) {
-                Text(
-                    text = "Error: ${uiState.error}",
-                    color = Color.Red,
-                    modifier = Modifier.align(Alignment.Center)
-                )
-            } else {
-                uiState.surahDetail?.let { detail ->
-                    if (uiState.isPageMode) {
-                        // Page Mode
-                        if (uiState.pages.isNotEmpty()) {
-                            val pagerState = rememberPagerState(pageCount = { uiState.pages.size })
-                            HorizontalPager(
-                                state = pagerState,
-                                modifier = Modifier.fillMaxSize()
-                            ) { pageIndex ->
-                                val pageAyahs = uiState.pages[pageIndex]
-                                LazyColumn(
-                                    modifier = Modifier.fillMaxSize(),
-                                    contentPadding = PaddingValues(16.dp),
-                                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                                ) {
-                                    item {
-                                        Text(
-                                            text = "Page ${pageAyahs.firstOrNull()?.page ?: "-"}",
-                                            style = MaterialTheme.typography.labelMedium,
-                                            color = TextGray,
-                                            modifier = Modifier.fillMaxWidth(),
-                                            textAlign = TextAlign.Center
-                                        )
+            Column(modifier = Modifier.fillMaxSize()) {
+                // Session Progress Bar
+                if (uiState.sessionProgress > 0) {
+                     LinearProgressIndicator(
+                        progress = { uiState.sessionProgress / 5f },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(4.dp),
+                        color = Color(0xFFD4AF37), // Gold
+                        trackColor = Color(0xFFE0E0E0)
+                    )
+                }
+
+                if (uiState.isLoading) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = DeepEmerald)
+                    }
+                } else if (uiState.error != null) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text(
+                            text = "Error: ${uiState.error}",
+                            color = Color.Red
+                        )
+                    }
+                } else {
+                    uiState.surahDetail?.let { detail ->
+                        if (uiState.isPageMode) {
+                            // Page Mode
+                            if (uiState.pages.isNotEmpty()) {
+                                val pagerState = rememberPagerState(pageCount = { uiState.pages.size })
+                                HorizontalPager(
+                                    state = pagerState,
+                                    modifier = Modifier.weight(1f)
+                                ) { pageIndex ->
+                                    val pageAyahs = uiState.pages[pageIndex]
+                                    LazyColumn(
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentPadding = PaddingValues(16.dp),
+                                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                                    ) {
+                                        item {
+                                            Text(
+                                                text = "Page ${pageAyahs.firstOrNull()?.page ?: "-"}",
+                                                style = MaterialTheme.typography.labelMedium,
+                                                color = TextGray,
+                                                modifier = Modifier.fillMaxWidth(),
+                                                textAlign = TextAlign.Center
+                                            )
+                                        }
+                                        items(pageAyahs) { ayah ->
+                                            AyahItem(ayah = ayah, surahNumber = surahNumber, arabicFont = arabicFont)
+                                        }
                                     }
-                                    items(pageAyahs) { ayah ->
-                                        AyahItem(ayah = ayah, surahNumber = surahNumber, arabicFont = arabicFont)
-                                    }
+                                }
+                            } else {
+                                Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                                    Text("No pages available")
                                 }
                             }
                         } else {
-                            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                                Text("No pages available")
-                            }
-                        }
-                    } else {
-                        // Ayah Mode
-                        LazyColumn(
-                            contentPadding = PaddingValues(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-                            // Basmalah except for Surah 1 (it's part of ayahs) and Surah 9
-                            if (surahNumber != 1 && surahNumber != 9) {
-                                item {
-                                    Box(
-                                        modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Text(
-                                            text = "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
-                                            style = MaterialTheme.typography.headlineMedium.copy(
-                                                fontFamily = arabicFont,
-                                                letterSpacing = 3.sp
-                                            ), 
-                                            textAlign = TextAlign.Center,
-                                            color = DeepEmerald
-                                        )
+                            // Ayah Mode
+                            LazyColumn(
+                                modifier = Modifier.weight(1f),
+                                contentPadding = PaddingValues(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(16.dp)
+                            ) {
+                                // Basmalah except for Surah 1 (it's part of ayahs) and Surah 9
+                                if (surahNumber != 1 && surahNumber != 9) {
+                                    item {
+                                        Box(
+                                            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                text = "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
+                                                style = MaterialTheme.typography.headlineMedium.copy(
+                                                    fontFamily = arabicFont,
+                                                    letterSpacing = 3.sp
+                                                ), 
+                                                textAlign = TextAlign.Center,
+                                                color = DeepEmerald
+                                            )
+                                        }
                                     }
                                 }
-                            }
 
-                            items(detail.ayahs) { ayah ->
-                                AyahItem(ayah = ayah, surahNumber = surahNumber, arabicFont = arabicFont)
+                                items(detail.ayahs) { ayah ->
+                                    AyahItem(ayah = ayah, surahNumber = surahNumber, arabicFont = arabicFont)
+                                }
                             }
                         }
                     }
                 }
+            }
+            
+            // Reward Overlay
+            if (uiState.showReward) {
+                Fireworks(modifier = Modifier.fillMaxSize())
             }
         }
     }
@@ -152,15 +175,42 @@ fun DetailHeader(
     title: String,
     onBack: () -> Unit,
     isPageMode: Boolean,
-    onToggleMode: () -> Unit
+    onToggleMode: () -> Unit,
+    sessionProgress: Int = 0 // Add progress param
 ) {
     AppHeader(
         title = title,
         onBackClick = onBack,
-        actionIcon = if (isPageMode) Icons.Default.Menu else Icons.Default.List, // Example icon for toggle
-        onActionClick = onToggleMode,
-        backgroundColor = BackgroundWhite,
-        contentColor = DeepEmerald
+        backgroundColor = CreamBackground,
+        contentColor = DeepEmerald,
+        actions = {
+            // Session Indicator
+            Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(end = 16.dp)) {
+                CircularProgressIndicator(
+                    progress = { sessionProgress / 5f },
+                    modifier = Modifier.size(24.dp),
+                    color = Color(0xFFD4AF37), // Gold
+                    trackColor = Color(0xFFE0E0E0),
+                    strokeWidth = 3.dp
+                )
+                Text(
+                    text = "$sessionProgress",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = DeepEmerald,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 10.sp
+                )
+            }
+
+            // View Mode Toggle
+            IconButton(onClick = onToggleMode) {
+                Icon(
+                    imageVector = if (isPageMode) Icons.Default.Menu else Icons.Default.List,
+                    contentDescription = "Toggle View",
+                    tint = DeepEmerald
+                )
+            }
+        }
     )
 }
 
@@ -178,7 +228,9 @@ fun AyahItem(ayah: Ayah, surahNumber: Int, arabicFont: FontFamily) {
         ) {
             Surface(
                 shape = RoundedCornerShape(20.dp),
-                color = Color(0xFFE0E0E0), // Light gray like screenshot
+                color = MediumEmerald.copy(
+                    alpha = 0.2f
+                ), // Light gray like screenshot
                 modifier = Modifier.wrapContentSize()
             ) {
                 Row(

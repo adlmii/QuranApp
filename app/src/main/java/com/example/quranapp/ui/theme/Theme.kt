@@ -11,6 +11,7 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
+import com.example.quranapp.ui.theme.CreamBackground
 private val LightColorScheme = lightColorScheme(
     primary = DeepEmerald,
     onPrimary = White, // Teks di atas warna primary (misal: teks di tombol login)
@@ -18,7 +19,7 @@ private val LightColorScheme = lightColorScheme(
     secondary = LightEmerald,
     onSecondary = DeepEmerald, // Teks di atas warna secondary
 
-    background = BackgroundWhite,
+    background = CreamBackground,
     onBackground = TextBlack,
 
     surface = White, // Warna kartu/card
@@ -39,10 +40,10 @@ fun QuranAppTheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            // Mengubah warna Status Bar (ikon baterai/jam) agar selaras
-            window.statusBarColor = DeepEmerald.toArgb()
-            // Mengatur ikon status bar menjadi terang (karena backgroundnya gelap/hijau)
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = false
+            // Mengubah warna Status Bar agar selaras dengan background Cream
+            window.statusBarColor = CreamBackground.toArgb()
+            // Mengatur ikon status bar menjadi gelap (karena backgroundnya terang/cream)
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = true
         }
     }
 

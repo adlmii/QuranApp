@@ -36,15 +36,22 @@ fun QuranScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundWhite)
+            .background(CreamBackground)
     ) {
         AppHeader(
             title = "Al-Qur'an",
             onBackClick = { navController.popBackStack() },
-            actionIcon = Icons.Default.Search,
-            onActionClick = { /* TODO: Open search */ },
-            backgroundColor = BackgroundWhite,
-            contentColor = DeepEmerald
+            backgroundColor = CreamBackground,
+            contentColor = DeepEmerald,
+            actions = {
+                IconButton(onClick = { /* TODO: Open search */ }) {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = "Search",
+                        tint = DeepEmerald
+                    )
+                }
+            }
         )
 
         // ── Tab Selector ──

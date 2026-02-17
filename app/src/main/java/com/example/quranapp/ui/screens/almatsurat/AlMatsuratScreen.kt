@@ -1,41 +1,35 @@
 package com.example.quranapp.ui.screens.almatsurat
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.quranapp.data.model.AlMatsurat
 import com.example.quranapp.data.model.MatsuratType
-import com.example.quranapp.ui.theme.BackgroundWhite
-import com.example.quranapp.ui.theme.DeepEmerald
-import com.example.quranapp.ui.theme.LightEmerald
-import com.example.quranapp.ui.theme.TextGray
-import com.example.quranapp.ui.theme.UthmaniHafs
-import com.example.quranapp.ui.theme.HeadlineQuran
-import androidx.compose.ui.graphics.graphicsLayer
-import com.example.quranapp.R
 import com.example.quranapp.ui.components.AppCard
 import com.example.quranapp.ui.components.AppHeader
+import com.example.quranapp.ui.theme.CreamBackground
+import com.example.quranapp.ui.theme.DeepEmerald
 import com.example.quranapp.ui.theme.HeadlineQuran
+import com.example.quranapp.ui.theme.LightEmerald
+import com.example.quranapp.ui.theme.TextGray
+import com.example.quranapp.ui.theme.White
 
 @Composable
 fun AlMatsuratScreen(
@@ -44,9 +38,6 @@ fun AlMatsuratScreen(
     viewModel: AlMatsuratViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    
-    // Load custom font
-
 
     LaunchedEffect(type) {
         viewModel.loadMatsurat(type)
@@ -55,12 +46,14 @@ fun AlMatsuratScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundWhite)
+            .background(CreamBackground)
     ) {
         AppHeader(
             title = "Al-Ma'tsurat",
             subtitle = if (uiState.matsuratType == MatsuratType.MORNING) "Dzikir Pagi" else "Dzikir Petang",
-            onBackClick = { navController.popBackStack() }
+            onBackClick = { navController.popBackStack() },
+            backgroundColor = CreamBackground,
+            contentColor = DeepEmerald
         )
 
         // List
@@ -85,66 +78,85 @@ fun AlMatsuratScreen(
 @Composable
 fun MatsuratItem(item: AlMatsurat) {
     if (item.isQuran) {
-        FlipMatsuratCard(item)
+        SlidingMatsuratCard(item)
     } else {
         StaticMatsuratCard(item)
     }
 }
 
 @Composable
-fun FlipMatsuratCard(item: AlMatsurat) {
-    var isFlipped by remember { mutableStateOf(false) }
-    val rotation by androidx.compose.animation.core.animateFloatAsState(
-        targetValue = if (isFlipped) 180f else 0f,
-        animationSpec = androidx.compose.animation.core.tween(500)
-    )
+fun SlidingMatsuratCard(item: AlMatsurat) {
+    // Page 0: Arabic, Page 1: Translation
+    val pagerState = rememberPagerState(pageCount = { 2 })
 
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
+    AppCard(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        backgroundColor = White
     ) {
-        AppCard(
-            onClick = { isFlipped = !isFlipped },
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .graphicsLayer {
-                    rotationY = rotation
-                    cameraDistance = 12f * density
-                }
+                .padding(16.dp)
         ) {
-            Box(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                if (rotation <= 90f) {
-                    // Front Face
-                    Column(modifier = Modifier.fillMaxWidth()) {
-                        MatsuratHeader(item)
-                        Spacer(modifier = Modifier.height(24.dp))
-                        
+            MatsuratHeader(item)
+            
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Sliding Content
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.fillMaxWidth()
+            ) { page ->
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    if (page == 0) {
+                        // Arabic View
                         Text(
                             text = item.arabic,
                             style = HeadlineQuran,
                             color = DeepEmerald,
                             textAlign = TextAlign.End,
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
                         )
-                        
-
+                    } else {
+                        // Translation View
+                         Box(
+                            modifier = Modifier.fillMaxWidth().heightIn(min = 100.dp), // Min height to match arabic approx
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = item.translation ?: "Tidak ada terjemahan",
+                                style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 26.sp),
+                                color = TextGray,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
                     }
-                } else {
-                    // Back Face
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Dots Indicator
+            Row(
+                Modifier
+                    .wrapContentHeight()
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                repeat(2) { iteration ->
+                    val color = if (pagerState.currentPage == iteration) DeepEmerald else LightEmerald
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .graphicsLayer { rotationY = 180f },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = item.translation ?: "Tidak ada terjemahan",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = DeepEmerald,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.padding(16.dp)
-                        )
-                    }
+                            .padding(2.dp)
+                            .clip(CircleShape)
+                            .background(color)
+                            .size(6.dp)
+                    )
                 }
             }
         }
@@ -154,7 +166,9 @@ fun FlipMatsuratCard(item: AlMatsurat) {
 @Composable
 fun StaticMatsuratCard(item: AlMatsurat) {
     AppCard(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        backgroundColor = White
     ) {
         Column(
             modifier = Modifier
@@ -174,11 +188,13 @@ fun StaticMatsuratCard(item: AlMatsurat) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Text(
-                text = item.translation ?: "",
-                style = MaterialTheme.typography.bodyMedium,
-                color = TextGray
-            )
+            if (!item.translation.isNullOrEmpty()) {
+                Text(
+                    text = item.translation,
+                    style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 24.sp),
+                    color = TextGray
+                )
+            }
         }
     }
 }
@@ -211,5 +227,3 @@ fun MatsuratHeader(item: AlMatsurat) {
         }
     }
 }
-
-

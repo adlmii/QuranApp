@@ -17,3 +17,4 @@ val BackgroundWhite = Color(0xFFFBFBFB) // Background utama aplikasi
 val TextBlack = Color(0xFF212121) // Teks utama
 val TextGray = Color(0xFF757575) // Teks deskripsi/sub-text
 val White = Color(0xFFFFFFFF)
+val CreamBackground = Color(0xFFFAF8EF) // Warm cream background (More visible)

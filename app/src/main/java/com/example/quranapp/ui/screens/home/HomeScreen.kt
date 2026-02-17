@@ -20,7 +20,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.quranapp.ui.components.AppHeader
 import com.example.quranapp.ui.components.PrayerCard
 import com.example.quranapp.ui.screens.home.components.*
-import com.example.quranapp.ui.theme.BackgroundWhite
+import com.example.quranapp.ui.theme.CreamBackground
 import com.example.quranapp.ui.theme.DeepEmerald
 import com.example.quranapp.ui.theme.TextGray
 import com.google.android.gms.location.LocationServices
@@ -68,7 +68,7 @@ fun HomeScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundWhite)
+            .background(CreamBackground)
             .padding(horizontal = 20.dp)
     ) {
         // ── Sticky Header ──

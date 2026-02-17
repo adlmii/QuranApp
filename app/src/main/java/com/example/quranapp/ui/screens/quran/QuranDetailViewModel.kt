@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 
 
 data class QuranDetailUiState(
@@ -17,7 +18,9 @@ data class QuranDetailUiState(
     val pages: List<List<Ayah>> = emptyList(),
     val isPageMode: Boolean = false,
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val sessionProgress: Int = 0,
+    val showReward: Boolean = false
 )
 
 class QuranDetailViewModel(application: Application) : AndroidViewModel(application) {
@@ -25,6 +28,26 @@ class QuranDetailViewModel(application: Application) : AndroidViewModel(applicat
 
     private val _uiState = MutableStateFlow(QuranDetailUiState())
     val uiState: StateFlow<QuranDetailUiState> = _uiState.asStateFlow()
+
+    init {
+        startSessionTimer()
+    }
+
+    private fun startSessionTimer() {
+        viewModelScope.launch {
+            while (_uiState.value.sessionProgress < 5) {
+                delay(60000) // 1 minute
+                val newProgress = _uiState.value.sessionProgress + 1
+                _uiState.value = _uiState.value.copy(sessionProgress = newProgress)
+                
+                if (newProgress >= 5) {
+                    _uiState.value = _uiState.value.copy(showReward = true)
+                    delay(5000) // Show reward for 5 seconds
+                    _uiState.value = _uiState.value.copy(showReward = false)
+                }
+            }
+        }
+    }
 
     fun loadSurah(number: Int) {
         viewModelScope.launch {
