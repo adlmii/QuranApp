@@ -71,9 +71,9 @@ fun AppNavigation() {
             ) { backStackEntry ->
                 val typeStr = backStackEntry.arguments?.getString("type") ?: "MORNING"
                 val type = try {
-                    com.example.quranapp.model.MatsuratType.valueOf(typeStr)
+                    com.example.quranapp.data.model.MatsuratType.valueOf(typeStr)
                 } catch (e: Exception) {
-                    com.example.quranapp.model.MatsuratType.MORNING
+                    com.example.quranapp.data.model.MatsuratType.MORNING
                 }
                 com.example.quranapp.ui.screens.almatsurat.AlMatsuratScreen(navController = navController, type = type)
             }

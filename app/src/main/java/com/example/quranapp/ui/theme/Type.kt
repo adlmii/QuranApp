@@ -5,6 +5,20 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.font.Font
+import com.example.quranapp.R
+
+val UthmaniHafs = FontFamily(
+    Font(R.font.uthmanic_hafs, FontWeight.Normal)
+)
+
+val HeadlineQuran = TextStyle(
+    fontFamily = UthmaniHafs,
+    fontWeight = FontWeight.SemiBold,
+    fontSize = 28.sp,
+    lineHeight = 50.sp,
+    letterSpacing = 0.sp
+)
 
 val Typography = Typography(
     // Display — untuk angka/teks hero yang sangat besar

@@ -7,13 +7,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -22,6 +23,7 @@ import com.example.quranapp.ui.screens.quran.components.JuzSurahCard
 import com.example.quranapp.ui.screens.quran.components.QuranTabSelector
 import com.example.quranapp.ui.screens.quran.components.SurahItem
 import com.example.quranapp.ui.theme.*
+import com.example.quranapp.ui.components.AppHeader
 
 @Composable
 fun QuranScreen(
@@ -36,60 +38,14 @@ fun QuranScreen(
             .fillMaxSize()
             .background(BackgroundWhite)
     ) {
-        // ── Sticky Header ──
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Back button
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .background(LightEmerald)
-                    .clickable { navController.popBackStack() },
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back",
-                    tint = DeepEmerald,
-                    modifier = Modifier.size(20.dp)
-                )
-            }
-
-            // Title
-            Text(
-                text = "Al-Qur'an",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                color = DeepEmerald
-            )
-
-            // Search button
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .background(LightEmerald)
-                    .clickable { /* TODO: Open search */ },
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Search,
-                    contentDescription = "Search",
-                    tint = DeepEmerald,
-                    modifier = Modifier.size(20.dp)
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
+        AppHeader(
+            title = "Al-Qur'an",
+            onBackClick = { navController.popBackStack() },
+            actionIcon = Icons.Default.Search,
+            onActionClick = { /* TODO: Open search */ },
+            backgroundColor = BackgroundWhite,
+            contentColor = DeepEmerald
+        )
 
         // ── Tab Selector ──
         Box(modifier = Modifier.padding(horizontal = 20.dp)) {

@@ -1,4 +1,4 @@
-package com.example.quranapp.ui.screens.qibla
+package com.example.quranapp.data.sensor
 
 import android.content.Context
 import android.hardware.Sensor

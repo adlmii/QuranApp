@@ -3,9 +3,9 @@ package com.example.quranapp.ui.screens.almatsurat
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.quranapp.data.AlMatsuratRepository
-import com.example.quranapp.model.AlMatsurat
-import com.example.quranapp.model.MatsuratType
+import com.example.quranapp.data.repository.AlMatsuratRepository
+import com.example.quranapp.data.model.AlMatsurat
+import com.example.quranapp.data.model.MatsuratType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

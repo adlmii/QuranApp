@@ -1,16 +1,9 @@
 package com.example.quranapp.data.model
 
-data class TajweedRule(
-    val start: Int,
-    val end: Int,
-    val rule: String
-)
-
 data class Ayah(
     val number: Int,
     val arabic: String,
     val translation: String,
-    val tajweedRules: List<TajweedRule> = emptyList(),
     val page: Int = 0,
     val juz: Int = 0,
     val manzil: Int = 0,

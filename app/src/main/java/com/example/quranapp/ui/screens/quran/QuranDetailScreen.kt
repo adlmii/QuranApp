@@ -3,6 +3,7 @@ package com.example.quranapp.ui.screens.quran
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import com.example.quranapp.ui.theme.UthmaniHafs
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
@@ -26,17 +27,12 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.quranapp.data.model.Ayah
-import com.example.quranapp.data.model.TajweedRule
-import com.example.quranapp.ui.theme.*
-import com.example.quranapp.util.TajweedUtils
-import com.example.quranapp.util.TajweedHelper
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.withStyle
 import com.example.quranapp.R
+import com.example.quranapp.ui.components.AppHeader
+import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.Menu
+import com.example.quranapp.ui.theme.*
+import androidx.compose.ui.text.font.FontFamily
 
 @Composable
 fun QuranDetailScreen(
@@ -50,7 +46,7 @@ fun QuranDetailScreen(
         viewModel.loadSurah(surahNumber)
     }
 
-    val arabicFont = FontFamily(Font(R.font.lpmq_isepmisbah))
+    val arabicFont = UthmaniHafs
 
     Scaffold(
         topBar = {
@@ -158,56 +154,14 @@ fun DetailHeader(
     isPageMode: Boolean,
     onToggleMode: () -> Unit
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 48.dp, bottom = 16.dp, start = 20.dp, end = 20.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        // Back Button
-        Box(
-            modifier = Modifier
-                .size(40.dp)
-                .clip(CircleShape)
-                .background(LightEmerald)
-                .clickable { onBack() },
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = Icons.Default.ArrowBack,
-                contentDescription = "Back",
-                tint = DeepEmerald,
-                modifier = Modifier.size(20.dp)
-            )
-        }
-
-        Spacer(modifier = Modifier.width(16.dp))
-
-        // Title
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold,
-            color = DeepEmerald,
-            modifier = Modifier.weight(1f)
-        )
-
-        // Toggle Button
-        Box(
-            modifier = Modifier
-                .clip(RoundedCornerShape(20.dp))
-                .background(LightEmerald)
-                .clickable { onToggleMode() }
-                .padding(horizontal = 12.dp, vertical = 6.dp)
-        ) {
-            Text(
-                text = if (isPageMode) "Ayah View" else "Page View",
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.Bold,
-                color = DeepEmerald
-            )
-        }
-    }
+    AppHeader(
+        title = title,
+        onBackClick = onBack,
+        actionIcon = if (isPageMode) Icons.Default.Menu else Icons.Default.List, // Example icon for toggle
+        onActionClick = onToggleMode,
+        backgroundColor = BackgroundWhite,
+        contentColor = DeepEmerald
+    )
 }
 
 @Composable
@@ -232,7 +186,7 @@ fun AyahItem(ayah: Ayah, surahNumber: Int, arabicFont: FontFamily) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Aya $surahNumber:${ayah.number}",
+                        text = "$surahNumber:${ayah.number}",
                         style = MaterialTheme.typography.labelMedium,
                         color = Color.Black,
                         fontWeight = FontWeight.Medium
@@ -254,18 +208,11 @@ fun AyahItem(ayah: Ayah, surahNumber: Int, arabicFont: FontFamily) {
         Spacer(modifier = Modifier.height(16.dp))
 
         // Arabic Text (Right Aligned)
-        // Use TajweedHelper to parse inline tags [n]text[/n]
-        val tajweedText = remember(ayah.arabic) {
-            TajweedHelper.parseTajweed(ayah.arabic)
-        }
+        // New data is Uthmani Hafs (Standard Unicode), so no need for TajweedHelper parsing
         
         Text(
-            text = tajweedText,
-            style = MaterialTheme.typography.headlineSmall.copy(
-                fontFamily = arabicFont,
-                lineHeight = 60.sp,
-                letterSpacing = 3.sp
-            ),
+            text = ayah.arabic,
+            style = HeadlineQuran,
             color = DeepEmerald,
             textAlign = TextAlign.End,
             modifier = Modifier.fillMaxWidth()

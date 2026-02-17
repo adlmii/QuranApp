@@ -20,6 +20,7 @@ import androidx.compose.ui.text.font.FontFamily
 import com.example.quranapp.data.model.Surah
 import com.example.quranapp.ui.theme.*
 import com.example.quranapp.R
+import com.example.quranapp.ui.components.AppCard
 
 // ─────────────────────────────────────────────
 // Tab Selector (Surah / Juz)
@@ -72,14 +73,13 @@ fun SurahItem(
     surah: Surah,
     onClick: () -> Unit
 ) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() },
+    AppCard(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = onClick,
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = LightEmerald)
+        backgroundColor = LightEmerald
     ) {
-        val arabicFont = FontFamily(Font(R.font.lpmq_isepmisbah))
+        val arabicFont = UthmaniHafs
 
         Row(
             modifier = Modifier
@@ -96,12 +96,15 @@ fun SurahItem(
                 modifier = Modifier.width(30.dp)
             )
 
+            Spacer(modifier = Modifier.width(16.dp))
+
             // Arabic name
             Text(
                 text = surah.arabicName.replace("سُورَةُ", "").trim(),
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontFamily = arabicFont,
-                    letterSpacing = 3.sp
+                    fontSize = 24.sp,
+                    letterSpacing = 0.sp
                 ),
                 fontWeight = FontWeight.Bold,
                 color = DeepEmerald.copy(alpha = 0.7f),
@@ -138,14 +141,13 @@ fun JuzSurahCard(
     entry: com.example.quranapp.data.model.JuzSurahEntry,
     onClick: () -> Unit = {}
 ) {
-    val arabicFont = FontFamily(Font(R.font.lpmq_isepmisbah))
+    val arabicFont = UthmaniHafs
 
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() },
+    AppCard(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = onClick,
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = LightEmerald)
+        backgroundColor = LightEmerald
     ) {
         Row(
             modifier = Modifier
@@ -158,7 +160,8 @@ fun JuzSurahCard(
                 text = entry.arabicName.replace("سُورَةُ", "").trim(),
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontFamily = arabicFont,
-                    letterSpacing = 3.sp
+                    fontSize = 24.sp,
+                    letterSpacing = 0.sp
                 ),
                 fontWeight = FontWeight.Bold,
                 color = DeepEmerald.copy(alpha = 0.7f),
