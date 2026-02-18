@@ -211,6 +211,7 @@ fun QuranScreen(
                                     surahNumber = result.surahNumber,
                                     ayahNumber = result.ayahNumber,
                                     snippet = result.snippet,
+                                    highlightQuery = uiState.searchQuery,
                                     onClick = {
                                         navController.navigate(
                                             "quran_detail/${result.surahNumber}?ayahNumber=${result.ayahNumber}"

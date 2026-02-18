@@ -323,6 +323,7 @@ fun AyahSearchResultItem(
     surahNumber: Int,
     ayahNumber: Int,
     snippet: String,
+    highlightQuery: String = "",
     onClick: () -> Unit
 ) {
     AppCard(
@@ -364,16 +365,75 @@ fun AyahSearchResultItem(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Translation snippet
-            Text(
-                text = snippet,
-                style = MaterialTheme.typography.bodySmall,
-                color = TextGray,
-                maxLines = 2,
-                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
-            )
+            // Translation snippet with keyword highlighting
+            if (highlightQuery.isNotBlank() && snippet.contains(highlightQuery, ignoreCase = true)) {
+                val annotated = buildHighlightedText(snippet, highlightQuery)
+                Text(
+                    text = annotated,
+                    style = MaterialTheme.typography.bodySmall,
+                    maxLines = 2,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                )
+            } else {
+                Text(
+                    text = snippet,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = TextGray,
+                    maxLines = 2,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                )
+            }
         }
     }
+}
+
+/**
+ * Build AnnotatedString with matched query highlighted in DeepEmerald bold.
+ */
+private fun buildHighlightedText(
+    text: String,
+    query: String
+): androidx.compose.ui.text.AnnotatedString {
+    val builder = androidx.compose.ui.text.AnnotatedString.Builder()
+    val lowerText = text.lowercase()
+    val lowerQuery = query.lowercase()
+    var currentIndex = 0
+
+    while (currentIndex < text.length) {
+        val matchIndex = lowerText.indexOf(lowerQuery, currentIndex)
+        if (matchIndex == -1) {
+            // No more matches — append rest as gray
+            builder.append(
+                androidx.compose.ui.text.AnnotatedString(
+                    text.substring(currentIndex),
+                    spanStyle = androidx.compose.ui.text.SpanStyle(color = TextGray)
+                )
+            )
+            break
+        }
+        // Append text before match as gray
+        if (matchIndex > currentIndex) {
+            builder.append(
+                androidx.compose.ui.text.AnnotatedString(
+                    text.substring(currentIndex, matchIndex),
+                    spanStyle = androidx.compose.ui.text.SpanStyle(color = TextGray)
+                )
+            )
+        }
+        // Append matched text as bold DeepEmerald
+        builder.append(
+            androidx.compose.ui.text.AnnotatedString(
+                text.substring(matchIndex, matchIndex + query.length),
+                spanStyle = androidx.compose.ui.text.SpanStyle(
+                    color = DeepEmerald,
+                    fontWeight = FontWeight.Bold
+                )
+            )
+        )
+        currentIndex = matchIndex + query.length
+    }
+
+    return builder.toAnnotatedString()
 }
 
 // ─────────────────────────────────────────────

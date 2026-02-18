@@ -18,6 +18,7 @@ import com.example.quranapp.ui.theme.*
 import com.example.quranapp.ui.components.GenericProgressCard
 import com.example.quranapp.ui.theme.CalligraphyIcon
 import androidx.compose.ui.unit.sp
+import androidx.compose.material.icons.filled.DateRange
 
 // ─────────────────────────────────────────────
 // Quran Progress Card
@@ -214,6 +215,100 @@ fun RecentSurahItem(
                             fontWeight = FontWeight.Bold
                         )
                     }
+                }
+            }
+        }
+    }
+}
+
+// ─────────────────────────────────────────────
+// Calendar Entry Card
+// ─────────────────────────────────────────────
+
+@Composable
+fun CalendarEntryCard(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    // Get today's Hijri info
+    val hijriInfo = com.example.quranapp.data.util.toHijriDate(java.time.LocalDate.now())
+
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(90.dp),
+        shape = RoundedCornerShape(22.dp),
+        elevation = CardDefaults.cardElevation(6.dp),
+        onClick = onClick
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(brush = SageGradient),
+            contentAlignment = Alignment.Center
+        ) {
+            // Decorative circle
+            Box(
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .offset(x = 24.dp, y = 24.dp)
+                    .size(100.dp)
+                    .clip(CircleShape)
+                    .background(White.copy(alpha = 0.06f))
+            )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 18.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Calendar icon
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clip(CircleShape)
+                        .background(White.copy(alpha = 0.2f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.DateRange,
+                        contentDescription = null,
+                        tint = White,
+                        modifier = Modifier.size(22.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(14.dp))
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Kalender Islam",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = White
+                    )
+                    Text(
+                        text = "${hijriInfo.day} ${hijriInfo.monthName} ${hijriInfo.year} H",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = White.copy(alpha = 0.85f)
+                    )
+                }
+
+                // Arrow
+                Box(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clip(CircleShape)
+                        .background(White.copy(alpha = 0.12f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowForward,
+                        contentDescription = "Open Calendar",
+                        tint = White,
+                        modifier = Modifier.size(16.dp)
+                    )
                 }
             }
         }

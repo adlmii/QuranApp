@@ -73,6 +73,8 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
     private val prayedStatusMap = mutableMapOf<String, Boolean>()
     // In-memory cache of notification prefs
     private val notificationPrefsMap = mutableMapOf<String, Boolean>()
+    // Flag to avoid scheduling alarms every second
+    private var alarmsScheduled = false
 
     init {
         updateDateInfo()
@@ -84,6 +86,7 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
     fun updateLocation(latitude: Double, longitude: Double, context: Context) {
         lat = latitude
         lon = longitude
+        alarmsScheduled = false // Reschedule on location change
         viewModelScope.launch {
             getAddressName(latitude, longitude, context)
         }
@@ -139,6 +142,7 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
             userPrefs.notificationPrefs.collect { prefs ->
                 notificationPrefsMap.clear()
                 notificationPrefsMap.putAll(prefs)
+                alarmsScheduled = false // Reschedule with updated prefs
                 calculatePrayerTimes()
             }
         }
@@ -307,8 +311,11 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                 canMarkAll = uiList.any { (it.isPassed || it.isNow) && !it.isPrayed }
             )
 
-            // Schedule notification alarms
-            scheduleAlarms(schedule)
+            // Schedule notification alarms (only once, not every second)
+            if (!alarmsScheduled) {
+                scheduleAlarms(schedule)
+                alarmsScheduled = true
+            }
 
         } catch (e: Exception) {
             e.printStackTrace()

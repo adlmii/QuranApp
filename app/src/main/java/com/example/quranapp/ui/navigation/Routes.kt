@@ -13,5 +13,6 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector?
     object QuranDetail : Screen("quran_detail/{surahNumber}?ayahNumber={ayahNumber}", "Detail", icon = Icons.Filled.MenuBook)
     object AlMatsurat : Screen("almatsurat/{type}", "Al-Ma'tsurat", icon = Icons.Filled.MenuBook)
     object Qibla : Screen("qibla", "Qibla", icon = Icons.Filled.Explore)
+    object Calendar : Screen("calendar", "Calendar", icon = Icons.Filled.DateRange)
     object Settings : Screen("settings", "Settings", icon = Icons.Filled.Settings)
 }

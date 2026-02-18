@@ -30,6 +30,7 @@ import com.google.android.gms.location.LocationServices
 fun HomeScreen(
     onNavigateToMatsurat: (String) -> Unit,
     onNavigateToDetail: (Int, Int) -> Unit = { _, _ -> },
+    onNavigateToCalendar: () -> Unit = {},
     viewModel: HomeViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -80,7 +81,8 @@ fun HomeScreen(
         AppHeader(
             gregorianDate = uiState.gregorianDate,
             hijriDate = uiState.hijriDate,
-            location = uiState.location
+            location = uiState.location,
+            onDateClick = onNavigateToCalendar
         )
         Spacer(modifier = Modifier.height(24.dp))
 

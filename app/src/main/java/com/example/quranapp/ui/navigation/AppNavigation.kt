@@ -54,6 +54,9 @@ fun AppNavigation() {
                     },
                     onNavigateToDetail = { surahNumber, ayahNumber ->
                         navController.navigate("quran_detail/$surahNumber?ayahNumber=$ayahNumber")
+                    },
+                    onNavigateToCalendar = {
+                        navController.navigate(Screen.Calendar.route)
                     }
                 ) 
             }
@@ -86,6 +89,9 @@ fun AppNavigation() {
             }
             composable(Screen.Qibla.route) { 
                 com.example.quranapp.ui.screens.qibla.QiblaScreen(navController = navController)
+            }
+            composable(Screen.Calendar.route) {
+                com.example.quranapp.ui.screens.calendar.CalendarScreen(navController = navController)
             }
             composable(Screen.Settings.route) { androidx.compose.material3.Text("Settings") }
         }

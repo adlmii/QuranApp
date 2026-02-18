@@ -7,6 +7,7 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -27,15 +28,20 @@ import androidx.compose.material.icons.filled.Timer
 fun AppHeader(
     gregorianDate: String,
     hijriDate: String,
-    location: String = "Locating..."
+    location: String = "Locating...",
+    onDateClick: (() -> Unit)? = null
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.Top
     ) {
-        // Date section
-        Column {
+        // Date section (clickable → Calendar)
+        Column(
+            modifier = if (onDateClick != null) {
+                Modifier.clickable { onDateClick() }
+            } else Modifier
+        ) {
             Text(
                 text = gregorianDate,
                 style = MaterialTheme.typography.titleMedium,
