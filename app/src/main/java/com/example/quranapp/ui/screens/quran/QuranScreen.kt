@@ -21,8 +21,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.quranapp.ui.screens.quran.components.AyahSearchResultItem
 import com.example.quranapp.ui.screens.quran.components.JuzSurahCard
 import com.example.quranapp.ui.screens.quran.components.QuranTabSelector
+import com.example.quranapp.ui.screens.quran.components.SmartJumpCard
 import com.example.quranapp.ui.screens.quran.components.SurahItem
 import com.example.quranapp.ui.theme.*
 import com.example.quranapp.ui.components.AppHeader
@@ -55,13 +57,13 @@ fun QuranScreen(
                     value = uiState.searchQuery,
                     onValueChange = { 
                         viewModel.onSearchQueryChange(it) 
-                        if (selectedTab != 0) selectedTab = 0 // Auto-switch to Surah tab
+                        if (selectedTab != 0) selectedTab = 0
                     },
-                    placeholder = { Text("Search Surah...", color = TextGray.copy(alpha = 0.7f)) },
+                    placeholder = { Text("Cari surah atau ayat...", color = TextGray.copy(alpha = 0.7f)) },
                     modifier = Modifier
                         .weight(1f)
                         .height(50.dp)
-                        .clip(RoundedCornerShape(50)) // Pill shape
+                        .clip(RoundedCornerShape(50))
                         .background(White),
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = White,
@@ -89,7 +91,7 @@ fun QuranScreen(
                 TextButton(
                     onClick = { 
                         isSearchActive = false 
-                        viewModel.onSearchQueryChange("") // Reset query on close
+                        viewModel.onSearchQueryChange("")
                     },
                     modifier = Modifier.padding(start = 4.dp)
                 ) {
@@ -121,9 +123,6 @@ fun QuranScreen(
         }
 
         // ── Tab Selector ──
-        // Only show tabs if NOT searching? Or keep them? 
-        // User said "Searching Juz is less common", so maybe just hide tabs or auto-select Surah.
-        // Let's keep tabs but maybe disable/hide if search is active to keep it simple.
         if (!isSearchActive) {
             Box(modifier = Modifier.padding(horizontal = 20.dp)) {
                 QuranTabSelector(
@@ -146,22 +145,97 @@ fun QuranScreen(
                 Text(text = "Error: ${uiState.error}", color = Color.Red)
             }
         } else {
-            if (selectedTab == 0 || isSearchActive) { // Force Surah view if searching
-                val listToDisplay = if (isSearchActive) uiState.filteredSurahList else uiState.surahList
-
+            if (selectedTab == 0 || isSearchActive) {
                 LazyColumn(
                     modifier = Modifier.padding(horizontal = 20.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                     contentPadding = PaddingValues(bottom = 24.dp)
                 ) {
-                    if (listToDisplay.isEmpty()) {
+                    // ── Smart Jump Card ──
+                    if (isSearchActive && uiState.smartJumpSurah != null) {
                         item {
-                            Box(modifier = Modifier.fillMaxWidth().padding(top = 40.dp), contentAlignment = Alignment.Center) {
-                                Text("No surah found", color = TextGray)
+                            SmartJumpCard(
+                                surahName = uiState.smartJumpSurahName ?: "",
+                                surahNumber = uiState.smartJumpSurah!!,
+                                ayahNumber = uiState.smartJumpAyah ?: 1,
+                                onClick = {
+                                    navController.navigate(
+                                        "quran_detail/${uiState.smartJumpSurah}?ayahNumber=${uiState.smartJumpAyah}"
+                                    )
+                                }
+                            )
+                        }
+                    }
+                    // ── Surah List ──
+                    else if (isSearchActive) {
+                        val listToDisplay = uiState.filteredSurahList
+
+                        if (listToDisplay.isNotEmpty()) {
+                            items(listToDisplay) { surah ->
+                                SurahItem(
+                                    surah = surah,
+                                    onClick = { navController.navigate("quran_detail/${surah.number}") }
+                                )
+                            }
+                        }
+
+                        // ── Ayah Search Results ──
+                        if (uiState.isSearchingAyahs) {
+                            item {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 16.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator(
+                                        color = DeepEmerald,
+                                        modifier = Modifier.size(24.dp),
+                                        strokeWidth = 2.dp
+                                    )
+                                }
+                            }
+                        } else if (uiState.ayahSearchResults.isNotEmpty()) {
+                            item {
+                                Text(
+                                    text = "Hasil Ayat",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = DeepEmerald,
+                                    modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
+                                )
+                            }
+                            items(uiState.ayahSearchResults) { result ->
+                                AyahSearchResultItem(
+                                    surahName = result.surahName,
+                                    surahNumber = result.surahNumber,
+                                    ayahNumber = result.ayahNumber,
+                                    snippet = result.snippet,
+                                    onClick = {
+                                        navController.navigate(
+                                            "quran_detail/${result.surahNumber}?ayahNumber=${result.ayahNumber}"
+                                        )
+                                    }
+                                )
+                            }
+                        }
+
+                        // Empty state
+                        if (listToDisplay.isEmpty() && uiState.ayahSearchResults.isEmpty() && !uiState.isSearchingAyahs) {
+                            item {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(top = 40.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text("Tidak ditemukan", color = TextGray)
+                                }
                             }
                         }
                     } else {
-                        items(listToDisplay) { surah ->
+                        // Not searching — show full surah list
+                        items(uiState.surahList) { surah ->
                             SurahItem(
                                 surah = surah,
                                 onClick = { navController.navigate("quran_detail/${surah.number}") }
@@ -170,7 +244,7 @@ fun QuranScreen(
                     }
                 }
             } else {
-                // Juz Tab (Unfiltered for now)
+                // Juz Tab
                 LazyColumn(
                     modifier = Modifier.padding(horizontal = 20.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp),

@@ -7,6 +7,7 @@ import com.example.quranapp.ui.theme.UthmaniHafs
 import com.example.quranapp.ui.theme.CreamBackground
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
@@ -36,11 +37,14 @@ import androidx.compose.material.icons.filled.Menu
 import com.example.quranapp.ui.theme.*
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.material.icons.filled.BookmarkBorder
+import androidx.compose.material.icons.filled.MenuBook
+import kotlinx.coroutines.delay
 
 @Composable
 fun QuranDetailScreen(
     navController: NavController,
     surahNumber: Int,
+    initialAyah: Int = 1,
     viewModel: QuranDetailViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -50,6 +54,35 @@ fun QuranDetailScreen(
     }
 
     val arabicFont = UthmaniHafs
+
+    // Scroll tracking state
+    val listState = rememberLazyListState()
+
+    // Scroll to initial ayah after content loads
+    LaunchedEffect(uiState.surahDetail) {
+        val ayahs = uiState.surahDetail?.ayahs ?: return@LaunchedEffect
+        if (initialAyah > 1 && ayahs.isNotEmpty()) {
+            val hasBasmalah = surahNumber != 1 && surahNumber != 9
+            val headerOffset = if (hasBasmalah) 1 else 0
+            val targetIndex = (initialAyah - 1 + headerOffset).coerceIn(0, ayahs.size - 1 + headerOffset)
+            listState.scrollToItem(targetIndex)
+        }
+    }
+
+    // Auto-save scroll position with debounce
+    val firstVisibleItem by remember { derivedStateOf { listState.firstVisibleItemIndex } }
+    LaunchedEffect(firstVisibleItem) {
+        // Debounce: wait 500ms before saving to avoid excessive writes
+        delay(500)
+        val ayahs = uiState.surahDetail?.ayahs ?: return@LaunchedEffect
+        // firstVisibleItemIndex accounts for header items (basmalah = 1 item offset for most surahs)
+        val hasBasmalah = surahNumber != 1 && surahNumber != 9
+        val headerOffset = if (hasBasmalah) 1 else 0
+        val ayahIndex = (firstVisibleItem - headerOffset).coerceIn(0, ayahs.size - 1)
+        if (ayahs.isNotEmpty()) {
+            viewModel.saveLastRead(ayahs[ayahIndex].number)
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -73,7 +106,7 @@ fun QuranDetailScreen(
                 // Session Progress Bar
                 if (uiState.sessionProgress > 0) {
                      LinearProgressIndicator(
-                        progress = { uiState.sessionProgress / 5f },
+                        progress = { uiState.sessionProgress / 25f }, // Use target from DataStore later
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(4.dp),
@@ -96,41 +129,40 @@ fun QuranDetailScreen(
                 } else {
                     uiState.surahDetail?.let { detail ->
                         if (uiState.isPageMode) {
-                            // Page Mode
-                            if (uiState.pages.isNotEmpty()) {
-                                val pagerState = rememberPagerState(pageCount = { uiState.pages.size })
-                                HorizontalPager(
-                                    state = pagerState,
-                                    modifier = Modifier.weight(1f)
-                                ) { pageIndex ->
-                                    val pageAyahs = uiState.pages[pageIndex]
-                                    LazyColumn(
-                                        modifier = Modifier.fillMaxSize(),
-                                        contentPadding = PaddingValues(16.dp),
-                                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                                    ) {
-                                        item {
-                                            Text(
-                                                text = "Page ${pageAyahs.firstOrNull()?.page ?: "-"}",
-                                                style = MaterialTheme.typography.labelMedium,
-                                                color = TextGray,
-                                                modifier = Modifier.fillMaxWidth(),
-                                                textAlign = TextAlign.Center
-                                            )
-                                        }
-                                        items(pageAyahs) { ayah ->
-                                            AyahItem(ayah = ayah, surahNumber = surahNumber, arabicFont = arabicFont)
-                                        }
-                                    }
-                                }
-                            } else {
-                                Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                                    Text("No pages available")
+                            // Page Mode — Placeholder
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.MenuBook,
+                                        contentDescription = null,
+                                        tint = DeepEmerald.copy(alpha = 0.3f),
+                                        modifier = Modifier.size(64.dp)
+                                    )
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                    Text(
+                                        text = "Mode Halaman",
+                                        style = MaterialTheme.typography.titleLarge,
+                                        fontWeight = FontWeight.Bold,
+                                        color = DeepEmerald
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Text(
+                                        text = "Masih dalam Pengembangan",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = TextGray
+                                    )
                                 }
                             }
                         } else {
-                            // Ayah Mode
+                            // Ayah Mode (with scroll tracking)
                             LazyColumn(
+                                state = listState,
                                 modifier = Modifier.weight(1f),
                                 contentPadding = PaddingValues(16.dp),
                                 verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -143,7 +175,7 @@ fun QuranDetailScreen(
                                             contentAlignment = Alignment.Center
                                         ) {
                                             Text(
-                                                text = "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
+                                                text = "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
                                                 style = MaterialTheme.typography.headlineMedium.copy(
                                                     fontFamily = arabicFont,
                                                     letterSpacing = 3.sp
@@ -175,12 +207,12 @@ fun DetailHeader(
     onBack: () -> Unit,
     isPageMode: Boolean,
     onToggleMode: () -> Unit,
-    sessionProgress: Int = 0 // Add progress param
+    sessionProgress: Int = 0
 ) {
     AppHeader(
         title = title,
         onBackClick = onBack,
-        backgroundColor = CreamBackground, // Use Cream
+        backgroundColor = CreamBackground,
         contentColor = DeepEmerald,
         actions = {
             // Session Indicator
@@ -188,7 +220,7 @@ fun DetailHeader(
                 CircularProgressIndicator(
                     progress = { sessionProgress / 5f },
                     modifier = Modifier.size(24.dp),
-                    color = GoldAccent, // Gold
+                    color = GoldAccent,
                     trackColor = DeepEmerald.copy(alpha = 0.1f),
                     strokeWidth = 3.dp
                 )
@@ -226,7 +258,7 @@ fun AyahItem(ayah: Ayah, surahNumber: Int, arabicFont: FontFamily) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Surface(
-                shape = RoundedCornerShape(50), // Pill shape
+                shape = RoundedCornerShape(50),
                 color = LightEmerald.copy(alpha = 0.5f),
                 modifier = Modifier.wrapContentSize(),
                 border = androidx.compose.foundation.BorderStroke(1.dp, MediumEmerald.copy(alpha = 0.3f))
@@ -245,11 +277,10 @@ fun AyahItem(ayah: Ayah, surahNumber: Int, arabicFont: FontFamily) {
             }
             
 
-
 // ...
 
             Spacer(modifier = Modifier.weight(1f))
-            // Action icons can go here (Share, Bookmark, Play) - placeholders for now
+            // Action icons
             Icon(
                 imageVector = Icons.Default.BookmarkBorder, 
                 contentDescription = "Bookmark",

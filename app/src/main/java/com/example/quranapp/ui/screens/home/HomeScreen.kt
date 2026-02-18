@@ -29,6 +29,7 @@ import com.google.android.gms.location.LocationServices
 @Composable
 fun HomeScreen(
     onNavigateToMatsurat: (String) -> Unit,
+    onNavigateToDetail: (Int, Int) -> Unit = { _, _ -> },
     viewModel: HomeViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -127,12 +128,20 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            RecentSurahItem(
-                number = uiState.lastReadNumber,
-                title = uiState.lastReadSurah!!,
-                arabicName = uiState.lastReadSurahArabic ?: "الكهف",
-                ayah = uiState.lastReadAyah
-            )
+            if (uiState.lastReadSurah != null) {
+                RecentSurahItem(
+                    number = uiState.lastReadNumber,
+                    title = uiState.lastReadSurah!!,
+                    ayah = uiState.lastReadAyah,
+                    onClick = { onNavigateToDetail(uiState.lastReadNumber, uiState.lastReadAyah) }
+                )
+            } else {
+                Text(
+                    text = "Belum ada riwayat bacaan",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = TextGray
+                )
+            }
 
             Spacer(modifier = Modifier.height(24.dp))
         }

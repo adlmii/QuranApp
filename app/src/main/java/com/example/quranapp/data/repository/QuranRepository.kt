@@ -2,12 +2,21 @@ package com.example.quranapp.data.repository
 
 import android.content.Context
 import com.example.quranapp.data.model.Ayah
+import com.example.quranapp.data.model.AyahSearchResult
 import com.example.quranapp.data.model.SurahDetail
+import com.example.quranapp.data.local.QuranAppDatabase
+import com.example.quranapp.data.local.entity.AyahSearchFts
+import com.example.quranapp.data.local.entity.RecentQuranEntity
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 
 class QuranRepository(private val context: Context) {
+
+    private val db = QuranAppDatabase.getInstance(context)
+    private val recentQuranDao = db.recentQuranDao()
+    private val ayahSearchDao = db.ayahSearchDao()
 
     suspend fun getSurahDetail(surahNumber: Int): SurahDetail? = withContext(Dispatchers.IO) {
         try {
@@ -26,14 +35,6 @@ class QuranRepository(private val context: Context) {
             // 3. Filter and Map Data
             val ayahs = ArrayList<Ayah>()
             
-            // Optimized approach: Iterate through Arabic verses, find matching ones for this surah
-            // Since the JSON is flat and sorted, we could optimize finding the start index, 
-            // but for simplicity and safety against minor unsorted data (though likely sorted), 
-            // we'll iterate. For 6236 verses, simple iteration is acceptable on IO thread, 
-            // but fetching *all* verses every time is inefficient.
-            // TODO: In a real production app, parsing the huge JSON once and caching, or using a DB is better.
-            // For this refactor, we stick to file reading but ensure we match chapter.
-            
             // Map Translation for O(1) lookup
             val translationMap =  HashMap<Int, String>() // Verse Number -> Text
             for (i in 0 until transVerses.length()) {
@@ -49,23 +50,14 @@ class QuranRepository(private val context: Context) {
                     val verseNum = aObj.getInt("verse")
                     val arabicText = aObj.getString("text")
                     val translationText = translationMap[verseNum] ?: ""
-
-                    // Note: The new JSON might not have page/juz info per verse. 
-                    // If strictly needed, we'd need another metadata source or heuristic.
-                    // For now, defaulting to 0 or using metadata if we had verse-level metadata.
-                    // The old code used metadata from "quran_tajweed_full.json" which had it.
-                    // If we strictly need Juz/Page, we might need to keep "quran_tajweed_full.json" just for metadata
-                    // or assume the user is okay with losing verse-level page info for now, 
-                    // OR we use the surah-level page info to estimate.
-                    // Let's default to 0 for now as per the "change the data" request.
                     
                     ayahs.add(
                         Ayah(
                             number = verseNum,
                             arabic = arabicText,
                             translation = translationText,
-                            page = 0, // Placeholder
-                            juz = 0, // Placeholder
+                            page = 0,
+                            juz = 0,
                             manzil = 0,
                             hizbQuarter = 0
                         )
@@ -78,9 +70,9 @@ class QuranRepository(private val context: Context) {
 
             return@withContext SurahDetail(
                 number = surahNumber,
-                name = surahMetadata?.name ?: "", // English/Latin Name
+                name = surahMetadata?.name ?: "",
                 arabicName = surahMetadata?.arabicName ?: "",
-                englishName = surahMetadata?.englishName ?: "", // Meaning
+                englishName = surahMetadata?.englishName ?: "",
                 ayahCount = ayahs.size,
                 type = surahMetadata?.type ?: "",
                 ayahs = ayahs
@@ -108,9 +100,9 @@ class QuranRepository(private val context: Context) {
                 surahList.add(
                     com.example.quranapp.data.model.Surah(
                         number = obj.getInt("number"),
-                        name = obj.getString("englishName"),                    // e.g. "Al-Faatiha"
-                        englishName = obj.getString("englishNameTranslation"),  // e.g. "The Opening"
-                        arabicName = obj.getString("name"),                     // e.g. "سُورَةُ ٱلْفَاتِحَةِ"
+                        name = obj.getString("englishName"),
+                        englishName = obj.getString("englishNameTranslation"),
+                        arabicName = obj.getString("name"),
                         ayahCount = obj.getInt("numberOfAyahs"),
                         type = obj.getString("revelationType")
                     )
@@ -159,37 +151,118 @@ class QuranRepository(private val context: Context) {
             emptyList()
         }
     }
-    // ── Recent Quran (Last Read) Persistence ──
 
-    private val prefs = context.getSharedPreferences("quran_app_prefs", Context.MODE_PRIVATE)
+    // ── Recent Quran (Last Read) — Room Database ──
 
-    fun saveLastRead(
+    /**
+     * Reactive Flow untuk observe perubahan last read secara real-time.
+     * Dipakai oleh HomeViewModel.
+     */
+    fun getLastReadFlow(): Flow<RecentQuranEntity?> {
+        return recentQuranDao.getLastRead()
+    }
+
+    /**
+     * Simpan posisi terakhir baca ke Room Database.
+     */
+    suspend fun saveLastRead(
         surahNumber: Int,
         ayahNumber: Int,
         surahName: String,
-        arabicName: String,
-        surahEnglishName: String
+        isPageMode: Boolean = false,
+        pageNumber: Int? = null
     ) {
-        prefs.edit().apply {
-            putInt("last_read_surah_number", surahNumber)
-            putInt("last_read_ayah_number", ayahNumber)
-            putString("last_read_surah_name", surahName)
-            putString("last_read_surah_arabic", arabicName)
-            putString("last_read_surah_english", surahEnglishName)
-            apply()
+        recentQuranDao.saveLastRead(
+            RecentQuranEntity(
+                id = 1,
+                surahNumber = surahNumber,
+                ayahNumber = ayahNumber,
+                surahName = surahName,
+                isPageMode = isPageMode,
+                pageNumber = pageNumber
+            )
+        )
+    }
+
+    // ── Ayah Search (FTS) ──
+
+    /**
+     * Populate FTS index from JSON assets on first launch.
+     * Skips if already populated.
+     */
+    suspend fun populateSearchIndex() = withContext(Dispatchers.IO) {
+        try {
+            if (ayahSearchDao.count() > 0) return@withContext
+
+            // Load surah metadata for name lookup
+            val surahMetaString = context.assets.open("surah_list_metadata.json").bufferedReader().use { it.readText() }
+            val surahMetaArray = org.json.JSONArray(surahMetaString)
+            val surahNameMap = HashMap<Int, String>()
+            for (i in 0 until surahMetaArray.length()) {
+                val obj = surahMetaArray.getJSONObject(i)
+                surahNameMap[obj.getInt("number")] = obj.getString("englishName")
+            }
+
+            // Load translations
+            val transString = context.assets.open("quran_translation_indo.json").bufferedReader().use { it.readText() }
+            val transRoot = JSONObject(transString)
+            val transVerses = transRoot.getJSONArray("quran")
+
+            val entries = ArrayList<AyahSearchFts>(6236)
+            for (i in 0 until transVerses.length()) {
+                val obj = transVerses.getJSONObject(i)
+                val chapter = obj.getInt("chapter")
+                entries.add(
+                    AyahSearchFts(
+                        surahNumber = chapter,
+                        ayahNumber = obj.getInt("verse"),
+                        surahName = surahNameMap[chapter] ?: "Surah $chapter",
+                        textTranslation = obj.getString("text")
+                    )
+                )
+            }
+
+            // Insert in batches
+            entries.chunked(500).forEach { batch ->
+                ayahSearchDao.insertAll(batch)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
-    fun getLastRead(): com.example.quranapp.data.model.LastReadData? {
-        val surahNumber = prefs.getInt("last_read_surah_number", -1)
-        if (surahNumber == -1) return null
+    /**
+     * Search ayahs by text in translation using FTS.
+     */
+    suspend fun searchAyahs(query: String): List<AyahSearchResult> = withContext(Dispatchers.IO) {
+        try {
+            if (query.isBlank()) return@withContext emptyList()
 
-        return com.example.quranapp.data.model.LastReadData(
-            surahNumber = surahNumber,
-            ayahNumber = prefs.getInt("last_read_ayah_number", 1),
-            surahName = prefs.getString("last_read_surah_name", "") ?: "",
-            surahArabicName = prefs.getString("last_read_surah_arabic", "") ?: "",
-            surahEnglishName = prefs.getString("last_read_surah_english", "") ?: ""
-        )
+            val ftsQuery = query.trim() + "*"
+            val results = ayahSearchDao.search(ftsQuery)
+
+            results.map { fts ->
+                val text = fts.textTranslation
+                val snippet = if (text.length > 120) {
+                    val idx = text.indexOf(query, ignoreCase = true).coerceAtLeast(0)
+                    val start = (idx - 30).coerceAtLeast(0)
+                    val end = (start + 120).coerceAtMost(text.length)
+                    (if (start > 0) "..." else "") + text.substring(start, end) + (if (end < text.length) "..." else "")
+                } else {
+                    text
+                }
+
+                AyahSearchResult(
+                    surahNumber = fts.surahNumber,
+                    ayahNumber = fts.ayahNumber,
+                    surahName = fts.surahName,
+                    snippet = snippet
+                )
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emptyList()
+        }
     }
 }
+

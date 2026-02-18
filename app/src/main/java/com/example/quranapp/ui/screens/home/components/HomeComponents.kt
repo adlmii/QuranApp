@@ -149,16 +149,16 @@ fun AlMatsuratCard(
 fun RecentSurahItem(
     number: Int,
     title: String,
-    arabicName: String,
     ayah: Int,
+    onClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = SandBackground), // Warmer background
+        colors = CardDefaults.cardColors(containerColor = SandBackground),
         elevation = CardDefaults.cardElevation(2.dp),
-        onClick = { /* Navigate to surah */ }
+        onClick = onClick
     ) {
         Row(
             modifier = Modifier
@@ -171,7 +171,7 @@ fun RecentSurahItem(
                 modifier = Modifier
                     .size(46.dp)
                     .clip(CircleShape)
-                    .background(DeepEmerald.copy(alpha = 0.1f)), // Softer circle
+                    .background(DeepEmerald.copy(alpha = 0.1f)),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -209,24 +209,13 @@ fun RecentSurahItem(
                         Text(
                             text = "Last Read",
                             style = MaterialTheme.typography.labelSmall,
-                            color = androidx.compose.ui.graphics.Color(0xFF8D6E63), // Brownish gold
+                            color = androidx.compose.ui.graphics.Color(0xFF8D6E63),
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold
                         )
                     }
                 }
             }
-            
-            Spacer(modifier = Modifier.width(8.dp))
-
-            // Arabic Name
-            Text(
-                text = arabicName,
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Normal,
-                color = DeepEmerald,
-                fontFamily = UthmaniHafs // Ensure this is available or use default
-            )
         }
     }
 }

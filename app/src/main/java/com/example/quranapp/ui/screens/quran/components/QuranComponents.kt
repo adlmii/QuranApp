@@ -247,6 +247,136 @@ fun JuzSurahCard(
 }
 
 // ─────────────────────────────────────────────
+// Smart Jump Card (navigate directly to a specific ayah)
+// ─────────────────────────────────────────────
+
+@Composable
+fun SmartJumpCard(
+    surahName: String,
+    surahNumber: Int,
+    ayahNumber: Int,
+    onClick: () -> Unit
+) {
+    AppCard(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = onClick,
+        shape = RoundedCornerShape(18.dp),
+        backgroundColor = DeepEmerald,
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(brush = DeepEmeraldGradient, shape = RoundedCornerShape(18.dp))
+                .padding(horizontal = 20.dp, vertical = 20.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Icon
+            Box(
+                modifier = Modifier
+                    .size(44.dp)
+                    .clip(CircleShape)
+                    .background(White.copy(alpha = 0.15f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "🕋",
+                    style = MaterialTheme.typography.titleLarge
+                )
+            }
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            // Text
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Loncati ke Ayat",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = White.copy(alpha = 0.7f)
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = "$surahName ($surahNumber) : Ayat $ayahNumber",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = White
+                )
+            }
+
+            // Arrow
+            Text(
+                text = "→",
+                style = MaterialTheme.typography.headlineMedium,
+                color = GoldAccent
+            )
+        }
+    }
+}
+
+// ─────────────────────────────────────────────
+// Ayah Search Result Item
+// ─────────────────────────────────────────────
+
+@Composable
+fun AyahSearchResultItem(
+    surahName: String,
+    surahNumber: Int,
+    ayahNumber: Int,
+    snippet: String,
+    onClick: () -> Unit
+) {
+    AppCard(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = onClick,
+        shape = RoundedCornerShape(18.dp),
+        backgroundColor = White,
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 14.dp)
+        ) {
+            // Surah info row
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(28.dp)
+                        .clip(CircleShape)
+                        .background(LightEmerald),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = surahNumber.toString(),
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = DeepEmerald
+                    )
+                }
+                Spacer(modifier = Modifier.width(10.dp))
+                Text(
+                    text = "$surahName : $ayahNumber",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    color = DeepEmerald
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Translation snippet
+            Text(
+                text = snippet,
+                style = MaterialTheme.typography.bodySmall,
+                color = TextGray,
+                maxLines = 2,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+            )
+        }
+    }
+}
+
+// ─────────────────────────────────────────────
 // Fireworks Animation
 // ─────────────────────────────────────────────
 

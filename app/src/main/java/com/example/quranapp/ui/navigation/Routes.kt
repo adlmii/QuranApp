@@ -10,7 +10,7 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector?
     object Home : Screen("home", "Home", icon = Icons.Filled.Home)
     object Prayers : Screen("prayers", "Prayers", iconRes = R.drawable.ic_prayers_custom)
     object Quran : Screen("quran", "Quran", icon = Icons.Filled.MenuBook)
-    object QuranDetail : Screen("quran_detail/{surahNumber}", "Detail", icon = Icons.Filled.MenuBook)
+    object QuranDetail : Screen("quran_detail/{surahNumber}?ayahNumber={ayahNumber}", "Detail", icon = Icons.Filled.MenuBook)
     object AlMatsurat : Screen("almatsurat/{type}", "Al-Ma'tsurat", icon = Icons.Filled.MenuBook)
     object Qibla : Screen("qibla", "Qibla", icon = Icons.Filled.Explore)
     object Settings : Screen("settings", "Settings", icon = Icons.Filled.Settings)

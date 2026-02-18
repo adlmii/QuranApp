@@ -7,7 +7,8 @@ import android.os.Build
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.quranapp.data.repository.PrayerRepository
-import com.example.quranapp.data.repository.PrayerSchedule
+import com.example.quranapp.data.repository.QuranRepository
+import com.example.quranapp.data.local.UserPreferencesRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,13 +31,12 @@ data class HomeUiState(
     val nextPrayerName: String = "--",
     val nextPrayerTime: String = "--:--",
     val timeToNextPrayer: String = "Calculating...",
-    val location: String = "Locating...",
-    val lat: Double = -6.2088, // Default Jakarta (lebih umum)
-    val lon: Double = 106.8456,
+    val location: String = "Jakarta",
+    val lat: Double = -6.1753,
+    val lon: Double = 106.8312,
     val quranCurrentMinutes: Int = 0,
     val quranTargetMinutes: Int = 25,
     val lastReadSurah: String? = null,
-    val lastReadSurahArabic: String? = null,
     val lastReadNumber: Int = 1,
     val lastReadAyah: Int = 1
 )
@@ -46,21 +46,21 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
+    private val prayerRepository = PrayerRepository()
+    private val quranRepository = QuranRepository(application)
+    private val userPrefs = UserPreferencesRepository(application)
+
     init {
         updateDateInfo()
         startPrayerCountdown()
-        loadUserData()
+        observeLastRead()
+        observeGoals()
     }
 
     fun updateLocation(latitude: Double, longitude: Double, context: Context) {
         viewModelScope.launch {
-            // Update koordinat
             _uiState.value = _uiState.value.copy(lat = latitude, lon = longitude)
-
-            // Recalculate prayer times immediately with new loc
             calculatePrayerTimes()
-
-            // Get Address Name (Async)
             getAddressName(latitude, longitude, context)
         }
     }
@@ -69,19 +69,15 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         withContext(Dispatchers.IO) {
             try {
                 val geocoder = Geocoder(context, Locale.getDefault())
-                // Menggunakan Deprecated method untuk kompatibilitas luas,
-                // atau gunakan versi listener untuk API 33+
                 @Suppress("DEPRECATION")
                 val addresses = geocoder.getFromLocation(lat, lon, 1)
 
                 if (!addresses.isNullOrEmpty()) {
                     val address = addresses[0]
                     val district = address.subLocality ?: address.locality ?: "Unknown"
-
                     _uiState.value = _uiState.value.copy(location = district)
                 }
             } catch (e: Exception) {
-                // Handle error (misal tidak ada internet)
                 _uiState.value = _uiState.value.copy(location = "Unknown Location")
             }
         }
@@ -91,23 +87,19 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             while (isActive) {
                 calculatePrayerTimes()
-                delay(1000L) // Update setiap detik
+                delay(1000L)
             }
         }
     }
 
-    private val prayerRepository = PrayerRepository()
-
     private fun calculatePrayerTimes() {
         try {
-            // Use Repository
             val schedule = prayerRepository.calculatePrayerTimes(_uiState.value.lat, _uiState.value.lon)
             
             val nextPrayerName = prayerRepository.getPrayerName(schedule.nextPrayer)
             val targetTime = schedule.nextPrayerTime
             val now = Date()
 
-            // Hitung Countdown
             val diffMillis = if (targetTime != null) targetTime.time - now.time else 0L
 
             val countdownText = if (diffMillis > 0) {
@@ -124,7 +116,6 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                 "Now"
             }
 
-            // Format waktu sholat (misal: 18:30)
             val timeFormatter = java.text.SimpleDateFormat("HH:mm", Locale.getDefault())
             val formattedTime = if (targetTime != null) timeFormatter.format(targetTime) else "--:--"
 
@@ -135,7 +126,6 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             )
         } catch (e: Exception) {
             e.printStackTrace()
-            // Fallback UI or log
             _uiState.value = _uiState.value.copy(
                 nextPrayerName = "Error",
                 timeToNextPrayer = "Retry..."
@@ -150,7 +140,6 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
             val formatter = DateTimeFormatter.ofPattern("EEEE, d MMMM", Locale.getDefault())
 
-            // HijrahDate (Perlu API Level 26+)
             val hijrahDate = HijrahDate.from(today)
             val hijriFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.getDefault())
 
@@ -165,39 +154,41 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    private fun loadUserData() {
+    /**
+     * Observe last read dari Room — real-time reactive update
+     */
+    private fun observeLastRead() {
         viewModelScope.launch {
-            // Load Last Read
-            val lastRead = prayerRepository.run { 
-                // Using QuranRepository here would be cleaner if injected, 
-                // but for now let's instantiate or use the one from QuranViewModel if shared. 
-                // Actually HomeViewModel creates PrayerRepository. 
-                // We need QuranRepository here.
-                com.example.quranapp.data.repository.QuranRepository(getApplication()).getLastRead()
+            quranRepository.getLastReadFlow().collect { entity ->
+                if (entity != null) {
+                    _uiState.value = _uiState.value.copy(
+                        lastReadSurah = entity.surahName,
+                        lastReadNumber = entity.surahNumber,
+                        lastReadAyah = entity.ayahNumber
+                    )
+                } else {
+                    // Belum ada data — biarkan null supaya UI tampil empty state
+                    _uiState.value = _uiState.value.copy(
+                        lastReadSurah = null
+                    )
+                }
             }
+        }
+    }
 
-            if (lastRead != null) {
-                _uiState.value = _uiState.value.copy(
-                    lastReadSurah = lastRead.surahName,
-                    lastReadSurahArabic = lastRead.surahArabicName,
-                    lastReadNumber = lastRead.surahNumber,
-                    lastReadAyah = lastRead.ayahNumber
-                )
-            } else {
-                // Default fallback if nothing saved yet
-                _uiState.value = _uiState.value.copy(
-                    lastReadSurah = "Al-Fatihah",
-                    lastReadSurahArabic = "الفاتحة",
-                    lastReadNumber = 1,
-                    lastReadAyah = 1
-                )
+    /**
+     * Observe goals dari DataStore — real-time reactive update
+     */
+    private fun observeGoals() {
+        viewModelScope.launch {
+            userPrefs.todayMinutes.collect { minutes ->
+                _uiState.value = _uiState.value.copy(quranCurrentMinutes = minutes)
             }
-            
-            // Simulasi target (can be prefs too later)
-            _uiState.value = _uiState.value.copy(
-                quranCurrentMinutes = 15,
-                quranTargetMinutes = 25
-            )
+        }
+        viewModelScope.launch {
+            userPrefs.targetMinutes.collect { target ->
+                _uiState.value = _uiState.value.copy(quranTargetMinutes = target)
+            }
         }
     }
 }

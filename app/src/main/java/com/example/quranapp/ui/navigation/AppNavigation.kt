@@ -51,6 +51,9 @@ fun AppNavigation() {
                 HomeScreen(
                     onNavigateToMatsurat = { type ->
                          navController.navigate(Screen.AlMatsurat.route.replace("{type}", type))
+                    },
+                    onNavigateToDetail = { surahNumber, ayahNumber ->
+                        navController.navigate("quran_detail/$surahNumber?ayahNumber=$ayahNumber")
                     }
                 ) 
             }
@@ -60,10 +63,14 @@ fun AppNavigation() {
             }
             composable(
                 route = Screen.QuranDetail.route,
-                arguments = listOf(navArgument("surahNumber") { type = NavType.IntType })
+                arguments = listOf(
+                    navArgument("surahNumber") { type = NavType.IntType },
+                    navArgument("ayahNumber") { type = NavType.IntType; defaultValue = 1 }
+                )
             ) { backStackEntry ->
                 val surahNumber = backStackEntry.arguments?.getInt("surahNumber") ?: 1
-                QuranDetailScreen(navController = navController, surahNumber = surahNumber)
+                val ayahNumber = backStackEntry.arguments?.getInt("ayahNumber") ?: 1
+                QuranDetailScreen(navController = navController, surahNumber = surahNumber, initialAyah = ayahNumber)
             }
             composable(
                 route = Screen.AlMatsurat.route,

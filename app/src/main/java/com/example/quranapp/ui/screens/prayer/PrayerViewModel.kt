@@ -1,14 +1,16 @@
 package com.example.quranapp.ui.screens.prayer
 
+import android.app.Application
 import android.content.Context
 import android.location.Geocoder
 import android.os.Build
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.batoulapps.adhan.Prayer
 import com.batoulapps.adhan.PrayerTimes
 import com.example.quranapp.data.repository.PrayerRepository
-import com.example.quranapp.data.repository.PrayerSchedule
+import com.example.quranapp.data.local.QuranAppDatabase
+import com.example.quranapp.data.local.entity.PrayerStatusEntity
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -45,20 +47,27 @@ data class PrayerUiState(
     val sunriseTime: String = "--:--",
     val gregorianDate: String = "",
     val hijriDate: String = "",
-    val location: String = "Locating...",
+    val location: String = "Jakarta",
     val canMarkAll: Boolean = false
 )
 
-class PrayerViewModel : ViewModel() {
+class PrayerViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _uiState = MutableStateFlow(PrayerUiState())
     val uiState: StateFlow<PrayerUiState> = _uiState.asStateFlow()
 
-    private var lat: Double = -7.9419
-    private var lon: Double = 112.6227
+    private var lat: Double = -6.1753
+    private var lon: Double = 106.8312
+
+    private val prayerRepository = PrayerRepository()
+    private val prayerStatusDao = QuranAppDatabase.getInstance(application).prayerStatusDao()
+
+    // In-memory cache of prayer statuses loaded from DB
+    private val prayedStatusMap = mutableMapOf<String, Boolean>()
 
     init {
         updateDateInfo()
+        loadPrayerStatuses()
         startPrayerCountdown()
     }
 
@@ -97,13 +106,30 @@ class PrayerViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Load prayer statuses for today from Room and observe reactively
+     */
+    private fun loadPrayerStatuses() {
+        viewModelScope.launch {
+            prayerStatusDao.getPrayerStatusByDate(getTodayString()).collect { statusList ->
+                prayedStatusMap.clear()
+                statusList.forEach { entity ->
+                    prayedStatusMap[entity.prayerName] = entity.isPrayed
+                }
+                // Re-calculate to merge the loaded statuses with prayer times
+                calculatePrayerTimes()
+            }
+        }
+    }
+
     fun togglePrayed(index: Int) {
         val currentList = _uiState.value.prayerList.toMutableList()
         val item = currentList[index]
         
         // Hanya bisa checklist jika waktu sholat sudah lewat
         if (item.isPassed) {
-            currentList[index] = item.copy(isPrayed = !item.isPrayed)
+            val newStatus = !item.isPrayed
+            currentList[index] = item.copy(isPrayed = newStatus)
             val newCount = currentList.count { it.isPrayed }
 
             _uiState.value = _uiState.value.copy(
@@ -111,11 +137,21 @@ class PrayerViewModel : ViewModel() {
                 prayedCount = newCount,
                 canMarkAll = currentList.any { it.isPassed && !it.isPrayed }
             )
+
+            // Persist to Room
+            viewModelScope.launch {
+                prayerStatusDao.upsertPrayerStatus(
+                    PrayerStatusEntity(
+                        date = getTodayString(),
+                        prayerName = item.name,
+                        isPrayed = newStatus
+                    )
+                )
+            }
         }
     }
 
     fun markAllPrayed() {
-        // Mark only passed prayers
         val currentList = _uiState.value.prayerList.map { 
             if (it.isPassed) it.copy(isPrayed = true) else it
         }
@@ -124,6 +160,11 @@ class PrayerViewModel : ViewModel() {
             prayedCount = currentList.count { it.isPrayed },
             canMarkAll = false
         )
+
+        // Persist all to Room
+        viewModelScope.launch {
+            prayerStatusDao.markAllPrayed(getTodayString())
+        }
     }
 
     private fun updateDateInfo() {
@@ -139,8 +180,6 @@ class PrayerViewModel : ViewModel() {
             )
         }
     }
-
-    private val prayerRepository = PrayerRepository()
 
     private fun calculatePrayerTimes() {
         try {
@@ -166,7 +205,6 @@ class PrayerViewModel : ViewModel() {
             val imsakTime = schedule.imsak
             val sunriseTime = schedule.sunrise
 
-            val currentList = _uiState.value.prayerList
             val prayerTimes = schedule.prayerTimes
 
             val rawList = listOf(
@@ -177,12 +215,14 @@ class PrayerViewModel : ViewModel() {
                 Triple("Isha'a", prayerTimes.isha, Prayer.ISHA)
             )
 
-            val uiList = rawList.mapIndexed { index, (nameIndo, timeDate, type) ->
-                val wasPrayed = if (index < currentList.size) currentList[index].isPrayed else false
+            val uiList = rawList.map { (_, timeDate, type) ->
+                val prayerName = prayerRepository.getPrayerName(type)
                 val isPassed = now >= timeDate.time
+                // Check persisted status from Room
+                val wasPrayed = prayedStatusMap[prayerName] ?: false
 
                 PrayerItemState(
-                    name = prayerRepository.getPrayerName(type),
+                    name = prayerName,
                     time = formatter.format(timeDate).lowercase(),
                     isNext = (nextPrayer == type),
                     isPrayed = wasPrayed,
@@ -202,11 +242,19 @@ class PrayerViewModel : ViewModel() {
                 timeToNextPrayer = countdownText,
                 imsakTime = formatter.format(imsakTime).lowercase(),
                 sunriseTime = formatter.format(sunriseTime).lowercase(),
+                prayedCount = uiList.count { it.isPrayed },
                 canMarkAll = uiList.any { it.isPassed && !it.isPrayed }
             )
         } catch (e: Exception) {
             e.printStackTrace()
-            // Silent fail or UI state update
+        }
+    }
+
+    private fun getTodayString(): String {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE)
+        } else {
+            SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
         }
     }
 }
