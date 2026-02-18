@@ -1,5 +1,7 @@
 package com.example.quranapp.ui.theme
 
+import androidx.compose.ui.graphics.Color
+
 import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -14,16 +16,25 @@ import androidx.core.view.WindowCompat
 import com.example.quranapp.ui.theme.CreamBackground
 private val LightColorScheme = lightColorScheme(
     primary = DeepEmerald,
-    onPrimary = White, // Teks di atas warna primary (misal: teks di tombol login)
+    onPrimary = White,
+    primaryContainer = LightEmerald,
+    onPrimaryContainer = DeepEmeraldDark,
 
-    secondary = LightEmerald,
-    onSecondary = DeepEmerald, // Teks di atas warna secondary
+    secondary = GoldAccent,
+    onSecondary = White,
+    secondaryContainer = GoldLight,
+    onSecondaryContainer = Color(0xFF5D4037),
+
+    tertiary = MediumEmerald,
+    onTertiary = White,
 
     background = CreamBackground,
     onBackground = TextBlack,
 
-    surface = White, // Warna kartu/card
-    onSurface = TextBlack
+    surface = White,
+    onSurface = TextBlack,
+    surfaceVariant = SandBackground,
+    onSurfaceVariant = TextGray
 )
 
 @Composable
@@ -52,4 +63,19 @@ fun QuranAppTheme(
         typography = Typography,
         content = content
     )
+}
+
+@Composable
+fun SetStatusBarColor(color: Color) {
+    val view = LocalView.current
+    if (!view.isInEditMode) {
+        SideEffect {
+            val window = (view.context as Activity).window
+            window.statusBarColor = color.toArgb()
+            
+            // If color is DeepEmerald (dark), use light icons (isAppearanceLightStatusBars = false).
+            val isLight = androidx.core.graphics.ColorUtils.calculateLuminance(color.toArgb()) > 0.5
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = isLight
+        }
+    }
 }

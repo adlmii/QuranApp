@@ -35,6 +35,7 @@ import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Menu
 import com.example.quranapp.ui.theme.*
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.material.icons.filled.BookmarkBorder
 
 @Composable
 fun QuranDetailScreen(
@@ -59,6 +60,7 @@ fun QuranDetailScreen(
                 onToggleMode = { viewModel.toggleViewMode() },
                 sessionProgress = uiState.sessionProgress
             )
+            SetStatusBarColor(CreamBackground)
         },
         containerColor = CreamBackground
     ) { padding ->
@@ -178,7 +180,7 @@ fun DetailHeader(
     AppHeader(
         title = title,
         onBackClick = onBack,
-        backgroundColor = CreamBackground,
+        backgroundColor = CreamBackground, // Use Cream
         contentColor = DeepEmerald,
         actions = {
             // Session Indicator
@@ -186,8 +188,8 @@ fun DetailHeader(
                 CircularProgressIndicator(
                     progress = { sessionProgress / 5f },
                     modifier = Modifier.size(24.dp),
-                    color = Color(0xFFD4AF37), // Gold
-                    trackColor = Color(0xFFE0E0E0),
+                    color = GoldAccent, // Gold
+                    trackColor = DeepEmerald.copy(alpha = 0.1f),
                     strokeWidth = 3.dp
                 )
                 Text(
@@ -216,7 +218,7 @@ fun AyahItem(ayah: Ayah, surahNumber: Int, arabicFont: FontFamily) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp)
+            .padding(vertical = 12.dp)
     ) {
         // Badge Row
         Row(
@@ -224,11 +226,10 @@ fun AyahItem(ayah: Ayah, surahNumber: Int, arabicFont: FontFamily) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Surface(
-                shape = RoundedCornerShape(20.dp),
-                color = MediumEmerald.copy(
-                    alpha = 0.2f
-                ), // Light gray like screenshot
-                modifier = Modifier.wrapContentSize()
+                shape = RoundedCornerShape(50), // Pill shape
+                color = LightEmerald.copy(alpha = 0.5f),
+                modifier = Modifier.wrapContentSize(),
+                border = androidx.compose.foundation.BorderStroke(1.dp, MediumEmerald.copy(alpha = 0.3f))
             ) {
                 Row(
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
@@ -236,33 +237,37 @@ fun AyahItem(ayah: Ayah, surahNumber: Int, arabicFont: FontFamily) {
                 ) {
                     Text(
                         text = "$surahNumber:${ayah.number}",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = Color.Black,
-                        fontWeight = FontWeight.Medium
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Icon(
-                        imageVector = Icons.Default.KeyboardArrowDown,
-                        contentDescription = "More",
-                        modifier = Modifier.size(16.dp),
-                        tint = Color.Black
+                        style = MaterialTheme.typography.labelSmall,
+                        color = DeepEmerald,
+                        fontWeight = FontWeight.Bold
                     )
                 }
             }
             
+
+
+// ...
+
             Spacer(modifier = Modifier.weight(1f))
-            // Action icons can go here
+            // Action icons can go here (Share, Bookmark, Play) - placeholders for now
+            Icon(
+                imageVector = Icons.Default.BookmarkBorder, 
+                contentDescription = "Bookmark",
+                tint = TextGray.copy(alpha = 0.6f),
+                modifier = Modifier.size(20.dp)
+            )
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
         // Arabic Text (Right Aligned)
-        // New data is Uthmani Hafs (Standard Unicode), so no need for TajweedHelper parsing
-        
         Text(
             text = ayah.arabic,
-            style = HeadlineQuran,
-            color = DeepEmerald,
+            style = MaterialTheme.typography.headlineMedium.copy(
+                fontFamily = arabicFont,
+                lineHeight = 50.sp
+            ),
+            color = TextBlack,
             textAlign = TextAlign.End,
             modifier = Modifier.fillMaxWidth()
         )
@@ -272,13 +277,20 @@ fun AyahItem(ayah: Ayah, surahNumber: Int, arabicFont: FontFamily) {
         // Translation
         Text(
             text = ayah.translation,
-            style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 24.sp),
+            style = MaterialTheme.typography.bodyLarge.copy(
+                lineHeight = 26.sp,
+                fontWeight = FontWeight.Normal
+            ),
             color = TextGray,
             textAlign = TextAlign.Start,
             modifier = Modifier.fillMaxWidth()
         )
     }
-    HorizontalDivider(color = LightEmerald.copy(alpha = 0.5f), thickness = 1.dp, modifier = Modifier.padding(top = 16.dp))
+    HorizontalDivider(
+        color = DividerColor, 
+        thickness = 1.dp, 
+        modifier = Modifier.padding(top = 24.dp)
+    )
 }
 
 // buildTajweedText function removed in favor of TajweedHelper

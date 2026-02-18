@@ -19,6 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.quranapp.ui.theme.*
+import com.example.quranapp.ui.components.GenericProgressCard
 
 // ─────────────────────────────────────────────
 // Prayer Progress Card
@@ -32,47 +33,12 @@ fun PrayerProgressCard(
 ) {
     val progress = if (total > 0) count.toFloat() / total.toFloat() else 0f
 
-    Card(
-        modifier = modifier.height(180.dp),
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = DeepEmerald)
-    ) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator(
-                progress = { 1f },
-                modifier = Modifier.size(120.dp),
-                color = White.copy(alpha = 0.12f),
-                trackColor = White.copy(alpha = 0.12f),
-                strokeWidth = 14.dp,
-                strokeCap = androidx.compose.ui.graphics.StrokeCap.Butt,
-                gapSize = 0.dp
-            )
-
-            CircularProgressIndicator(
-                progress = { progress },
-                modifier = Modifier.size(120.dp),
-                color = MediumEmerald,
-                trackColor = androidx.compose.ui.graphics.Color.Transparent,
-                strokeWidth = 14.dp,
-                strokeCap = androidx.compose.ui.graphics.StrokeCap.Round,
-                gapSize = 0.dp
-            )
-
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    text = "$count/$total",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = White
-                )
-                Text(
-                    text = "prayed",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = White.copy(alpha = 0.5f)
-                )
-            }
-        }
-    }
+    GenericProgressCard(
+        progress = progress,
+        mainText = "$count/$total",
+        subText = "prayed",
+        modifier = modifier
+    )
 }
 
 // ─────────────────────────────────────────────

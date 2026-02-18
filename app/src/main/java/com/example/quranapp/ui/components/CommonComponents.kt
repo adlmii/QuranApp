@@ -13,6 +13,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.quranapp.ui.theme.*
+import androidx.compose.ui.unit.sp
+import androidx.compose.material.icons.filled.Timer
 
 @Composable
 fun AppHeader(
@@ -44,22 +46,22 @@ fun AppHeader(
         // Location badge
         Row(
             modifier = Modifier
-                .clip(RoundedCornerShape(20.dp))
+                .clip(RoundedCornerShape(50))
                 .background(LightEmerald)
-                .padding(start = 8.dp, end = 12.dp, top = 6.dp, bottom = 6.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                .padding(start = 10.dp, end = 14.dp, top = 6.dp, bottom = 6.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
                 Icons.Default.LocationOn,
                 contentDescription = "Location",
                 tint = DeepEmerald,
-                modifier = Modifier.size(16.dp)
+                modifier = Modifier.size(14.dp)
             )
+            Spacer(modifier = Modifier.width(4.dp))
             Text(
                 text = location,
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.Medium,
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.Bold,
                 color = DeepEmerald
             )
         }
@@ -80,55 +82,142 @@ fun PrayerCard(
     val isNow = countDown == "Now"
 
     Card(
-        modifier = modifier.height(180.dp),
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = DeepEmerald)
+        modifier = modifier
+            .height(180.dp),
+        shape = RoundedCornerShape(26.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
-        Column(
+        Box(
             modifier = Modifier
-                .padding(20.dp)
-                .fillMaxSize(),
-            verticalArrangement = Arrangement.SpaceBetween
+                .fillMaxSize()
+                .background(brush = DeepEmeraldGradient)
         ) {
-            // Now / Next badge
+            // Decorative Circle
             Box(
                 modifier = Modifier
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(if (isNow) MediumEmerald else White.copy(alpha = 0.15f))
-                    .padding(horizontal = 12.dp, vertical = 4.dp)
+                    .offset(x = 80.dp, y = (-20).dp)
+                    .size(150.dp)
+                    .clip(androidx.compose.foundation.shape.CircleShape)
+                    .background(White.copy(alpha = 0.05f))
+            )
+
+            Column(
+                modifier = Modifier
+                    .padding(20.dp)
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(
-                    text = if (isNow) "Now" else "Next",
-                    color = White,
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.Bold
+                // Now / Next badge
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(if (isNow) GoldAccent else White.copy(alpha = 0.15f))
+                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                ) {
+                    Text(
+                        text = if (isNow) "Now" else "Next",
+                        color = if (isNow) DeepEmerald else White,
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                // Prayer name + time
+                Column {
+                    Text(
+                        text = prayerName,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium,
+                        color = White.copy(alpha = 0.8f)
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = prayerTime,
+                        style = MaterialTheme.typography.displaySmall, // Bigger font
+                        fontWeight = FontWeight.Bold,
+                        color = White,
+                        fontSize = 32.sp // Custom override for better fit
+                    )
+                }
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Timer,
+                            contentDescription = null,
+                            tint = GoldAccent,
+                            modifier = Modifier.size(14.dp)
+                        )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = countDown,
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Medium,
+                        color = GoldAccent
+                    )
+                }
+            }
+        }
+    }
+}
+
+// ─────────────────────────────────────────────
+// Generic Progress Card (Shared)
+// ─────────────────────────────────────────────
+
+@Composable
+fun GenericProgressCard(
+    progress: Float,
+    mainText: String,
+    subText: String,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier.height(180.dp),
+        shape = RoundedCornerShape(26.dp),
+        elevation = CardDefaults.cardElevation(8.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(brush = DeepEmeraldGradient),
+            contentAlignment = Alignment.Center
+        ) {
+            // Track (flat ends) - Single layer only
+            CircularProgressIndicator(
+                progress = { 1f },
+                modifier = Modifier.size(120.dp),
+                color = White.copy(alpha = 0.1f),
+                trackColor = androidx.compose.ui.graphics.Color.Transparent, // Avoid double opacity
+                strokeWidth = 12.dp,
+                gapSize = 0.dp
+            )
+
+            // Progress (rounded ends) - Only if > 0
+            if (progress > 0.001f) {
+                CircularProgressIndicator(
+                    progress = { progress },
+                    modifier = Modifier.size(120.dp),
+                    color = GoldAccent,
+                    trackColor = androidx.compose.ui.graphics.Color.Transparent,
+                    strokeWidth = 12.dp,
+                    strokeCap = androidx.compose.ui.graphics.StrokeCap.Round,
+                    gapSize = 0.dp
                 )
             }
 
-            // Prayer name + time
-            Column {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    text = prayerName,
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Normal,
-                    color = White.copy(alpha = 0.7f)
-                )
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = prayerTime,
-                    style = MaterialTheme.typography.headlineLarge,
+                    text = mainText,
+                    style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
                     color = White
                 )
+                Text(
+                    text = subText,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = White.copy(alpha = 0.7f)
+                )
             }
-
-            // Countdown
-            Text(
-                text = countDown,
-                style = MaterialTheme.typography.bodySmall,
-                fontWeight = FontWeight.Medium,
-                color = White
-            )
         }
     }
 }

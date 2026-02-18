@@ -159,4 +159,37 @@ class QuranRepository(private val context: Context) {
             emptyList()
         }
     }
+    // ── Recent Quran (Last Read) Persistence ──
+
+    private val prefs = context.getSharedPreferences("quran_app_prefs", Context.MODE_PRIVATE)
+
+    fun saveLastRead(
+        surahNumber: Int,
+        ayahNumber: Int,
+        surahName: String,
+        arabicName: String,
+        surahEnglishName: String
+    ) {
+        prefs.edit().apply {
+            putInt("last_read_surah_number", surahNumber)
+            putInt("last_read_ayah_number", ayahNumber)
+            putString("last_read_surah_name", surahName)
+            putString("last_read_surah_arabic", arabicName)
+            putString("last_read_surah_english", surahEnglishName)
+            apply()
+        }
+    }
+
+    fun getLastRead(): com.example.quranapp.data.model.LastReadData? {
+        val surahNumber = prefs.getInt("last_read_surah_number", -1)
+        if (surahNumber == -1) return null
+
+        return com.example.quranapp.data.model.LastReadData(
+            surahNumber = surahNumber,
+            ayahNumber = prefs.getInt("last_read_ayah_number", 1),
+            surahName = prefs.getString("last_read_surah_name", "") ?: "",
+            surahArabicName = prefs.getString("last_read_surah_arabic", "") ?: "",
+            surahEnglishName = prefs.getString("last_read_surah_english", "") ?: ""
+        )
+    }
 }

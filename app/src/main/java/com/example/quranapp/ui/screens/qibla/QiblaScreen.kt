@@ -74,6 +74,8 @@ fun QiblaScreen(
         },
         containerColor = CreamBackground
     ) { paddingValues ->
+        SetStatusBarColor(CreamBackground)
+        
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -308,21 +310,22 @@ fun InfoCard(
             .fillMaxWidth()
             .padding(horizontal = 24.dp),
         colors = CardDefaults.cardColors(containerColor = White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+        shape = RoundedCornerShape(26.dp),
         border = if (isAligned) androidx.compose.foundation.BorderStroke(2.dp, GoldAccent) else null
     ) {
         Row(
-            modifier = Modifier.padding(20.dp),
+            modifier = Modifier.padding(24.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(modifier = Modifier.weight(1f)) {
+            Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
                     text = "Qibla Direction",
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.labelMedium,
                     color = TextGray
                 )
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = "${qiblaBearing.toInt()}°",
                     style = MaterialTheme.typography.headlineMedium,
@@ -331,22 +334,23 @@ fun InfoCard(
                 )
             }
             
-            Divider(
+            Box(
                 modifier = Modifier
                     .height(40.dp)
-                    .width(1.dp),
-                color = LightEmerald
+                    .width(1.dp)
+                    .background(LightEmerald)
             )
             
             Column(
                 modifier = Modifier.weight(1f),
-                horizontalAlignment = Alignment.End
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
                     text = "Current Heading",
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.labelMedium,
                     color = TextGray
                 )
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = "${currentHeading.toInt()}°",
                     style = MaterialTheme.typography.headlineMedium,

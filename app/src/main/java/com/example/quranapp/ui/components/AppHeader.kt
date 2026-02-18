@@ -23,11 +23,20 @@ fun AppHeader(
     contentColor: Color = Color.White,
     actions: @Composable RowScope.() -> Unit = {}
 ) {
-    Box(
-        modifier = Modifier
+    // Only apply gradient if the background color matches our primary DeepEmerald
+    val modifier = if (backgroundColor == DeepEmerald) {
+        Modifier
+            .fillMaxWidth()
+            .background(brush = com.example.quranapp.ui.theme.DeepEmeraldGradient)
+    } else {
+        Modifier
             .fillMaxWidth()
             .background(backgroundColor)
-            .padding(vertical = 16.dp, horizontal = 20.dp)
+    }
+
+    Box(
+        modifier = modifier
+            .padding(vertical = 18.dp, horizontal = 20.dp)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically
@@ -40,13 +49,13 @@ fun AppHeader(
                         tint = contentColor
                     )
                 }
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(4.dp))
             }
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.titleLarge,
+                    style = MaterialTheme.typography.headlineSmall, // Slightly larger
                     fontWeight = FontWeight.Bold,
                     color = contentColor
                 )
@@ -54,7 +63,7 @@ fun AppHeader(
                     Text(
                         text = subtitle,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = contentColor.copy(alpha = 0.8f)
+                        color = contentColor.copy(alpha = 0.85f)
                     )
                 }
             }

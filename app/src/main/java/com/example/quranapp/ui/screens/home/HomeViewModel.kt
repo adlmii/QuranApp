@@ -1,9 +1,10 @@
 package com.example.quranapp.ui.screens.home
 
+import android.app.Application
 import android.content.Context
 import android.location.Geocoder
 import android.os.Build
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.quranapp.data.repository.PrayerRepository
 import com.example.quranapp.data.repository.PrayerSchedule
@@ -22,7 +23,6 @@ import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
 
-// Pastikan UiState tetap sama seperti kodemu
 data class HomeUiState(
     val gregorianDate: String = "",
     val hijriDate: String = "",
@@ -41,7 +41,7 @@ data class HomeUiState(
     val lastReadAyah: Int = 1
 )
 
-class HomeViewModel : ViewModel() {
+class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
@@ -166,14 +166,38 @@ class HomeViewModel : ViewModel() {
     }
 
     private fun loadUserData() {
-        // Simulasi data user
-        _uiState.value = _uiState.value.copy(
-            quranCurrentMinutes = 15,
-            quranTargetMinutes = 25,
-            lastReadSurah = "Al-Kahf",
-            lastReadSurahArabic = "الكهف",
-            lastReadNumber = 18,
-            lastReadAyah = 10
-        )
+        viewModelScope.launch {
+            // Load Last Read
+            val lastRead = prayerRepository.run { 
+                // Using QuranRepository here would be cleaner if injected, 
+                // but for now let's instantiate or use the one from QuranViewModel if shared. 
+                // Actually HomeViewModel creates PrayerRepository. 
+                // We need QuranRepository here.
+                com.example.quranapp.data.repository.QuranRepository(getApplication()).getLastRead()
+            }
+
+            if (lastRead != null) {
+                _uiState.value = _uiState.value.copy(
+                    lastReadSurah = lastRead.surahName,
+                    lastReadSurahArabic = lastRead.surahArabicName,
+                    lastReadNumber = lastRead.surahNumber,
+                    lastReadAyah = lastRead.ayahNumber
+                )
+            } else {
+                // Default fallback if nothing saved yet
+                _uiState.value = _uiState.value.copy(
+                    lastReadSurah = "Al-Fatihah",
+                    lastReadSurahArabic = "الفاتحة",
+                    lastReadNumber = 1,
+                    lastReadAyah = 1
+                )
+            }
+            
+            // Simulasi target (can be prefs too later)
+            _uiState.value = _uiState.value.copy(
+                quranCurrentMinutes = 15,
+                quranTargetMinutes = 25
+            )
+        }
     }
 }

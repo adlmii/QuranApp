@@ -72,6 +72,8 @@ fun PrayerScreen(
             .background(CreamBackground)
             .padding(horizontal = 20.dp)
     ) {
+        com.example.quranapp.ui.theme.SetStatusBarColor(CreamBackground)
+
         // ── Sticky Header ──
         Spacer(modifier = Modifier.height(24.dp))
         AppHeader(

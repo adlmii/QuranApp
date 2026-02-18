@@ -53,6 +53,17 @@ class QuranDetailViewModel(application: Application) : AndroidViewModel(applicat
             try {
                 val detail = repository.getSurahDetail(number)
                 val pages = detail?.ayahs?.groupBy { it.page }?.values?.toList() ?: emptyList()
+                
+                if (detail != null) {
+                    repository.saveLastRead(
+                        surahNumber = detail.number,
+                        ayahNumber = 1, // Default to 1 for now (TODO: Scroll tracking)
+                        surahName = detail.name,
+                        arabicName = detail.arabicName,
+                        surahEnglishName = detail.englishName
+                    )
+                }
+
                 _uiState.value = _uiState.value.copy(
                     surahDetail = detail,
                     pages = pages,

@@ -30,6 +30,10 @@ import com.example.quranapp.ui.theme.HeadlineQuran
 import com.example.quranapp.ui.theme.LightEmerald
 import com.example.quranapp.ui.theme.TextGray
 import com.example.quranapp.ui.theme.White
+import com.example.quranapp.ui.theme.TextBlack
+import com.example.quranapp.ui.theme.GoldAccent
+import com.example.quranapp.ui.theme.DeepEmeraldHeader
+import com.example.quranapp.ui.theme.SetStatusBarColor
 
 @Composable
 fun AlMatsuratScreen(
@@ -48,9 +52,11 @@ fun AlMatsuratScreen(
             .fillMaxSize()
             .background(CreamBackground)
     ) {
+        SetStatusBarColor(CreamBackground)
+
         AppHeader(
             title = "Al-Ma'tsurat",
-            subtitle = if (uiState.matsuratType == MatsuratType.MORNING) "Dzikir Pagi" else "Dzikir Petang",
+            subtitle = if (type == MatsuratType.MORNING) "Dzikir Pagi" else "Dzikir Petang",
             onBackClick = { navController.popBackStack() },
             backgroundColor = CreamBackground,
             contentColor = DeepEmerald
@@ -86,18 +92,18 @@ fun MatsuratItem(item: AlMatsurat) {
 
 @Composable
 fun SlidingMatsuratCard(item: AlMatsurat) {
-    // Page 0: Arabic, Page 1: Translation
     val pagerState = rememberPagerState(pageCount = { 2 })
 
     AppCard(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        backgroundColor = White
+        shape = RoundedCornerShape(26.dp),
+        backgroundColor = White,
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(20.dp)
         ) {
             MatsuratHeader(item)
             
@@ -116,15 +122,15 @@ fun SlidingMatsuratCard(item: AlMatsurat) {
                         // Arabic View
                         Text(
                             text = item.arabic,
-                            style = HeadlineQuran,
-                            color = DeepEmerald,
+                            style = HeadlineQuran.copy(lineHeight = 48.sp),
+                            color = TextBlack,
                             textAlign = TextAlign.End,
-                            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp)
                         )
                     } else {
                         // Translation View
                          Box(
-                            modifier = Modifier.fillMaxWidth().heightIn(min = 100.dp), // Min height to match arabic approx
+                            modifier = Modifier.fillMaxWidth().heightIn(min = 100.dp),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
@@ -139,7 +145,7 @@ fun SlidingMatsuratCard(item: AlMatsurat) {
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             // Dots Indicator
             Row(
@@ -150,12 +156,13 @@ fun SlidingMatsuratCard(item: AlMatsurat) {
             ) {
                 repeat(2) { iteration ->
                     val color = if (pagerState.currentPage == iteration) DeepEmerald else LightEmerald
+                    val width = if (pagerState.currentPage == iteration) 24.dp else 8.dp
                     Box(
                         modifier = Modifier
                             .padding(2.dp)
-                            .clip(CircleShape)
+                            .clip(RoundedCornerShape(4.dp))
                             .background(color)
-                            .size(6.dp)
+                            .size(width = width, height = 6.dp)
                     )
                 }
             }
@@ -167,21 +174,22 @@ fun SlidingMatsuratCard(item: AlMatsurat) {
 fun StaticMatsuratCard(item: AlMatsurat) {
     AppCard(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        backgroundColor = White
+        shape = RoundedCornerShape(26.dp),
+        backgroundColor = White,
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(20.dp)
         ) {
             MatsuratHeader(item)
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
                 text = item.arabic,
-                style = HeadlineQuran,
-                color = DeepEmerald,
+                style = HeadlineQuran.copy(lineHeight = 48.sp),
+                color = TextBlack,
                 textAlign = TextAlign.End,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -211,18 +219,19 @@ fun MatsuratHeader(item: AlMatsurat) {
         )
 
         if (item.count > 1) {
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(LightEmerald)
-                    .padding(horizontal = 8.dp, vertical = 4.dp)
+            Surface(
+                shape = RoundedCornerShape(50),
+                color = GoldAccent.copy(alpha = 0.15f),
+                border = androidx.compose.foundation.BorderStroke(1.dp, GoldAccent.copy(alpha = 0.5f))
             ) {
-                Text(
-                    text = "${item.count}x",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = DeepEmerald,
-                    fontWeight = FontWeight.Bold
-                )
+                Box(modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)) {
+                    Text(
+                        text = "${item.count}x",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Color(0xFFD4AF37), // Darker Gold for text
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
         }
     }

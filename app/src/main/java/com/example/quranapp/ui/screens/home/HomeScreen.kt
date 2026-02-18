@@ -22,6 +22,7 @@ import com.example.quranapp.ui.components.PrayerCard
 import com.example.quranapp.ui.screens.home.components.*
 import com.example.quranapp.ui.theme.CreamBackground
 import com.example.quranapp.ui.theme.DeepEmerald
+import com.example.quranapp.ui.theme.SetStatusBarColor
 import com.example.quranapp.ui.theme.TextGray
 import com.google.android.gms.location.LocationServices
 
@@ -71,6 +72,8 @@ fun HomeScreen(
             .background(CreamBackground)
             .padding(horizontal = 20.dp)
     ) {
+        SetStatusBarColor(CreamBackground)
+
         // ── Sticky Header ──
         Spacer(modifier = Modifier.height(24.dp))
         AppHeader(
@@ -106,7 +109,6 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // ── Al-Ma'tsurat ──
             // ── Al-Ma'tsurat ──
             AlMatsuratCard(
                 type = uiState.matsuratType,

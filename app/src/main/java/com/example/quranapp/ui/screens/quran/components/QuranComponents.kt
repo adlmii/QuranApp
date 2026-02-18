@@ -26,6 +26,8 @@ import com.example.quranapp.ui.components.AppCard
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.draw.shadow
+import androidx.compose.foundation.border
 import kotlin.math.*
 import kotlin.random.Random
 
@@ -41,9 +43,9 @@ fun QuranTabSelector(
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxWidth()
-            .height(50.dp)
-            .clip(RoundedCornerShape(16.dp))
-            .background(LightEmerald) // Background track
+            .height(54.dp)
+            .clip(RoundedCornerShape(26.dp))
+            .background(Color(0xFFF0F4F4)) // Very light emerald/gray
             .padding(4.dp)
     ) {
         val tabWidth = maxWidth / 2
@@ -58,14 +60,15 @@ fun QuranTabSelector(
             label = "TabIndicator"
         )
 
-        // The Sliding Indicator (Dark background)
+        // The Sliding Indicator (Gradient background)
         Box(
             modifier = Modifier
                 .offset(x = indicatorOffset)
                 .width(tabWidth)
                 .fillMaxHeight()
-                .clip(RoundedCornerShape(12.dp))
-                .background(DeepEmerald)
+                .clip(RoundedCornerShape(24.dp))
+                .background(brush = DeepEmeraldGradient)
+                .shadow(elevation = 4.dp, shape = RoundedCornerShape(24.dp), clip = false)
         )
 
         // The Clickable Text Layers
@@ -89,7 +92,7 @@ fun QuranTabSelector(
 @Composable
 fun TabButton(text: String, isSelected: Boolean, modifier: Modifier, onClick: () -> Unit) {
     val textColor by animateColorAsState(
-        targetValue = if (isSelected) White else DeepEmerald,
+        targetValue = if (isSelected) White else TextGray,
         animationSpec = tween(durationMillis = 300), 
         label = "TabTextColor"
     )
@@ -106,7 +109,7 @@ fun TabButton(text: String, isSelected: Boolean, modifier: Modifier, onClick: ()
         Text(
             text = text,
             style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
+            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
             color = textColor
         )
     }
@@ -124,58 +127,65 @@ fun SurahItem(
     AppCard(
         modifier = Modifier.fillMaxWidth(),
         onClick = onClick,
-        shape = RoundedCornerShape(16.dp),
-        backgroundColor = LightEmerald
+        shape = RoundedCornerShape(18.dp),
+        backgroundColor = White,
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        val arabicFont = UthmaniHafs
-
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 14.dp),
+                .padding(horizontal = 16.dp, vertical = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Number
-            Text(
-                text = surah.number.toString(),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = DeepEmerald.copy(alpha = 0.5f),
-                modifier = Modifier.width(30.dp)
-            )
+            // Number in a Star/Polygon shape or Circle with Border
+            Box(
+                modifier = Modifier
+                    .size(42.dp)
+                    .clip(CircleShape)
+                    .border(1.dp, LightEmerald, CircleShape)
+                    .background(CreamBackground),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = surah.number.toString(),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = DeepEmerald
+                )
+            }
 
             Spacer(modifier = Modifier.width(16.dp))
-
-            // Arabic name
-            Text(
-                text = surah.arabicName.replace("سُورَةُ", "").trim(),
-                style = MaterialTheme.typography.titleMedium.copy(
-                    fontFamily = arabicFont,
-                    fontSize = 24.sp,
-                    letterSpacing = 0.sp
-                ),
-                fontWeight = FontWeight.Bold,
-                color = DeepEmerald.copy(alpha = 0.7f),
-                modifier = Modifier.width(80.dp)
-            )
-
-            Spacer(modifier = Modifier.width(4.dp))
 
             // Latin name + Info
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = surah.name,
-                    style = MaterialTheme.typography.titleSmall,
+                    style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = DeepEmerald
+                    color = TextBlack
                 )
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = surah.englishName, // Removed Ayat count
-                    style = MaterialTheme.typography.bodySmall,
-                    color = TextGray
-                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = surah.englishName, 
+                        style = MaterialTheme.typography.bodySmall,
+                        color = TextGray
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                }
             }
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            // Arabic name
+            Text(
+                text = surah.arabicName.replace("سُورَةُ", "").trim(),
+                style = MaterialTheme.typography.headlineSmall.copy(
+                    fontFamily = UthmaniHafs,
+                    color = DeepEmerald
+                ),
+                textAlign = TextAlign.End
+            )
         }
     }
 }
@@ -189,50 +199,49 @@ fun JuzSurahCard(
     entry: com.example.quranapp.data.model.JuzSurahEntry,
     onClick: () -> Unit = {}
 ) {
-    val arabicFont = UthmaniHafs
-
     AppCard(
         modifier = Modifier.fillMaxWidth(),
         onClick = onClick,
-        shape = RoundedCornerShape(16.dp),
-        backgroundColor = LightEmerald
+        shape = RoundedCornerShape(18.dp),
+        backgroundColor = White,
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 14.dp),
+                .padding(horizontal = 16.dp, vertical = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Arabic name (left side)
-            Text(
-                text = entry.arabicName.replace("سُورَةُ", "").trim(),
-                style = MaterialTheme.typography.titleMedium.copy(
-                    fontFamily = arabicFont,
-                    fontSize = 24.sp,
-                    letterSpacing = 0.sp
-                ),
-                fontWeight = FontWeight.Bold,
-                color = DeepEmerald.copy(alpha = 0.7f),
-                modifier = Modifier.width(80.dp)
-            )
+            // Arabic name (right side usually for Quran, but following design)
+            // Let's swap to match SurahItem logic (Latin Left, Arabic Right)
 
-            Spacer(modifier = Modifier.width(14.dp))
-
-            // Surah name + ayah range
-            Column {
+             // Surah name + ayah range
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = entry.surahName,
-                    style = MaterialTheme.typography.titleSmall,
+                    text = entry.surahName, // Assuming this is Latin name
+                    style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = DeepEmerald
+                    color = TextBlack
                 )
-                Spacer(modifier = Modifier.height(2.dp))
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Aya ${entry.ayahRange}",
+                    text = "Ayah ${entry.ayahRange}",
                     style = MaterialTheme.typography.bodySmall,
                     color = TextGray
                 )
             }
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            // Arabic name
+            Text(
+                text = entry.arabicName.replace("سُورَةُ", "").trim(),
+                style = MaterialTheme.typography.headlineSmall.copy(
+                    fontFamily = UthmaniHafs,
+                    color = DeepEmerald
+                ),
+                textAlign = TextAlign.End
+            )
         }
     }
 }

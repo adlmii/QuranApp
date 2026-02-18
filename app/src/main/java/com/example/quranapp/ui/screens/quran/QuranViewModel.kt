@@ -15,7 +15,9 @@ import kotlinx.coroutines.launch
 
 data class QuranHomeUiState(
     val surahList: List<Surah> = emptyList(),
+    val filteredSurahList: List<Surah> = emptyList(), // Displayed list
     val juzList: List<Juz> = emptyList(),
+    val searchQuery: String = "",
     val isLoading: Boolean = false,
     val error: String? = null
 )
@@ -40,6 +42,7 @@ class QuranViewModel(application: Application) : AndroidViewModel(application) {
                 val juzs = repository.getJuzList()
                 _uiState.value = _uiState.value.copy(
                     surahList = surahs,
+                    filteredSurahList = surahs, // Initialize with full list
                     juzList = juzs,
                     isLoading = false
                 )
@@ -50,5 +53,27 @@ class QuranViewModel(application: Application) : AndroidViewModel(application) {
                 )
             }
         }
+    }
+
+    fun onSearchQueryChange(query: String) {
+        val currentList = _uiState.value.surahList
+        if (query.isBlank()) {
+            _uiState.value = _uiState.value.copy(
+                searchQuery = query,
+                filteredSurahList = currentList
+            )
+            return
+        }
+
+        val filtered = currentList.filter { surah ->
+            surah.name.contains(query, ignoreCase = true) ||
+            surah.englishName.contains(query, ignoreCase = true) ||
+            surah.number.toString().contains(query)
+        }
+
+        _uiState.value = _uiState.value.copy(
+            searchQuery = query,
+            filteredSurahList = filtered
+        )
     }
 }
