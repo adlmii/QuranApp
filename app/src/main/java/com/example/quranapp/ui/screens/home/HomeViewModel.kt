@@ -5,12 +5,8 @@ import android.location.Geocoder
 import android.os.Build
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.batoulapps.adhan.CalculationMethod
-import com.batoulapps.adhan.Coordinates
-import com.batoulapps.adhan.Madhab
-import com.batoulapps.adhan.Prayer
-import com.batoulapps.adhan.PrayerTimes
-import com.batoulapps.adhan.data.DateComponents
+import com.example.quranapp.data.repository.PrayerRepository
+import com.example.quranapp.data.repository.PrayerSchedule
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -100,69 +96,51 @@ class HomeViewModel : ViewModel() {
         }
     }
 
+    private val prayerRepository = PrayerRepository()
+
     private fun calculatePrayerTimes() {
-        val coordinates = Coordinates(_uiState.value.lat, _uiState.value.lon)
-        val params = CalculationMethod.SINGAPORE.parameters // Sesuaikan dengan Kemenag/Lokasi
-        params.madhab = Madhab.SHAFI
+        try {
+            // Use Repository
+            val schedule = prayerRepository.calculatePrayerTimes(_uiState.value.lat, _uiState.value.lon)
+            
+            val nextPrayerName = prayerRepository.getPrayerName(schedule.nextPrayer)
+            val targetTime = schedule.nextPrayerTime
+            val now = Date()
 
-        val now = Date()
-        val todayComponents = DateComponents.from(now)
-        val prayerTimes = PrayerTimes(coordinates, todayComponents, params)
+            // Hitung Countdown
+            val diffMillis = if (targetTime != null) targetTime.time - now.time else 0L
 
-        // Cari waktu sholat berikutnya
-        var nextPrayer = prayerTimes.nextPrayer()
-        var targetTime: Date? = null
-        var prayerName = ""
+            val countdownText = if (diffMillis > 0) {
+                val hours = diffMillis / (1000 * 60 * 60)
+                val minutes = (diffMillis / (1000 * 60)) % 60
+                val seconds = (diffMillis / 1000) % 60
 
-        if (nextPrayer == Prayer.NONE) {
-            // Jika hari ini sudah lewat Isya, targetnya adalah Subuh besok
-            val tomorrow = Date(now.time + 86400000) // + 1 hari
-            val tomorrowComponents = DateComponents.from(tomorrow)
-            val tomorrowPrayerTimes = PrayerTimes(coordinates, tomorrowComponents, params)
-
-            nextPrayer = Prayer.FAJR
-            targetTime = tomorrowPrayerTimes.fajr
-            prayerName = "Fajr \u2728"
-        } else {
-            // Ambil waktu berdasarkan tipe sholat
-            targetTime = prayerTimes.timeForPrayer(nextPrayer)
-            prayerName = when(nextPrayer) {
-                Prayer.FAJR -> "Fajr \u2728"
-                Prayer.SUNRISE -> "Syuruq \u2600"
-                Prayer.DHUHR -> "Dhuhr \uD83C\uDF24"
-                Prayer.ASR -> "Asr \uD83C\uDF25"
-                Prayer.MAGHRIB -> "Maghrib \uD83C\uDF05"
-                Prayer.ISHA -> "Isha'a \uD83C\uDF19"
-                else -> "--"
-            }
-        }
-
-        // Hitung Countdown
-        val diffMillis = if (targetTime != null) targetTime.time - now.time else 0L
-
-        val countdownText = if (diffMillis > 0) {
-            val hours = diffMillis / (1000 * 60 * 60)
-            val minutes = (diffMillis / (1000 * 60)) % 60
-            val seconds = (diffMillis / 1000) % 60
-
-            if (hours > 0) {
-                String.format("in %dh %dm", hours, minutes)
+                if (hours > 0) {
+                    String.format("in %dh %dm", hours, minutes)
+                } else {
+                    String.format("in %dm %ds", minutes, seconds)
+                }
             } else {
-                String.format("in %dm %ds", minutes, seconds)
+                "Now"
             }
-        } else {
-            "Now"
+
+            // Format waktu sholat (misal: 18:30)
+            val timeFormatter = java.text.SimpleDateFormat("HH:mm", Locale.getDefault())
+            val formattedTime = if (targetTime != null) timeFormatter.format(targetTime) else "--:--"
+
+            _uiState.value = _uiState.value.copy(
+                nextPrayerName = nextPrayerName,
+                nextPrayerTime = formattedTime,
+                timeToNextPrayer = countdownText
+            )
+        } catch (e: Exception) {
+            e.printStackTrace()
+            // Fallback UI or log
+            _uiState.value = _uiState.value.copy(
+                nextPrayerName = "Error",
+                timeToNextPrayer = "Retry..."
+            )
         }
-
-        // Format waktu sholat (misal: 18:30)
-        val timeFormatter = java.text.SimpleDateFormat("HH:mm", Locale.getDefault())
-        val formattedTime = if (targetTime != null) timeFormatter.format(targetTime) else "--:--"
-
-        _uiState.value = _uiState.value.copy(
-            nextPrayerName = prayerName,
-            nextPrayerTime = formattedTime,
-            timeToNextPrayer = countdownText
-        )
     }
 
     private fun updateDateInfo() {

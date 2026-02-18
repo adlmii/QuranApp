@@ -1,5 +1,6 @@
 package com.example.quranapp.ui.components
 
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -15,6 +16,7 @@ import com.example.quranapp.ui.navigation.Screen
 import com.example.quranapp.ui.theme.DeepEmerald
 import com.example.quranapp.ui.theme.LightEmerald
 import com.example.quranapp.ui.theme.White
+import androidx.compose.ui.res.painterResource
 
 @Composable
 fun BottomNavBar(navController: NavHostController) {
@@ -38,13 +40,31 @@ fun BottomNavBar(navController: NavHostController) {
             val contentColor = if (isSelected) LightEmerald else White.copy(alpha = 0.5f)
 
             NavigationBarItem(
+
                 icon = {
-                    Icon(
-                        imageVector = screen.icon,
-                        contentDescription = screen.title,
-                        tint = contentColor,
-                        modifier = Modifier.size(if (isSelected) 28.dp else 24.dp)
-                    )
+                    val iconSize = if (screen == Screen.Prayers) 22.dp else 26.dp
+                    // Shift Prayer icon down slightly to center it visually if the custom asset feels "high"
+                    val modifier = if (screen == Screen.Prayers) {
+                        Modifier.padding(top = 4.dp).size(iconSize)
+                    } else {
+                        Modifier.size(iconSize)
+                    }
+
+                    if (screen.iconRes != null) {
+                        Icon(
+                            painter = painterResource(id = screen.iconRes),
+                            contentDescription = screen.title,
+                            tint = contentColor,
+                            modifier = modifier
+                        )
+                    } else if (screen.icon != null) {
+                        Icon(
+                            imageVector = screen.icon,
+                            contentDescription = screen.title,
+                            tint = contentColor,
+                            modifier = modifier
+                        )
+                    }
                 },
                 label = {
                     Text(

@@ -196,8 +196,7 @@ fun PrayerItem(
             Spacer(modifier = Modifier.width(10.dp))
 
             // Time
-            // User: "ganti warna teks jam-nya jadi abu-abu" if prayed
-            val timeColor = if (isPrayed) TextGray else White.copy(alpha = if (isNext) 1f else contentAlpha * 0.7f)
+            val timeColor = White.copy(alpha = if (isNext) 1f else contentAlpha * 0.7f)
             
             Text(
                 text = time,

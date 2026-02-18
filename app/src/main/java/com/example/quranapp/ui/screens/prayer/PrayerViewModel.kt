@@ -5,12 +5,10 @@ import android.location.Geocoder
 import android.os.Build
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.batoulapps.adhan.CalculationMethod
-import com.batoulapps.adhan.Coordinates
-import com.batoulapps.adhan.Madhab
 import com.batoulapps.adhan.Prayer
 import com.batoulapps.adhan.PrayerTimes
-import com.batoulapps.adhan.data.DateComponents
+import com.example.quranapp.data.repository.PrayerRepository
+import com.example.quranapp.data.repository.PrayerSchedule
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -142,91 +140,73 @@ class PrayerViewModel : ViewModel() {
         }
     }
 
+    private val prayerRepository = PrayerRepository()
+
     private fun calculatePrayerTimes() {
-        val coordinates = Coordinates(lat, lon)
-        val params = CalculationMethod.SINGAPORE.parameters
-        params.madhab = Madhab.SHAFI
+        try {
+            val schedule = prayerRepository.calculatePrayerTimes(lat, lon)
+            
+            val nextPrayer = schedule.nextPrayer
+            val nextPrayerTimeDate = schedule.nextPrayerTime
+            val now = System.currentTimeMillis()
 
-        val now = System.currentTimeMillis()
-        val dateComponents = DateComponents.from(Date())
-        val prayerTimes = PrayerTimes(coordinates, dateComponents, params)
+            // Hitung Countdown
+            val diffMillis = if (nextPrayerTimeDate != null) nextPrayerTimeDate.time - now else 0L
+            val countdownText = if (diffMillis > 0) {
+                val hours = diffMillis / (1000 * 60 * 60)
+                val minutes = (diffMillis / (1000 * 60)) % 60
+                val seconds = (diffMillis / 1000) % 60
 
-        var nextPrayer = prayerTimes.nextPrayer()
-        var nextPrayerTimeDate = prayerTimes.timeForPrayer(nextPrayer)
+                if (hours > 0) "in ${hours}h ${minutes}m" else "in ${minutes}m ${seconds}s"
+            } else {
+                "Now"
+            }
 
-        if (nextPrayer == Prayer.NONE || nextPrayerTimeDate == null) {
-            val tomorrowDate = Date(now + (24 * 60 * 60 * 1000))
-            val tomorrowComponents = DateComponents.from(tomorrowDate)
-            val tomorrowPrayerTimes = PrayerTimes(coordinates, tomorrowComponents, params)
+            val formatter = SimpleDateFormat("h:mm a", Locale.ENGLISH)
+            val imsakTime = schedule.imsak
+            val sunriseTime = schedule.sunrise
 
-            nextPrayer = Prayer.FAJR
-            nextPrayerTimeDate = tomorrowPrayerTimes.timeForPrayer(Prayer.FAJR)
-        }
+            val currentList = _uiState.value.prayerList
+            val prayerTimes = schedule.prayerTimes
 
-        val diffMillis = if (nextPrayerTimeDate != null) nextPrayerTimeDate.time - now else 0L
-        val countdownText = if (diffMillis > 0) {
-            val hours = diffMillis / (1000 * 60 * 60)
-            val minutes = (diffMillis / (1000 * 60)) % 60
-            val seconds = (diffMillis / 1000) % 60
-
-            if (hours > 0) "in ${hours}h ${minutes}m" else "in ${minutes}m ${seconds}s"
-        } else {
-            "Now"
-        }
-
-        val formatter = SimpleDateFormat("h:mm a", Locale.ENGLISH)
-
-        // Imsak (10 min before Fajr) & Sunrise
-        val imsakTime = Date(prayerTimes.fajr.time - (10 * 60 * 1000))
-        val sunriseTime = prayerTimes.sunrise
-
-        val currentList = _uiState.value.prayerList
-
-        val rawList = listOf(
-            Triple("Fajr", prayerTimes.fajr, Prayer.FAJR),
-            Triple("Dzuhur", prayerTimes.dhuhr, Prayer.DHUHR),
-            Triple("Asr", prayerTimes.asr, Prayer.ASR),
-            Triple("Maghrib", prayerTimes.maghrib, Prayer.MAGHRIB),
-            Triple("Isha'a", prayerTimes.isha, Prayer.ISHA)
-        )
-
-        val uiList = rawList.mapIndexed { index, (nameIndo, timeDate, type) ->
-            val wasPrayed = if (index < currentList.size) currentList[index].isPrayed else false
-            val isPassed = now >= timeDate.time
-
-            PrayerItemState(
-                name = mapPrayerName(type),
-                time = formatter.format(timeDate).lowercase(),
-                isNext = (nextPrayer == type),
-                isPrayed = wasPrayed,
-                isPassed = isPassed,
-                countdown = if (nextPrayer == type) countdownText else ""
+            val rawList = listOf(
+                Triple("Fajr", prayerTimes.fajr, Prayer.FAJR),
+                Triple("Dzuhur", prayerTimes.dhuhr, Prayer.DHUHR),
+                Triple("Asr", prayerTimes.asr, Prayer.ASR),
+                Triple("Maghrib", prayerTimes.maghrib, Prayer.MAGHRIB),
+                Triple("Isha'a", prayerTimes.isha, Prayer.ISHA)
             )
-        }
 
-        val formattedNextTime = if (nextPrayerTimeDate != null) {
-            SimpleDateFormat("HH:mm", Locale.getDefault()).format(nextPrayerTimeDate)
-        } else "--:--"
+            val uiList = rawList.mapIndexed { index, (nameIndo, timeDate, type) ->
+                val wasPrayed = if (index < currentList.size) currentList[index].isPrayed else false
+                val isPassed = now >= timeDate.time
 
-        _uiState.value = _uiState.value.copy(
-            prayerList = uiList,
-            nextPrayerName = mapPrayerName(nextPrayer),
-            nextPrayerTime = formattedNextTime,
-            timeToNextPrayer = countdownText,
-            imsakTime = formatter.format(imsakTime).lowercase(),
-            sunriseTime = formatter.format(sunriseTime).lowercase(),
-            canMarkAll = uiList.any { it.isPassed && !it.isPrayed }
-        )
-    }
+                PrayerItemState(
+                    name = prayerRepository.getPrayerName(type),
+                    time = formatter.format(timeDate).lowercase(),
+                    isNext = (nextPrayer == type),
+                    isPrayed = wasPrayed,
+                    isPassed = isPassed,
+                    countdown = if (nextPrayer == type) countdownText else ""
+                )
+            }
 
-    private fun mapPrayerName(prayer: Prayer): String {
-        return when (prayer) {
-            Prayer.FAJR -> "Fajr \u2728"
-            Prayer.DHUHR -> "Dhuhr \uD83C\uDF24"
-            Prayer.ASR -> "Asr \uD83C\uDF25"
-            Prayer.MAGHRIB -> "Maghrib \uD83C\uDF05"
-            Prayer.ISHA -> "Isha'a \uD83C\uDF19"
-            else -> "Fajr \u2728"
+            val formattedNextTime = if (nextPrayerTimeDate != null) {
+                SimpleDateFormat("HH:mm", Locale.getDefault()).format(nextPrayerTimeDate)
+            } else "--:--"
+
+            _uiState.value = _uiState.value.copy(
+                prayerList = uiList,
+                nextPrayerName = prayerRepository.getPrayerName(nextPrayer),
+                nextPrayerTime = formattedNextTime,
+                timeToNextPrayer = countdownText,
+                imsakTime = formatter.format(imsakTime).lowercase(),
+                sunriseTime = formatter.format(sunriseTime).lowercase(),
+                canMarkAll = uiList.any { it.isPassed && !it.isPrayed }
+            )
+        } catch (e: Exception) {
+            e.printStackTrace()
+            // Silent fail or UI state update
         }
     }
 }

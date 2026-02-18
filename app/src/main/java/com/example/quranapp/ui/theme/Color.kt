@@ -18,3 +18,13 @@ val TextBlack = Color(0xFF212121) // Teks utama
 val TextGray = Color(0xFF757575) // Teks deskripsi/sub-text
 val White = Color(0xFFFFFFFF)
 val CreamBackground = Color(0xFFFAF8EF) // Warm cream background (More visible)
+
+// Accents & Special
+val GoldAccent = Color(0xFFD4AF37)
+val QiblaActive = Color(0xFFFFD700) // Gold-ish, brighter
+val CompassShadow = Color(0x40000000)
+
+// Gradients
+val DeepEmeraldGradient = androidx.compose.ui.graphics.Brush.linearGradient(
+    colors = listOf(DeepEmerald, DeepEmeraldDark)
+)

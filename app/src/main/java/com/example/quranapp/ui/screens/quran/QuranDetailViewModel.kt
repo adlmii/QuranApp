@@ -41,9 +41,7 @@ class QuranDetailViewModel(application: Application) : AndroidViewModel(applicat
                 _uiState.value = _uiState.value.copy(sessionProgress = newProgress)
                 
                 if (newProgress >= 5) {
-                    _uiState.value = _uiState.value.copy(showReward = true)
-                    delay(5000) // Show reward for 5 seconds
-                    _uiState.value = _uiState.value.copy(showReward = false)
+                    // Reached goal, no animation
                 }
             }
         }

@@ -162,10 +162,7 @@ fun QuranDetailScreen(
                 }
             }
             
-            // Reward Overlay
-            if (uiState.showReward) {
-                Fireworks(modifier = Modifier.fillMaxSize())
-            }
+            // Reward Overlay Removed
         }
     }
 }
