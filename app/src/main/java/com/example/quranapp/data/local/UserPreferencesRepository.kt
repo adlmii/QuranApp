@@ -3,6 +3,7 @@ package com.example.quranapp.data.local
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -21,6 +22,15 @@ class UserPreferencesRepository(private val context: Context) {
         private val KEY_TARGET_MINUTES = intPreferencesKey("quran_target_minutes")
         private val KEY_TODAY_MINUTES = intPreferencesKey("quran_today_minutes")
         private val KEY_LAST_SAVED_DATE = stringPreferencesKey("last_saved_date")
+
+        // Per-prayer notification toggles
+        private val PRAYER_NOTIFICATION_KEYS = mapOf(
+            "Fajr ✨" to booleanPreferencesKey("notify_fajr"),
+            "Dhuhr 🌤" to booleanPreferencesKey("notify_dhuhr"),
+            "Asr 🌥" to booleanPreferencesKey("notify_asr"),
+            "Maghrib 🌅" to booleanPreferencesKey("notify_maghrib"),
+            "Isha'a 🌙" to booleanPreferencesKey("notify_isha")
+        )
     }
 
     /**
@@ -37,9 +47,18 @@ class UserPreferencesRepository(private val context: Context) {
         val savedDate = prefs[KEY_LAST_SAVED_DATE] ?: ""
         val today = getTodayString()
         if (savedDate != today) {
-            0 // Hari berbeda → belum ada progres
+            0
         } else {
             prefs[KEY_TODAY_MINUTES] ?: 0
+        }
+    }
+
+    /**
+     * Observe per-prayer notification preferences as Map<PrayerName, Boolean>
+     */
+    val notificationPrefs: Flow<Map<String, Boolean>> = context.dataStore.data.map { prefs ->
+        PRAYER_NOTIFICATION_KEYS.mapValues { (_, key) ->
+            prefs[key] ?: true // Default: notifications ON
         }
     }
 
@@ -53,7 +72,6 @@ class UserPreferencesRepository(private val context: Context) {
             val savedDate = prefs[KEY_LAST_SAVED_DATE] ?: ""
 
             if (savedDate != today) {
-                // Hari berganti → reset progres
                 prefs[KEY_TODAY_MINUTES] = 1
                 prefs[KEY_LAST_SAVED_DATE] = today
             } else {
@@ -69,6 +87,16 @@ class UserPreferencesRepository(private val context: Context) {
     suspend fun setTarget(minutes: Int) {
         context.dataStore.edit { prefs ->
             prefs[KEY_TARGET_MINUTES] = minutes
+        }
+    }
+
+    /**
+     * Toggle notification for a specific prayer
+     */
+    suspend fun setNotificationPref(prayerName: String, enabled: Boolean) {
+        val key = PRAYER_NOTIFICATION_KEYS[prayerName] ?: return
+        context.dataStore.edit { prefs ->
+            prefs[key] = enabled
         }
     }
 

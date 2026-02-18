@@ -2,6 +2,7 @@ package com.example.quranapp.ui.screens.prayer
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -58,11 +59,23 @@ fun PrayerScreen(
         }
     }
 
+    // Request notification permission on Android 13+
+    val requestNotifPermission = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { _ -> }
+
     LaunchedEffect(Unit) {
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             getLocation()
         } else {
             requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+        }
+
+        // Request POST_NOTIFICATIONS on Android 13+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                requestNotifPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
         }
     }
 
@@ -98,6 +111,8 @@ fun PrayerScreen(
                         prayerName = uiState.nextPrayerName,
                         prayerTime = uiState.nextPrayerTime,
                         countDown = uiState.timeToNextPrayer,
+                        isNow = uiState.isCurrentPrayerNow,
+                        nowLabel = uiState.currentPrayerLabel,
                         modifier = Modifier.weight(1f)
                     )
 
@@ -131,10 +146,15 @@ fun PrayerScreen(
                     time = prayer.time,
                     isPrayed = prayer.isPrayed,
                     isNext = prayer.isNext,
+                    isNow = prayer.isNow,
                     isPassed = prayer.isPassed,
+                    isNotificationOn = prayer.isNotificationOn,
                     countdown = prayer.countdown,
                     onCheckClick = {
                         viewModel.togglePrayed(index)
+                    },
+                    onNotificationToggle = {
+                        viewModel.toggleNotification(index)
                     }
                 )
             }

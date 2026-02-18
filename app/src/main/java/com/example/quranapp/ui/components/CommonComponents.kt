@@ -1,5 +1,11 @@
 package com.example.quranapp.ui.components
 
+import androidx.compose.animation.core.InfiniteTransition
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -7,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -77,9 +84,24 @@ fun PrayerCard(
     prayerName: String,
     prayerTime: String,
     countDown: String,
+    isNow: Boolean = false,
+    nowLabel: String = "",
     modifier: Modifier = Modifier
 ) {
-    val isNow = countDown == "Now"
+    // Pulse animation for "Now" state
+    val pulseAlpha: Float = if (isNow) {
+        val infiniteTransition = rememberInfiniteTransition(label = "nowPulse")
+        val alpha by infiniteTransition.animateFloat(
+            initialValue = 0.6f,
+            targetValue = 1f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(1000),
+                repeatMode = RepeatMode.Reverse
+            ),
+            label = "pulseAlpha"
+        )
+        alpha
+    } else 1f
 
     Card(
         modifier = modifier
@@ -111,7 +133,10 @@ fun PrayerCard(
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(12.dp))
-                        .background(if (isNow) GoldAccent else White.copy(alpha = 0.15f))
+                        .background(
+                            if (isNow) GoldAccent.copy(alpha = pulseAlpha)
+                            else White.copy(alpha = 0.15f)
+                        )
                         .padding(horizontal = 12.dp, vertical = 6.dp)
                 ) {
                     Text(
@@ -125,7 +150,7 @@ fun PrayerCard(
                 // Prayer name + time
                 Column {
                     Text(
-                        text = prayerName,
+                        text = if (isNow && nowLabel.isNotEmpty()) nowLabel else prayerName,
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Medium,
                         color = White.copy(alpha = 0.8f)
@@ -133,23 +158,23 @@ fun PrayerCard(
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = prayerTime,
-                        style = MaterialTheme.typography.displaySmall, // Bigger font
+                        style = MaterialTheme.typography.displaySmall,
                         fontWeight = FontWeight.Bold,
                         color = White,
-                        fontSize = 32.sp // Custom override for better fit
+                        fontSize = 32.sp
                     )
                 }
 
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.Timer,
-                            contentDescription = null,
-                            tint = GoldAccent,
-                            modifier = Modifier.size(14.dp)
-                        )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Timer,
+                        contentDescription = null,
+                        tint = GoldAccent,
+                        modifier = Modifier.size(14.dp)
+                    )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = countDown,
+                        text = if (isNow) "Sedang Berlangsung" else countDown,
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Medium,
                         color = GoldAccent

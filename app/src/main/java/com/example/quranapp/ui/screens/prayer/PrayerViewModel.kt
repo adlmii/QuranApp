@@ -10,7 +10,9 @@ import com.batoulapps.adhan.Prayer
 import com.batoulapps.adhan.PrayerTimes
 import com.example.quranapp.data.repository.PrayerRepository
 import com.example.quranapp.data.local.QuranAppDatabase
+import com.example.quranapp.data.local.UserPreferencesRepository
 import com.example.quranapp.data.local.entity.PrayerStatusEntity
+import com.example.quranapp.notification.PrayerAlarmScheduler
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -32,6 +34,7 @@ data class PrayerItemState(
     val isPrayed: Boolean = false,
     val isNotificationOn: Boolean = true,
     val isNext: Boolean = false,
+    val isNow: Boolean = false,
     val isPassed: Boolean = false,
     val countdown: String = ""
 )
@@ -43,6 +46,8 @@ data class PrayerUiState(
     val nextPrayerName: String = "--",
     val nextPrayerTime: String = "--:--",
     val timeToNextPrayer: String = "Calculating...",
+    val isCurrentPrayerNow: Boolean = false,
+    val currentPrayerLabel: String = "",
     val imsakTime: String = "--:--",
     val sunriseTime: String = "--:--",
     val gregorianDate: String = "",
@@ -61,13 +66,18 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
 
     private val prayerRepository = PrayerRepository()
     private val prayerStatusDao = QuranAppDatabase.getInstance(application).prayerStatusDao()
+    private val userPrefs = UserPreferencesRepository(application)
+    private val alarmScheduler = PrayerAlarmScheduler(application)
 
     // In-memory cache of prayer statuses loaded from DB
     private val prayedStatusMap = mutableMapOf<String, Boolean>()
+    // In-memory cache of notification prefs
+    private val notificationPrefsMap = mutableMapOf<String, Boolean>()
 
     init {
         updateDateInfo()
         loadPrayerStatuses()
+        observeNotificationPrefs()
         startPrayerCountdown()
     }
 
@@ -116,7 +126,19 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                 statusList.forEach { entity ->
                     prayedStatusMap[entity.prayerName] = entity.isPrayed
                 }
-                // Re-calculate to merge the loaded statuses with prayer times
+                calculatePrayerTimes()
+            }
+        }
+    }
+
+    /**
+     * Observe notification preferences from DataStore
+     */
+    private fun observeNotificationPrefs() {
+        viewModelScope.launch {
+            userPrefs.notificationPrefs.collect { prefs ->
+                notificationPrefsMap.clear()
+                notificationPrefsMap.putAll(prefs)
                 calculatePrayerTimes()
             }
         }
@@ -126,8 +148,8 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
         val currentList = _uiState.value.prayerList.toMutableList()
         val item = currentList[index]
         
-        // Hanya bisa checklist jika waktu sholat sudah lewat
-        if (item.isPassed) {
+        // Allow checklist if prayer is passed or currently in "Now" state
+        if (item.isPassed || item.isNow) {
             val newStatus = !item.isPrayed
             currentList[index] = item.copy(isPrayed = newStatus)
             val newCount = currentList.count { it.isPrayed }
@@ -135,7 +157,7 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
             _uiState.value = _uiState.value.copy(
                 prayerList = currentList,
                 prayedCount = newCount,
-                canMarkAll = currentList.any { it.isPassed && !it.isPrayed }
+                canMarkAll = currentList.any { (it.isPassed || it.isNow) && !it.isPrayed }
             )
 
             // Persist to Room
@@ -151,9 +173,22 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
+    fun toggleNotification(index: Int) {
+        val currentList = _uiState.value.prayerList.toMutableList()
+        val item = currentList[index]
+        val newStatus = !item.isNotificationOn
+
+        currentList[index] = item.copy(isNotificationOn = newStatus)
+        _uiState.value = _uiState.value.copy(prayerList = currentList)
+
+        viewModelScope.launch {
+            userPrefs.setNotificationPref(item.name, newStatus)
+        }
+    }
+
     fun markAllPrayed() {
         val currentList = _uiState.value.prayerList.map { 
-            if (it.isPassed) it.copy(isPrayed = true) else it
+            if (it.isPassed || it.isNow) it.copy(isPrayed = true) else it
         }
         _uiState.value = _uiState.value.copy(
             prayerList = currentList,
@@ -189,7 +224,7 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
             val nextPrayerTimeDate = schedule.nextPrayerTime
             val now = System.currentTimeMillis()
 
-            // Hitung Countdown
+            // Countdown to next prayer
             val diffMillis = if (nextPrayerTimeDate != null) nextPrayerTimeDate.time - now else 0L
             val countdownText = if (diffMillis > 0) {
                 val hours = diffMillis / (1000 * 60 * 60)
@@ -218,16 +253,23 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
             val uiList = rawList.map { (_, timeDate, type) ->
                 val prayerName = prayerRepository.getPrayerName(type)
                 val isPassed = now >= timeDate.time
-                // Check persisted status from Room
+                val isNow = schedule.isInGracePeriod && schedule.currentPrayer == type
                 val wasPrayed = prayedStatusMap[prayerName] ?: false
+                val isNotifOn = notificationPrefsMap[prayerName] ?: true
 
                 PrayerItemState(
                     name = prayerName,
                     time = formatter.format(timeDate).lowercase(),
-                    isNext = (nextPrayer == type),
+                    isNext = (nextPrayer == type && !isNow),
+                    isNow = isNow,
                     isPrayed = wasPrayed,
-                    isPassed = isPassed,
-                    countdown = if (nextPrayer == type) countdownText else ""
+                    isPassed = isPassed && !isNow,
+                    isNotificationOn = isNotifOn,
+                    countdown = when {
+                        isNow -> "Now"
+                        nextPrayer == type -> countdownText
+                        else -> ""
+                    }
                 )
             }
 
@@ -235,19 +277,64 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                 SimpleDateFormat("HH:mm", Locale.getDefault()).format(nextPrayerTimeDate)
             } else "--:--"
 
+            // Determine card label for PrayerCard
+            val isNowActive = schedule.isInGracePeriod && schedule.currentPrayer != null
+            val currentLabel = if (isNowActive && schedule.currentPrayer != null) {
+                prayerRepository.getPrayerName(schedule.currentPrayer)
+            } else ""
+
+            // When in grace period, show current prayer's time on the card
+            val cardTime = if (isNowActive && schedule.currentPrayer != null) {
+                val currentPrayerDate = prayerTimes.timeForPrayer(schedule.currentPrayer)
+                if (currentPrayerDate != null) {
+                    SimpleDateFormat("HH:mm", Locale.getDefault()).format(currentPrayerDate)
+                } else formattedNextTime
+            } else formattedNextTime
+
+            val cardName = if (isNowActive) currentLabel
+                else prayerRepository.getPrayerName(nextPrayer)
+
             _uiState.value = _uiState.value.copy(
                 prayerList = uiList,
-                nextPrayerName = prayerRepository.getPrayerName(nextPrayer),
-                nextPrayerTime = formattedNextTime,
+                nextPrayerName = cardName,
+                nextPrayerTime = cardTime,
                 timeToNextPrayer = countdownText,
+                isCurrentPrayerNow = isNowActive,
+                currentPrayerLabel = currentLabel,
                 imsakTime = formatter.format(imsakTime).lowercase(),
                 sunriseTime = formatter.format(sunriseTime).lowercase(),
                 prayedCount = uiList.count { it.isPrayed },
-                canMarkAll = uiList.any { it.isPassed && !it.isPrayed }
+                canMarkAll = uiList.any { (it.isPassed || it.isNow) && !it.isPrayed }
             )
+
+            // Schedule notification alarms
+            scheduleAlarms(schedule)
+
         } catch (e: Exception) {
             e.printStackTrace()
         }
+    }
+
+    private fun scheduleAlarms(schedule: com.example.quranapp.data.repository.PrayerSchedule) {
+        val prayerTimes = schedule.prayerTimes
+        // Triple: (Prayer, Date, skipPreReminder)
+        val prayers = listOf(
+            Triple(Prayer.FAJR, prayerTimes.fajr, false),
+            Triple(Prayer.SUNRISE, prayerTimes.sunrise, true), // Sunrise: only exact time, no pre-reminder
+            Triple(Prayer.DHUHR, prayerTimes.dhuhr, false),
+            Triple(Prayer.ASR, prayerTimes.asr, false),
+            Triple(Prayer.MAGHRIB, prayerTimes.maghrib, false),
+            Triple(Prayer.ISHA, prayerTimes.isha, false)
+        )
+
+        val enabledPrayers = prayers.filter { (type, _, _) ->
+            val name = prayerRepository.getPrayerName(type)
+            notificationPrefsMap[name] ?: true
+        }.map { (type, time, skipPre) ->
+            Triple(prayerRepository.getPrayerNameClean(type), time, skipPre)
+        }
+
+        alarmScheduler.scheduleAll(enabledPrayers)
     }
 
     private fun getTodayString(): String {

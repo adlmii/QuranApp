@@ -1,5 +1,11 @@
 package com.example.quranapp.ui.screens.prayer.components
 
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -11,6 +17,7 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.NotificationsOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -78,30 +85,54 @@ fun PrayerItem(
     time: String,
     isPrayed: Boolean,
     isNext: Boolean = false,
+    isNow: Boolean = false,
     isPassed: Boolean = false,
+    isNotificationOn: Boolean = true,
     countdown: String = "",
-    onCheckClick: () -> Unit
+    onCheckClick: () -> Unit,
+    onNotificationToggle: () -> Unit = {}
 ) {
-    val containerColor = if (isNext) DeepEmerald else DeepEmerald
-    // User requested 0.7f alpha for prayed items
-    val contentAlpha = if (isPrayed) 0.7f else if (isPassed || isNext) 1f else 0.35f 
+    val containerColor = DeepEmerald
+    val contentAlpha = when {
+        isNow -> 1f
+        isPrayed -> 0.7f
+        isPassed || isNext -> 1f
+        else -> 0.35f
+    }
 
-    val borderStroke = if (isNext) {
-        androidx.compose.foundation.BorderStroke(2.dp, MediumEmerald) // Thicker, solid border for Next
-    } else {
-        null
+    // Pulse animation for "Now" state
+    val borderAlpha: Float = if (isNow) {
+        val infiniteTransition = rememberInfiniteTransition(label = "nowItemPulse")
+        val alpha by infiniteTransition.animateFloat(
+            initialValue = 0.5f,
+            targetValue = 1f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(1000),
+                repeatMode = RepeatMode.Reverse
+            ),
+            label = "borderPulse"
+        )
+        alpha
+    } else 1f
+
+    val borderStroke = when {
+        isNow -> BorderStroke(2.5.dp, GoldAccent.copy(alpha = borderAlpha))
+        isNext -> BorderStroke(2.dp, MediumEmerald)
+        else -> null
     }
 
     Card(
         modifier = Modifier.fillMaxWidth().run {
-             // Optional: apply alpha to the whole card if prayed?
-             // User said "buat kartunya sedikit lebih transparan"
              if(isPrayed) this.alpha(0.7f) else this
         },
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = containerColor),
         border = borderStroke,
-        elevation = CardDefaults.cardElevation(defaultElevation = if (isNext) 4.dp else 0.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = when {
+            isNow -> 6.dp
+            isNext -> 4.dp
+            else -> 0.dp
+        })
     ) {
         Row(
             modifier = Modifier
@@ -115,9 +146,10 @@ fun PrayerItem(
                     .size(28.dp)
                     .clip(CircleShape)
                     .background(
-                        if (isPrayed) MediumEmerald else White.copy(alpha = if (isPassed) 0.12f else 0.05f)
+                        if (isPrayed) MediumEmerald
+                        else White.copy(alpha = if (isPassed || isNow) 0.12f else 0.05f)
                     )
-                    .clickable(enabled = isPassed || isNext) { onCheckClick() }, // Allow checking if passed or next
+                    .clickable(enabled = isPassed || isNext || isNow) { onCheckClick() },
                 contentAlignment = Alignment.Center
             ) {
                 if (isPrayed) {
@@ -137,12 +169,27 @@ fun PrayerItem(
                 text = name,
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Medium,
-                color = White.copy(alpha = if (isNext) 1f else contentAlpha),
+                color = White.copy(alpha = if (isNext || isNow) 1f else contentAlpha),
                 modifier = Modifier.weight(1f)
             )
 
-            // Countdown badge (for next prayer)
-            if (isNext && countdown.isNotEmpty()) {
+            // "Now" badge or countdown badge
+            if (isNow && countdown.isNotEmpty()) {
+                Spacer(modifier = Modifier.width(8.dp))
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(GoldAccent.copy(alpha = 0.3f))
+                        .padding(horizontal = 8.dp, vertical = 2.dp)
+                ) {
+                    Text(
+                        text = "Now",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = GoldAccent
+                    )
+                }
+            } else if (isNext && countdown.isNotEmpty()) {
                 Spacer(modifier = Modifier.width(8.dp))
                 Box(
                     modifier = Modifier
@@ -162,7 +209,7 @@ fun PrayerItem(
             Spacer(modifier = Modifier.width(10.dp))
 
             // Time
-            val timeColor = White.copy(alpha = if (isNext) 1f else contentAlpha * 0.7f)
+            val timeColor = White.copy(alpha = if (isNext || isNow) 1f else contentAlpha * 0.7f)
             
             Text(
                 text = time,
@@ -173,12 +220,14 @@ fun PrayerItem(
 
             Spacer(modifier = Modifier.width(12.dp))
 
-            // Notification icon
+            // Notification icon (clickable toggle)
             Icon(
-                imageVector = if (isPrayed || isNext) Icons.Default.Notifications else Icons.Default.NotificationsOff,
-                contentDescription = "Notification",
-                tint = White.copy(alpha = 0.4f),
-                modifier = Modifier.size(20.dp)
+                imageVector = if (isNotificationOn) Icons.Default.Notifications else Icons.Default.NotificationsOff,
+                contentDescription = "Toggle Notification",
+                tint = if (isNotificationOn) GoldAccent.copy(alpha = 0.7f) else White.copy(alpha = 0.25f),
+                modifier = Modifier
+                    .size(20.dp)
+                    .clickable { onNotificationToggle() }
             )
         }
     }

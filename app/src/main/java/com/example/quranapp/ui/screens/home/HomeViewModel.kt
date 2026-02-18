@@ -31,6 +31,8 @@ data class HomeUiState(
     val nextPrayerName: String = "--",
     val nextPrayerTime: String = "--:--",
     val timeToNextPrayer: String = "Calculating...",
+    val isCurrentPrayerNow: Boolean = false,
+    val currentPrayerLabel: String = "",
     val location: String = "Jakarta",
     val lat: Double = -6.1753,
     val lon: Double = 106.8312,
@@ -119,10 +121,29 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             val timeFormatter = java.text.SimpleDateFormat("HH:mm", Locale.getDefault())
             val formattedTime = if (targetTime != null) timeFormatter.format(targetTime) else "--:--"
 
+            // Grace period awareness
+            val isNowActive = schedule.isInGracePeriod && schedule.currentPrayer != null
+            val currentLabel = if (isNowActive && schedule.currentPrayer != null) {
+                prayerRepository.getPrayerName(schedule.currentPrayer)
+            } else ""
+
+            // When in grace period, show current prayer's time on the card
+            val cardTime = if (isNowActive && schedule.currentPrayer != null) {
+                val currentPrayerDate = schedule.prayerTimes.timeForPrayer(schedule.currentPrayer)
+                if (currentPrayerDate != null) {
+                    timeFormatter.format(currentPrayerDate)
+                } else formattedTime
+            } else formattedTime
+
+            val cardName = if (isNowActive) currentLabel
+                else nextPrayerName
+
             _uiState.value = _uiState.value.copy(
-                nextPrayerName = nextPrayerName,
-                nextPrayerTime = formattedTime,
-                timeToNextPrayer = countdownText
+                nextPrayerName = cardName,
+                nextPrayerTime = cardTime,
+                timeToNextPrayer = countdownText,
+                isCurrentPrayerNow = isNowActive,
+                currentPrayerLabel = currentLabel
             )
         } catch (e: Exception) {
             e.printStackTrace()

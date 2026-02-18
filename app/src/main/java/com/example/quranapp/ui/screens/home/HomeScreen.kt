@@ -99,6 +99,8 @@ fun HomeScreen(
                     prayerName = uiState.nextPrayerName,
                     prayerTime = uiState.nextPrayerTime,
                     countDown = uiState.timeToNextPrayer,
+                    isNow = uiState.isCurrentPrayerNow,
+                    nowLabel = uiState.currentPrayerLabel,
                     modifier = Modifier.weight(1f)
                 )
                 QuranProgressCard(

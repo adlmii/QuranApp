@@ -12,21 +12,40 @@ data class PrayerSchedule(
     val prayerTimes: PrayerTimes,
     val nextPrayer: Prayer,
     val nextPrayerTime: Date?,
+    val currentPrayer: Prayer?,
+    val isInGracePeriod: Boolean,
     val imsak: Date,
     val sunrise: Date
 )
 
 class PrayerRepository {
 
+    companion object {
+        const val GRACE_PERIOD_MS = 10 * 60 * 1000L // 10 minutes
+        const val PRE_REMINDER_MS = 10 * 60 * 1000L // 10 minutes before
+    }
+
     fun calculatePrayerTimes(lat: Double, lon: Double): PrayerSchedule {
         val coordinates = Coordinates(lat, lon)
-        // Use Singapore parameters as default/placeholder similar to previous code
-        val params = CalculationMethod.SINGAPORE.parameters 
+        val params = CalculationMethod.SINGAPORE.parameters
         params.madhab = Madhab.SHAFI
 
         val now = Date()
         val todayComponents = DateComponents.from(now)
         val prayerTimes = PrayerTimes(coordinates, todayComponents, params)
+
+        // Determine the current prayer (most recently entered)
+        val activePrayer = prayerTimes.currentPrayer()
+        val activePrayerTime = if (activePrayer != null && activePrayer != Prayer.NONE) {
+            prayerTimes.timeForPrayer(activePrayer)
+        } else null
+
+        // Check grace period: within 10 minutes of the active prayer's start
+        val isInGracePeriod = if (activePrayerTime != null) {
+            (now.time - activePrayerTime.time) <= GRACE_PERIOD_MS
+        } else false
+
+        val currentPrayer = if (isInGracePeriod) activePrayer else null
 
         var nextPrayer = prayerTimes.nextPrayer()
         var nextPrayerTime = prayerTimes.timeForPrayer(nextPrayer)
@@ -49,6 +68,8 @@ class PrayerRepository {
             prayerTimes = prayerTimes,
             nextPrayer = nextPrayer,
             nextPrayerTime = nextPrayerTime,
+            currentPrayer = currentPrayer,
+            isInGracePeriod = isInGracePeriod,
             imsak = imsak,
             sunrise = sunrise
         )
@@ -57,12 +78,25 @@ class PrayerRepository {
     // Helper to map Prayer enum to Display Name
     fun getPrayerName(prayer: Prayer): String {
         return when(prayer) {
-            Prayer.FAJR -> "Fajr \u2728"
-            Prayer.SUNRISE -> "Syuruq \u2600"
-            Prayer.DHUHR -> "Dhuhr \uD83C\uDF24"
-            Prayer.ASR -> "Asr \uD83C\uDF25"
-            Prayer.MAGHRIB -> "Maghrib \uD83C\uDF05"
-            Prayer.ISHA -> "Isha'a \uD83C\uDF19"
+            Prayer.FAJR -> "Fajr ✨"
+            Prayer.SUNRISE -> "Syuruq ☀"
+            Prayer.DHUHR -> "Dhuhr 🌤"
+            Prayer.ASR -> "Asr 🌥"
+            Prayer.MAGHRIB -> "Maghrib 🌅"
+            Prayer.ISHA -> "Isha'a 🌙"
+            else -> "--"
+        }
+    }
+
+    // Clean name without emoji (for notifications)
+    fun getPrayerNameClean(prayer: Prayer): String {
+        return when(prayer) {
+            Prayer.FAJR -> "Fajr"
+            Prayer.SUNRISE -> "Syuruq"
+            Prayer.DHUHR -> "Dhuhr"
+            Prayer.ASR -> "Asr"
+            Prayer.MAGHRIB -> "Maghrib"
+            Prayer.ISHA -> "Isha'a"
             else -> "--"
         }
     }
