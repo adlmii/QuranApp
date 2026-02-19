@@ -29,6 +29,8 @@ import com.example.quranapp.ui.screens.quran.components.SmartJumpCard
 import com.example.quranapp.ui.screens.quran.components.SurahItem
 import com.example.quranapp.ui.theme.*
 import com.example.quranapp.ui.components.AppHeader
+import androidx.compose.ui.res.stringResource
+import com.example.quranapp.R
 
 @Composable
 fun QuranScreen(
@@ -60,7 +62,7 @@ fun QuranScreen(
                         viewModel.onSearchQueryChange(it) 
                         if (selectedTab != 0) selectedTab = 0
                     },
-                    placeholder = { Text("Cari surah atau ayat...", color = TextGray.copy(alpha = 0.7f)) },
+                    placeholder = { Text(stringResource(R.string.hint_search), color = TextGray.copy(alpha = 0.7f)) },
                     modifier = Modifier
                         .weight(1f)
                         .height(50.dp)
@@ -98,7 +100,7 @@ fun QuranScreen(
                     modifier = Modifier.padding(start = 4.dp)
                 ) {
                     Text(
-                        "Cancel", 
+                        text = stringResource(R.string.action_cancel), 
                         color = DeepEmerald, 
                         fontWeight = FontWeight.SemiBold,
                         style = MaterialTheme.typography.labelLarge
@@ -108,7 +110,7 @@ fun QuranScreen(
         } else {
             // ── Standard Header ──
             AppHeader(
-                title = "Al-Qur'an",
+                title = stringResource(R.string.title_quran),
                 onBackClick = { navController.popBackStack() },
                 backgroundColor = CreamBackground,
                 contentColor = DeepEmerald,
@@ -144,7 +146,7 @@ fun QuranScreen(
             }
         } else if (uiState.error != null) {
              Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(text = "Error: ${uiState.error}", color = Color.Red)
+                Text(text = stringResource(R.string.label_error, uiState.error!!), color = Color.Red)
             }
         } else {
             if (selectedTab == 0 || isSearchActive) {
@@ -200,7 +202,7 @@ fun QuranScreen(
                         } else if (uiState.ayahSearchResults.isNotEmpty()) {
                             item {
                                 Text(
-                                    text = "Hasil Ayat",
+                                    text = stringResource(R.string.title_ayah_results),
                                     style = MaterialTheme.typography.titleSmall,
                                     fontWeight = FontWeight.Bold,
                                     color = DeepEmerald,
@@ -232,7 +234,7 @@ fun QuranScreen(
                                         .padding(top = 40.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Text("Tidak ditemukan", color = TextGray)
+                                    Text(stringResource(R.string.label_no_results), color = TextGray)
                                 }
                             }
                         }
@@ -256,7 +258,7 @@ fun QuranScreen(
                     uiState.juzList.forEach { juz ->
                         item {
                             Text(
-                                text = "Juz ${juz.number}",
+                                text = "${stringResource(R.string.label_juz)} ${juz.number}",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = DeepEmerald,

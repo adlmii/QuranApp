@@ -45,7 +45,7 @@ data class PrayerUiState(
     val totalPrayer: Int = 5,
     val nextPrayerName: String = "--",
     val nextPrayerTime: String = "--:--",
-    val timeToNextPrayer: String = "Calculating...",
+    val timeToNextPrayer: String = "",
     val isCurrentPrayerNow: Boolean = false,
     val currentPrayerLabel: String = "",
     val imsakTime: String = "--:--",
@@ -117,7 +117,8 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                     _uiState.value = _uiState.value.copy(location = district)
                 }
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(location = "Unknown")
+                val unknown = getApplication<Application>().getString(com.example.quranapp.R.string.location_unknown)
+                _uiState.value = _uiState.value.copy(location = unknown)
             }
         }
     }
@@ -247,9 +248,10 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                 val minutes = (diffMillis / (1000 * 60)) % 60
                 val seconds = (diffMillis / 1000) % 60
 
-                if (hours > 0) "in ${hours}h ${minutes}m" else "in ${minutes}m ${seconds}s"
+                if (hours > 0) getApplication<Application>().getString(com.example.quranapp.R.string.countdown_hours_mins, hours, minutes) 
+                else getApplication<Application>().getString(com.example.quranapp.R.string.countdown_mins_secs, minutes, seconds)
             } else {
-                "Now"
+                getApplication<Application>().getString(com.example.quranapp.R.string.label_now)
             }
 
             val formatter = SimpleDateFormat("h:mm a", Locale.ENGLISH)
@@ -267,7 +269,7 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
             )
 
             val uiList = rawList.map { (_, timeDate, type) ->
-                val prayerName = prayerRepository.getPrayerName(type)
+                val prayerName = getPrayerNameString(type)
                 val isPassed = now >= timeDate.time
                 val isNow = schedule.isInGracePeriod && schedule.currentPrayer == type
                 val wasPrayed = prayedStatusMap[prayerName] ?: false
@@ -282,7 +284,7 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                     isPassed = isPassed && !isNow,
                     isNotificationOn = isNotifOn,
                     countdown = when {
-                        isNow -> "Now"
+                        isNow -> getApplication<Application>().getString(com.example.quranapp.R.string.label_now)
                         nextPrayer == type -> countdownText
                         else -> ""
                     }
@@ -296,7 +298,7 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
             // Determine card label for PrayerCard
             val isNowActive = schedule.isInGracePeriod && schedule.currentPrayer != null
             val currentLabel = if (isNowActive && schedule.currentPrayer != null) {
-                prayerRepository.getPrayerName(schedule.currentPrayer)
+                getPrayerNameString(schedule.currentPrayer)
             } else ""
 
             // When in grace period, show current prayer's time on the card
@@ -308,7 +310,7 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
             } else formattedNextTime
 
             val cardName = if (isNowActive) currentLabel
-                else prayerRepository.getPrayerName(nextPrayer)
+                else getPrayerNameString(nextPrayer)
 
             _uiState.value = _uiState.value.copy(
                 prayerList = uiList,
@@ -359,6 +361,19 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
             asrTime = prayerTimes.asr,
             maghribTime = prayerTimes.maghrib
         )
+    }
+
+    private fun getPrayerNameString(prayer: Prayer): String {
+        val resId = when(prayer) {
+            Prayer.FAJR -> com.example.quranapp.R.string.prayer_fajr
+            Prayer.SUNRISE -> com.example.quranapp.R.string.prayer_syuruq
+            Prayer.DHUHR -> com.example.quranapp.R.string.prayer_dhuhr
+            Prayer.ASR -> com.example.quranapp.R.string.prayer_asr
+            Prayer.MAGHRIB -> com.example.quranapp.R.string.prayer_maghrib
+            Prayer.ISHA -> com.example.quranapp.R.string.prayer_isha
+            else -> return "--"
+        }
+        return getApplication<Application>().getString(resId)
     }
 
     private fun getTodayString(): String {

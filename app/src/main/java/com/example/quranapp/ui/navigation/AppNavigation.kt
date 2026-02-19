@@ -1,5 +1,6 @@
 package com.example.quranapp.ui.navigation
 
+import HomeScreen
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -10,7 +11,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.quranapp.ui.components.BottomNavBar
-import com.example.quranapp.ui.screens.home.HomeScreen
 import com.example.quranapp.ui.screens.prayer.PrayerScreen
 import com.example.quranapp.ui.screens.quran.QuranScreen
 import com.example.quranapp.ui.screens.quran.QuranDetailScreen

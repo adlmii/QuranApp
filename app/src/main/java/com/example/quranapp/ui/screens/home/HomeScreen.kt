@@ -1,4 +1,5 @@
-package com.example.quranapp.ui.screens.home
+import androidx.compose.ui.res.stringResource
+import com.example.quranapp.R
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -19,6 +20,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.quranapp.ui.components.AppHeader
 import com.example.quranapp.ui.components.PrayerCard
+import com.example.quranapp.ui.screens.home.HomeViewModel
 import com.example.quranapp.ui.screens.home.components.*
 import com.example.quranapp.ui.theme.CreamBackground
 import com.example.quranapp.ui.theme.DeepEmerald
@@ -117,7 +119,7 @@ fun HomeScreen(
             // ── Al-Ma'tsurat ──
             AlMatsuratCard(
                 type = uiState.matsuratType,
-                onClick = onNavigateToMatsurat 
+                onClick = { onNavigateToMatsurat(uiState.matsuratKey) }
             )
 
             // ── Bookmark Card (Lanjut Tilawah) ──
@@ -134,7 +136,7 @@ fun HomeScreen(
 
             // ── Recent Section ──
             Text(
-                text = "Recents",
+                text = stringResource(R.string.title_recents),
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold,
                 color = DeepEmerald
@@ -151,7 +153,7 @@ fun HomeScreen(
                 )
             } else {
                 Text(
-                    text = "Belum ada riwayat bacaan",
+                    text = stringResource(R.string.label_no_history),
                     style = MaterialTheme.typography.bodyMedium,
                     color = TextGray
                 )

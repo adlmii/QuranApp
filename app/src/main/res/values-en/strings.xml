@@ -1,0 +1,74 @@
+<resources>
+    <string name="app_name">QuranApp</string>
+
+    <!-- Home & Prayer ViewModels -->
+    <string name="label_calculating">Calculating...</string>
+    <string name="label_now">Now</string>
+    <string name="countdown_hours_mins">in %1$dh %2$dm</string>
+    <string name="countdown_mins_secs">in %1$dm %2$ds</string>
+    <string name="matsurat_pagi">Morning</string>
+    <string name="matsurat_petang">Evening</string>
+    <string name="location_unknown">Unknown Location</string>
+
+    <!-- Notification Receiver -->
+    <string name="notif_pre_title">⏰ Preparation for %1$s</string>
+    <string name="notif_pre_body">%1$s is in 10 minutes. Get ready!</string>
+    <string name="notif_prayer_title">🕌 %1$s</string>
+    <string name="notif_prayer_body">It is time for %1$s. Let\'s pray!</string>
+    <string name="notif_syuruq_title">☀️ Sunrise Time</string>
+    <string name="notif_syuruq_body">The sun has risen. Duha time is coming!</string>
+    <string name="notif_post_title">🌿 Have you prayed %1$s?</string>
+    <string name="notif_post_body">Don\'t forget to record your prayer progress today 🌿</string>
+
+    <!-- Quran Detail -->
+    <string name="mode_halaman_title">Page Mode</string>
+    <string name="mode_halaman_desc">Under Development</string>
+    <string name="nav_surah_prev">Previous Surah</string>
+    <string name="nav_surah_next">Next to</string>
+    <string name="matsurat_prefix">Dhikr</string>
+
+    <!-- Prayer Names -->
+    <string name="prayer_fajr">Fajr</string>
+    <string name="prayer_syuruq">Sunrise</string>
+    <string name="prayer_dhuhr">Dhuhr</string>
+    <string name="prayer_asr">Asr</string>
+    <string name="prayer_maghrib">Maghrib</string>
+    <string name="prayer_isha">Isha</string>
+
+    <!-- General -->
+    <string name="action_cancel">Cancel</string>
+    <string name="action_go">Go</string>
+    <string name="unit_min">min</string>
+    <string name="label_small">Small</string>
+    <string name="label_large">Large</string>
+    <string name="label_coming_soon">Coming Soon</string>
+    <string name="label_loading">Loading...</string>
+    <string name="label_error">Error: %1$s</string>
+
+    <!-- Home -->
+    <string name="card_matsurat">Al-Ma\'tsurat</string>
+    <string name="title_recents">Recent</string>
+    <string name="label_no_history">No reading history yet</string>
+    <string name="label_ayah">Ayah</string>
+    <string name="label_last_read">Last Read</string>
+    <string name="card_calendar">Islamic Calendar</string>
+
+    <!-- Quran Screen -->
+    <string name="title_quran">Al-Qur\'an</string>
+    <string name="hint_search">Search surah or ayah...</string>
+    <string name="title_ayah_results">Ayah Results</string>
+    <string name="label_no_results">No results found</string>
+    <string name="label_juz">Juz</string>
+    <string name="label_surah">Surah</string>
+
+    <!-- Settings Sheet -->
+    <string name="settings_title">Reading Settings</string>
+    <string name="settings_display_mode">Display Mode</string>
+    <string name="settings_mode_ayah">Ayah Mode</string>
+    <string name="settings_jump_title">Jump to Ayah</string>
+    <string name="hint_ayah_range">1 – %1$d</string>
+    <string name="settings_font_size">Arabic Text Size</string>
+    <string name="settings_tajwid">Tajweed Colors</string>
+    <string name="notif_hijri_month_title">🌙 New Hijri Month</string>
+    <string name="notif_hijri_month_body">Welcome to the month of %1$s. Have a blessed one! 🌙</string>
+</resources>

@@ -43,14 +43,14 @@ class PrayerNotificationReceiver : BroadcastReceiver() {
         val body: String
 
         if (isPreReminder) {
-            title = "⏰ Persiapan $prayerName"
-            body = "Waktu $prayerName tinggal 10 menit lagi. Segera bersiap!"
+            title = context.getString(R.string.notif_pre_title, prayerName)
+            body = context.getString(R.string.notif_pre_body, prayerName)
         } else if (prayerName == "Syuruq") {
-            title = "☀️ Waktu Terbit"
-            body = "Matahari telah terbit. Waktu Dhuha sebentar lagi!"
+            title = context.getString(R.string.notif_syuruq_title)
+            body = context.getString(R.string.notif_syuruq_body)
         } else {
-            title = "🕌 $prayerName"
-            body = "Waktu $prayerName telah masuk. Ayo sholat!"
+            title = context.getString(R.string.notif_prayer_title, prayerName)
+            body = context.getString(R.string.notif_prayer_body, prayerName)
         }
 
         showNotification(context, notificationId, title, body)
@@ -63,8 +63,8 @@ class PrayerNotificationReceiver : BroadcastReceiver() {
                 showNotification(
                     context,
                     "post_prayer_$prayerName".hashCode(),
-                    "🌿 Sudah Sholat $prayerName?",
-                    "Jangan lupa catat progres sholatmu hari ini ya 🌿"
+                    context.getString(R.string.notif_post_title, prayerName),
+                    context.getString(R.string.notif_post_body)
                 )
             }
 
@@ -115,25 +115,26 @@ class PrayerNotificationReceiver : BroadcastReceiver() {
                     try {
                         val tomorrow = java.time.LocalDate.now().plusDays(1)
                         val hijri = java.time.chrono.HijrahDate.from(tomorrow)
-                        val formatter = java.time.format.DateTimeFormatter.ofPattern(
-                            "d MMMM yyyy", java.util.Locale.getDefault()
-                        )
-                        val hijriStr = formatter.format(hijri)
+                        
+                        // Check if it is the start of a new Hijri month
+                        val dayOfMonth = hijri.get(java.time.temporal.ChronoField.DAY_OF_MONTH)
+                        
+                        if (dayOfMonth == 1) {
+                            val formatter = java.time.format.DateTimeFormatter.ofPattern(
+                                "MMMM yyyy", java.util.Locale.getDefault()
+                            )
+                            val monthStr = formatter.format(hijri)
 
-                        showNotification(
-                            context,
-                            "hijri_change".hashCode(),
-                            "🌙 Pergantian Hari Hijriah",
-                            "Selamat memasuki malam $hijriStr. Semoga berkah! 🌙"
-                        )
+                            showNotification(
+                                context,
+                                "hijri_change".hashCode(),
+                                context.getString(R.string.notif_hijri_month_title),
+                                context.getString(R.string.notif_hijri_month_body, monthStr)
+                            )
+                        }
                     } catch (e: Exception) {
-                        // Fallback if date conversion fails
-                        showNotification(
-                            context,
-                            "hijri_change".hashCode(),
-                            "🌙 Pergantian Hari Hijriah",
-                            "Selamat memasuki malam hari baru Hijriah. Semoga berkah! 🌙"
-                        )
+                        // Fallback or error handling if needed
+                        e.printStackTrace()
                     }
                 }
             }

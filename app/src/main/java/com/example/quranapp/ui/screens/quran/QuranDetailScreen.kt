@@ -1,5 +1,6 @@
 package com.example.quranapp.ui.screens.quran
 
+import QuranSettingsSheet
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -30,9 +31,9 @@ import androidx.navigation.NavController
 import com.example.quranapp.data.model.Ayah
 import com.example.quranapp.R
 import com.example.quranapp.ui.components.AppHeader
-import com.example.quranapp.ui.screens.quran.components.QuranSettingsSheet
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.ui.res.stringResource
 import com.example.quranapp.ui.theme.*
 import androidx.compose.ui.text.font.FontFamily
 import kotlinx.coroutines.delay
@@ -101,7 +102,7 @@ fun QuranDetailScreen(
                 }
                 showSettings = false
             },
-            onFontSizeChange = { viewModel.updateFontSize(it) },
+            onFontSizeChange = { size -> viewModel.updateFontSize(size) },
             onDismiss = { showSettings = false }
         )
     }
@@ -109,7 +110,7 @@ fun QuranDetailScreen(
     Scaffold(
         topBar = {
             DetailHeader(
-                title = uiState.surahDetail?.name ?: "Loading...",
+                title = uiState.surahDetail?.name ?: stringResource(R.string.label_loading),
                 onBack = { navController.popBackStack() },
                 isPageMode = uiState.isPageMode,
                 onToggleMode = { viewModel.toggleViewMode() },
@@ -146,7 +147,7 @@ fun QuranDetailScreen(
                 } else if (uiState.error != null) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Text(
-                            text = "Error: ${uiState.error}",
+                            text = stringResource(R.string.label_error, uiState.error!!),
                             color = Color.Red
                         )
                     }
@@ -170,14 +171,14 @@ fun QuranDetailScreen(
                                     )
                                     Spacer(modifier = Modifier.height(16.dp))
                                     Text(
-                                        text = "Mode Halaman",
+                                        text = stringResource(id = R.string.mode_halaman_title),
                                         style = MaterialTheme.typography.titleLarge,
                                         fontWeight = FontWeight.Bold,
                                         color = DeepEmerald
                                     )
                                     Spacer(modifier = Modifier.height(8.dp))
                                     Text(
-                                        text = "Masih dalam Pengembangan",
+                                        text = stringResource(id = R.string.mode_halaman_desc),
                                         style = MaterialTheme.typography.bodyMedium,
                                         color = TextGray
                                     )
@@ -195,7 +196,7 @@ fun QuranDetailScreen(
                                 if (surahNumber > 1 && uiState.prevSurahName != null) {
                                     item {
                                         SurahNavigationCard(
-                                            label = "Surah Sebelumnya",
+                                            label = stringResource(id = R.string.nav_surah_prev),
                                             surahName = uiState.prevSurahName!!,
                                             onClick = {
                                                 navController.navigate("quran_detail/${surahNumber - 1}") {
@@ -244,7 +245,7 @@ fun QuranDetailScreen(
                                     item {
                                         Spacer(modifier = Modifier.height(8.dp))
                                         SurahNavigationCard(
-                                            label = "Lanjut ke",
+                                            label = stringResource(id = R.string.nav_surah_next),
                                             surahName = uiState.nextSurahName!!,
                                             onClick = {
                                                 navController.navigate("quran_detail/${surahNumber + 1}") {

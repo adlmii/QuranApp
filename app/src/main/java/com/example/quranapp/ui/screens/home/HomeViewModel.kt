@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.quranapp.data.repository.PrayerRepository
 import com.example.quranapp.data.repository.QuranRepository
 import com.example.quranapp.data.local.UserPreferencesRepository
+import com.batoulapps.adhan.Prayer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,10 +28,11 @@ import java.util.Locale
 data class HomeUiState(
     val gregorianDate: String = "",
     val hijriDate: String = "",
-    val matsuratType: String = "Pagi",
+    val matsuratType: String = "", // Localized Label
+    val matsuratKey: String = "MORNING", // Nav Key
     val nextPrayerName: String = "--",
     val nextPrayerTime: String = "--:--",
-    val timeToNextPrayer: String = "Calculating...",
+    val timeToNextPrayer: String = "",
     val isCurrentPrayerNow: Boolean = false,
     val currentPrayerLabel: String = "",
     val location: String = "Jakarta",
@@ -57,6 +59,11 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private val userPrefs = UserPreferencesRepository(application)
 
     init {
+        // Set default values from resources
+        _uiState.value = _uiState.value.copy(
+            timeToNextPrayer = application.getString(com.example.quranapp.R.string.label_calculating),
+            matsuratType = application.getString(com.example.quranapp.R.string.matsurat_pagi)
+        )
         loadSavedLocation()
         updateDateInfo()
         startPrayerCountdown()
@@ -109,7 +116,8 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                     _uiState.value = _uiState.value.copy(location = district)
                 }
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(location = "Unknown Location")
+                val unknown = getApplication<Application>().getString(com.example.quranapp.R.string.location_unknown)
+                _uiState.value = _uiState.value.copy(location = unknown)
             }
         }
     }
@@ -127,7 +135,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         try {
             val schedule = prayerRepository.calculatePrayerTimes(_uiState.value.lat, _uiState.value.lon)
             
-            val nextPrayerName = prayerRepository.getPrayerName(schedule.nextPrayer)
+            val nextPrayerName = getPrayerNameString(schedule.nextPrayer)
             val targetTime = schedule.nextPrayerTime
             val now = Date()
 
@@ -139,12 +147,12 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                 val seconds = (diffMillis / 1000) % 60
 
                 if (hours > 0) {
-                    String.format("in %dh %dm", hours, minutes)
+                    getApplication<Application>().getString(com.example.quranapp.R.string.countdown_hours_mins, hours, minutes)
                 } else {
-                    String.format("in %dm %ds", minutes, seconds)
+                    getApplication<Application>().getString(com.example.quranapp.R.string.countdown_mins_secs, minutes, seconds)
                 }
             } else {
-                "Now"
+                getApplication<Application>().getString(com.example.quranapp.R.string.label_now)
             }
 
             val timeFormatter = java.text.SimpleDateFormat("HH:mm", Locale.getDefault())
@@ -153,7 +161,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             // Grace period awareness
             val isNowActive = schedule.isInGracePeriod && schedule.currentPrayer != null
             val currentLabel = if (isNowActive && schedule.currentPrayer != null) {
-                prayerRepository.getPrayerName(schedule.currentPrayer)
+                getPrayerNameString(schedule.currentPrayer)
             } else ""
 
             // When in grace period, show current prayer's time on the card
@@ -194,12 +202,18 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             val hijriFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.getDefault())
 
             val isMorning = now.hour < 14
-            val matsurat = if (isMorning) "Pagi" else "Petang"
+            val matsuratLabel = if (isMorning) 
+                getApplication<Application>().getString(com.example.quranapp.R.string.matsurat_pagi) 
+            else 
+                getApplication<Application>().getString(com.example.quranapp.R.string.matsurat_petang)
+            
+            val matsuratKey = if (isMorning) "MORNING" else "EVENING"
 
             _uiState.value = _uiState.value.copy(
                 gregorianDate = today.format(formatter),
                 hijriDate = hijriFormatter.format(hijrahDate),
-                matsuratType = matsurat
+                matsuratType = matsuratLabel,
+                matsuratKey = matsuratKey
             )
         }
     }
@@ -240,5 +254,18 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                 _uiState.value = _uiState.value.copy(quranTargetMinutes = target)
             }
         }
+    }
+
+    private fun getPrayerNameString(prayer: Prayer): String {
+        val resId = when(prayer) {
+            Prayer.FAJR -> com.example.quranapp.R.string.prayer_fajr
+            Prayer.SUNRISE -> com.example.quranapp.R.string.prayer_syuruq
+            Prayer.DHUHR -> com.example.quranapp.R.string.prayer_dhuhr
+            Prayer.ASR -> com.example.quranapp.R.string.prayer_asr
+            Prayer.MAGHRIB -> com.example.quranapp.R.string.prayer_maghrib
+            Prayer.ISHA -> com.example.quranapp.R.string.prayer_isha
+            else -> return "--"
+        }
+        return getApplication<Application>().getString(resId)
     }
 }

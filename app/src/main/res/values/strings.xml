@@ -1,3 +1,74 @@
 <resources>
     <string name="app_name">QuranApp</string>
+
+    <!-- Home & Prayer ViewModels -->
+    <string name="label_calculating">Menghitung...</string>
+    <string name="label_now">Sekarang</string>
+    <string name="countdown_hours_mins">dalam %1$dh %2$dm</string>
+    <string name="countdown_mins_secs">dalam %1$dm %2$ds</string>
+    <string name="matsurat_pagi">Pagi</string>
+    <string name="matsurat_petang">Petang</string>
+    <string name="location_unknown">Lokasi Tidak Diketahui</string>
+
+    <!-- Notification Receiver -->
+    <string name="notif_pre_title">⏰ Persiapan %1$s</string>
+    <string name="notif_pre_body">Waktu %1$s tinggal 10 menit lagi. Segera bersiap!</string>
+    <string name="notif_prayer_title">🕌 %1$s</string>
+    <string name="notif_prayer_body">Waktu %1$s telah masuk. Ayo sholat!</string>
+    <string name="notif_syuruq_title">☀️ Waktu Terbit</string>
+    <string name="notif_syuruq_body">Matahari telah terbit. Waktu Dhuha sebentar lagi!</string>
+    <string name="notif_post_title">🌿 Sudah Sholat %1$s?</string>
+    <string name="notif_post_body">Jangan lupa catat progres sholatmu hari ini ya 🌿</string>
+
+    <!-- Quran Detail -->
+    <string name="mode_halaman_title">Mode Halaman</string>
+    <string name="mode_halaman_desc">Masih dalam Pengembangan</string>
+    <string name="nav_surah_prev">Surah Sebelumnya</string>
+    <string name="nav_surah_next">Lanjut ke</string>
+    <string name="matsurat_prefix">Dzikir</string>
+
+    <!-- Prayer Names -->
+    <string name="prayer_fajr">Subuh</string>
+    <string name="prayer_syuruq">Syuruq</string>
+    <string name="prayer_dhuhr">Dzuhur</string>
+    <string name="prayer_asr">Ashar</string>
+    <string name="prayer_maghrib">Maghrib</string>
+    <string name="prayer_isha">Isya</string>
+
+    <!-- General -->
+    <string name="action_cancel">Batal</string>
+    <string name="action_go">Ke</string>
+    <string name="unit_min">min</string>
+    <string name="label_small">Kecil</string>
+    <string name="label_large">Besar</string>
+    <string name="label_coming_soon">Segera Hadir</string>
+    <string name="label_loading">Memuat...</string>
+    <string name="label_error">Error: %1$s</string>
+
+    <!-- Home -->
+    <string name="card_matsurat">Al-Ma\'tsurat</string>
+    <string name="title_recents">Terakhir Dibaca</string>
+    <string name="label_no_history">Belum ada riwayat bacaan</string>
+    <string name="label_ayah">Ayat</string>
+    <string name="label_last_read">Terakhir Dibaca</string>
+    <string name="card_calendar">Kalender Islam</string>
+
+    <!-- Quran Screen -->
+    <string name="title_quran">Al-Qur\'an</string>
+    <string name="hint_search">Cari surah atau ayat...</string>
+    <string name="title_ayah_results">Hasil Ayat</string>
+    <string name="label_no_results">Tidak ditemukan</string>
+    <string name="label_juz">Juz</string>
+    <string name="label_surah">Surah</string>
+
+    <!-- Settings Sheet -->
+    <string name="settings_title">Pengaturan Baca</string>
+    <string name="settings_display_mode">Mode Tampilan</string>
+    <string name="settings_mode_ayah">Mode Ayat</string>
+    <string name="settings_jump_title">Lompat ke Ayat</string>
+    <string name="hint_ayah_range">1 – %1$d</string>
+    <string name="settings_font_size">Ukuran Teks Arab</string>
+    <string name="settings_tajwid">Warna Tajwid</string>
+    <string name="notif_hijri_month_title">🌙 Pergantian Bulan Hijriah</string>
+    <string name="notif_hijri_month_body">Selamat memasuki bulan %1$s. Semoga berkah! 🌙</string>
 </resources>

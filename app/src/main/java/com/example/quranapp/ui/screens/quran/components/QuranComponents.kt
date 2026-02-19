@@ -22,6 +22,7 @@ import androidx.compose.ui.text.font.FontFamily
 import com.example.quranapp.data.model.Surah
 import com.example.quranapp.ui.theme.*
 import com.example.quranapp.R
+import androidx.compose.ui.res.stringResource
 import com.example.quranapp.ui.components.AppCard
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
@@ -74,13 +75,13 @@ fun QuranTabSelector(
         // The Clickable Text Layers
         Row(modifier = Modifier.fillMaxSize()) {
             TabButton(
-                text = "Surah",
+                text = stringResource(R.string.label_surah),
                 isSelected = selectedTab == 0,
                 modifier = Modifier.weight(1f),
                 onClick = { onTabSelected(0) }
             )
             TabButton(
-                text = "Juz",
+                text = stringResource(R.string.label_juz),
                 isSelected = selectedTab == 1,
                 modifier = Modifier.weight(1f),
                 onClick = { onTabSelected(1) }
@@ -225,7 +226,7 @@ fun JuzSurahCard(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Ayah ${entry.ayahRange}",
+                    text = "${stringResource(R.string.label_ayah)} ${entry.ayahRange}",
                     style = MaterialTheme.typography.bodySmall,
                     color = TextGray
                 )
@@ -290,13 +291,13 @@ fun SmartJumpCard(
             // Text
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Loncati ke Ayat",
+                    text = stringResource(R.string.settings_jump_title),
                     style = MaterialTheme.typography.labelMedium,
                     color = White.copy(alpha = 0.7f)
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
-                    text = "$surahName ($surahNumber) : Ayat $ayahNumber",
+                    text = "$surahName ($surahNumber) : ${stringResource(R.string.label_ayah)} $ayahNumber",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = White

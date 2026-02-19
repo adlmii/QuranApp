@@ -1,4 +1,5 @@
-package com.example.quranapp.ui.screens.home.components
+import androidx.compose.ui.res.stringResource
+import com.example.quranapp.R
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -35,7 +36,7 @@ fun QuranProgressCard(
     GenericProgressCard(
         progress = progress,
         mainText = "$currentMinutes/$targetMinutes",
-        subText = "min",
+        subText = stringResource(R.string.unit_min),
         modifier = modifier
     )
 }
@@ -47,7 +48,7 @@ fun QuranProgressCard(
 @Composable
 fun AlMatsuratCard(
     type: String,
-    onClick: (String) -> Unit,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -55,7 +56,7 @@ fun AlMatsuratCard(
             .fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),
         elevation = CardDefaults.cardElevation(2.dp),
-        onClick = { onClick(if (type == "Pagi") "MORNING" else "EVENING") }
+        onClick = onClick
     ) {
         Box(
             modifier = Modifier
@@ -77,14 +78,14 @@ fun AlMatsuratCard(
                 Spacer(modifier = Modifier.width(14.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Al-Ma'tsurat",
+                        text = stringResource(R.string.card_matsurat),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = White
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = "Dzikir ${type}",
+                        text = "${androidx.compose.ui.res.stringResource(com.example.quranapp.R.string.matsurat_prefix)} ${type}",
                         style = MaterialTheme.typography.bodySmall,
                         color = White.copy(alpha = 0.7f)
                     )
@@ -154,7 +155,7 @@ fun RecentSurahItem(
                 Spacer(modifier = Modifier.height(2.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = "Ayah $ayah",
+                        text = "${stringResource(R.string.label_ayah)} $ayah",
                         style = MaterialTheme.typography.bodySmall,
                         color = TextGray
                     )
@@ -166,7 +167,7 @@ fun RecentSurahItem(
                             .padding(horizontal = 6.dp, vertical = 2.dp)
                     ) {
                         Text(
-                            text = "Last Read",
+                            text = stringResource(R.string.label_last_read),
                             style = MaterialTheme.typography.labelSmall,
                             color = androidx.compose.ui.graphics.Color(0xFF8D6E63),
                             fontSize = 10.sp,
@@ -241,7 +242,7 @@ fun CalendarEntryCard(
 
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Kalender Islam",
+                        text = stringResource(R.string.card_calendar),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = White

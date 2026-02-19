@@ -1,4 +1,5 @@
-package com.example.quranapp.ui.screens.quran.components
+import androidx.compose.ui.res.stringResource
+import com.example.quranapp.R
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -45,7 +46,7 @@ fun QuranSettingsSheet(
                 .padding(bottom = 36.dp)
         ) {
             Text(
-                text = "Pengaturan Baca",
+                text = stringResource(R.string.settings_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = DeepEmerald
@@ -61,13 +62,13 @@ fun QuranSettingsSheet(
             ) {
                 Column {
                     Text(
-                        text = "Mode Tampilan",
+                        text = stringResource(R.string.settings_display_mode),
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.SemiBold,
                         color = TextBlack
                     )
                     Text(
-                        text = if (isPageMode) "Mode Halaman" else "Mode Ayat",
+                        text = if (isPageMode) stringResource(R.string.mode_halaman_title) else stringResource(R.string.settings_mode_ayah),
                         style = MaterialTheme.typography.bodySmall,
                         color = TextGray
                     )
@@ -89,7 +90,7 @@ fun QuranSettingsSheet(
 
             // ── Jump to Ayah ──
             Text(
-                text = "Lompat ke Ayat",
+                text = stringResource(R.string.settings_jump_title),
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.SemiBold,
                 color = TextBlack
@@ -109,7 +110,7 @@ fun QuranSettingsSheet(
                         .border(1.dp, DeepEmerald, RoundedCornerShape(50)),
                     placeholder = {
                         Text(
-                            "1 – $totalAyahs",
+                            text = stringResource(R.string.hint_ayah_range, totalAyahs),
                             style = MaterialTheme.typography.bodyMedium,
                             color = TextGray
                         )
@@ -157,7 +158,7 @@ fun QuranSettingsSheet(
                     shape = RoundedCornerShape(50)
                 ) {
                     Text(
-                        "Go",
+                        text = stringResource(R.string.action_go),
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -170,7 +171,7 @@ fun QuranSettingsSheet(
 
             // ── Font Size Slider ──
             Text(
-                text = "Ukuran Teks Arab",
+                text = stringResource(R.string.settings_font_size),
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.SemiBold,
                 color = TextBlack
@@ -199,8 +200,8 @@ fun QuranSettingsSheet(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text("Kecil", style = MaterialTheme.typography.labelSmall, color = TextGray)
-                Text("Besar", style = MaterialTheme.typography.labelSmall, color = TextGray)
+                Text(stringResource(R.string.label_small), style = MaterialTheme.typography.labelSmall, color = TextGray)
+                Text(stringResource(R.string.label_large), style = MaterialTheme.typography.labelSmall, color = TextGray)
             }
 
             HorizontalDivider(
@@ -216,13 +217,13 @@ fun QuranSettingsSheet(
             ) {
                 Column {
                     Text(
-                        text = "Warna Tajwid",
+                        text = stringResource(R.string.settings_tajwid),
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.SemiBold,
                         color = TextBlack
                     )
                     Text(
-                        text = "Segera Hadir",
+                        text = stringResource(R.string.label_coming_soon),
                         style = MaterialTheme.typography.bodySmall,
                         color = TextGray
                     )
