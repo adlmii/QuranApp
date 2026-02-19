@@ -264,7 +264,10 @@ fun QuranScreen(
                         items(juz.surahs) { entry ->
                             JuzSurahCard(
                                 entry = entry,
-                                onClick = { navController.navigate("quran_detail/${entry.surahNumber}") }
+                                onClick = {
+                                    val startAyah = entry.ayahRange.split("-").firstOrNull()?.toIntOrNull() ?: 1
+                                    navController.navigate("quran_detail/${entry.surahNumber}?ayahNumber=$startAyah")
+                                }
                             )
                         }
                     }

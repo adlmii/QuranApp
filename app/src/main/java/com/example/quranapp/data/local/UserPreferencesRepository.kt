@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.doublePreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -22,6 +23,8 @@ class UserPreferencesRepository(private val context: Context) {
         private val KEY_TARGET_MINUTES = intPreferencesKey("quran_target_minutes")
         private val KEY_TODAY_MINUTES = intPreferencesKey("quran_today_minutes")
         private val KEY_LAST_SAVED_DATE = stringPreferencesKey("last_saved_date")
+        private val KEY_LAST_LAT = doublePreferencesKey("last_lat")
+        private val KEY_LAST_LON = doublePreferencesKey("last_lon")
 
         // Per-prayer notification toggles
         private val PRAYER_NOTIFICATION_KEYS = mapOf(
@@ -34,10 +37,19 @@ class UserPreferencesRepository(private val context: Context) {
     }
 
     /**
-     * Observe target menit baca harian (default 25)
+     * Observe target menit baca harian (default 5)
      */
     val targetMinutes: Flow<Int> = context.dataStore.data.map { prefs ->
-        prefs[KEY_TARGET_MINUTES] ?: 25
+        prefs[KEY_TARGET_MINUTES] ?: 5
+    }
+
+    /**
+     * Observe lokasi terakhir yang tersimpan (default Jakarta)
+     */
+    val lastLocation: Flow<Pair<Double, Double>> = context.dataStore.data.map { prefs ->
+        val lat = prefs[KEY_LAST_LAT] ?: -6.1753
+        val lon = prefs[KEY_LAST_LON] ?: 106.8312
+        Pair(lat, lon)
     }
 
     /**
@@ -97,6 +109,16 @@ class UserPreferencesRepository(private val context: Context) {
         val key = PRAYER_NOTIFICATION_KEYS[prayerName] ?: return
         context.dataStore.edit { prefs ->
             prefs[key] = enabled
+        }
+    }
+
+    /**
+     * Simpan lokasi terakhir ke DataStore
+     */
+    suspend fun saveLastLocation(lat: Double, lon: Double) {
+        context.dataStore.edit { prefs ->
+            prefs[KEY_LAST_LAT] = lat
+            prefs[KEY_LAST_LON] = lon
         }
     }
 

@@ -37,7 +37,7 @@ data class HomeUiState(
     val lat: Double = -6.1753,
     val lon: Double = 106.8312,
     val quranCurrentMinutes: Int = 0,
-    val quranTargetMinutes: Int = 25,
+    val quranTargetMinutes: Int = 5,
     val lastReadSurah: String? = null,
     val lastReadNumber: Int = 1,
     val lastReadAyah: Int = 1
@@ -53,10 +53,21 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private val userPrefs = UserPreferencesRepository(application)
 
     init {
+        loadSavedLocation()
         updateDateInfo()
         startPrayerCountdown()
         observeLastRead()
         observeGoals()
+    }
+
+    private fun loadSavedLocation() {
+        viewModelScope.launch {
+            userPrefs.lastLocation.collect { (lat, lon) ->
+                _uiState.value = _uiState.value.copy(lat = lat, lon = lon)
+                calculatePrayerTimes()
+                return@collect
+            }
+        }
     }
 
     fun updateLocation(latitude: Double, longitude: Double, context: Context) {
@@ -64,6 +75,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             _uiState.value = _uiState.value.copy(lat = latitude, lon = longitude)
             calculatePrayerTimes()
             getAddressName(latitude, longitude, context)
+            userPrefs.saveLastLocation(latitude, longitude)
         }
     }
 

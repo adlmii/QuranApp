@@ -77,10 +77,21 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
     private var alarmsScheduled = false
 
     init {
+        loadSavedLocation()
         updateDateInfo()
         loadPrayerStatuses()
         observeNotificationPrefs()
         startPrayerCountdown()
+    }
+
+    private fun loadSavedLocation() {
+        viewModelScope.launch {
+            userPrefs.lastLocation.collect { (savedLat, savedLon) ->
+                lat = savedLat
+                lon = savedLon
+                return@collect
+            }
+        }
     }
 
     fun updateLocation(latitude: Double, longitude: Double, context: Context) {
@@ -89,6 +100,7 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
         alarmsScheduled = false // Reschedule on location change
         viewModelScope.launch {
             getAddressName(latitude, longitude, context)
+            userPrefs.saveLastLocation(latitude, longitude)
         }
     }
 
@@ -342,6 +354,11 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
         }
 
         alarmScheduler.scheduleAll(enabledPrayers)
+        alarmScheduler.scheduleExtras(
+            fajrTime = prayerTimes.fajr,
+            asrTime = prayerTimes.asr,
+            maghribTime = prayerTimes.maghrib
+        )
     }
 
     private fun getTodayString(): String {

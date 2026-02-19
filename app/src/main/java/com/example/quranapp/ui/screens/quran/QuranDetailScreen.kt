@@ -106,7 +106,7 @@ fun QuranDetailScreen(
                 // Session Progress Bar
                 if (uiState.sessionProgress > 0) {
                      LinearProgressIndicator(
-                        progress = { uiState.sessionProgress / 25f }, // Use target from DataStore later
+                        progress = { uiState.sessionProgress / uiState.targetMinutes.toFloat() },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(4.dp),

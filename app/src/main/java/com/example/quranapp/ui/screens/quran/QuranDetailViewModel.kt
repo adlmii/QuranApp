@@ -21,6 +21,7 @@ data class QuranDetailUiState(
     val isLoading: Boolean = false,
     val error: String? = null,
     val sessionProgress: Int = 0,
+    val targetMinutes: Int = 5,
     val showReward: Boolean = false
 )
 
@@ -36,17 +37,28 @@ class QuranDetailViewModel(application: Application) : AndroidViewModel(applicat
     private var currentSurahName: String = ""
 
     init {
+        observeProgress()
         startSessionTimer()
+    }
+
+    private fun observeProgress() {
+        viewModelScope.launch {
+            userPrefs.todayMinutes.collect { minutes ->
+                _uiState.value = _uiState.value.copy(sessionProgress = minutes)
+            }
+        }
+        viewModelScope.launch {
+            userPrefs.targetMinutes.collect { target ->
+                _uiState.value = _uiState.value.copy(targetMinutes = target)
+            }
+        }
     }
 
     private fun startSessionTimer() {
         viewModelScope.launch {
             while (true) {
                 delay(60000) // 1 minute
-                val newProgress = _uiState.value.sessionProgress + 1
-                _uiState.value = _uiState.value.copy(sessionProgress = newProgress)
-
-                // Persist to DataStore
+                // Persist to DataStore (observer will update sessionProgress)
                 userPrefs.addMinute()
             }
         }
