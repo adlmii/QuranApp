@@ -6,6 +6,7 @@ import com.example.quranapp.data.model.AyahSearchResult
 import com.example.quranapp.data.model.SurahDetail
 import com.example.quranapp.data.local.QuranAppDatabase
 import com.example.quranapp.data.local.entity.AyahSearchFts
+import com.example.quranapp.data.local.entity.ManualBookmarkEntity
 import com.example.quranapp.data.local.entity.RecentQuranEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -17,6 +18,7 @@ class QuranRepository(private val context: Context) {
     private val db = QuranAppDatabase.getInstance(context)
     private val recentQuranDao = db.recentQuranDao()
     private val ayahSearchDao = db.ayahSearchDao()
+    private val bookmarkDao = db.manualBookmarkDao()
 
     suspend fun getSurahDetail(surahNumber: Int): SurahDetail? = withContext(Dispatchers.IO) {
         try {
@@ -182,6 +184,30 @@ class QuranRepository(private val context: Context) {
                 pageNumber = pageNumber
             )
         )
+    }
+
+    // ── Manual Bookmark ──
+
+    fun getBookmarkFlow(): Flow<ManualBookmarkEntity?> {
+        return bookmarkDao.getBookmark()
+    }
+
+    suspend fun saveBookmark(surahNumber: Int, ayahNumber: Int, surahName: String) {
+        bookmarkDao.saveBookmark(
+            ManualBookmarkEntity(
+                id = 1,
+                surahNumber = surahNumber,
+                ayahNumber = ayahNumber,
+                surahName = surahName
+            )
+        )
+    }
+
+    /**
+     * Public wrapper to get surah name by number (for flow navigation)
+     */
+    suspend fun getSurahNameByNumber(surahNumber: Int): String? {
+        return getSurahMetadata(surahNumber)?.englishName
     }
 
     // ── Ayah Search (FTS) ──

@@ -120,6 +120,16 @@ fun HomeScreen(
                 onClick = onNavigateToMatsurat 
             )
 
+            // ── Bookmark Card (Lanjut Tilawah) ──
+            if (uiState.bookmarkSurah != null) {
+                Spacer(modifier = Modifier.height(12.dp))
+                BookmarkCard(
+                    surahName = uiState.bookmarkSurah!!,
+                    ayahNumber = uiState.bookmarkAyah,
+                    onClick = { onNavigateToDetail(uiState.bookmarkSurahNumber, uiState.bookmarkAyah) }
+                )
+            }
+
             Spacer(modifier = Modifier.height(28.dp))
 
             // ── Recent Section ──

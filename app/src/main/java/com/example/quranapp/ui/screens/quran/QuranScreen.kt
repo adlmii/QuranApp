@@ -1,6 +1,7 @@
 package com.example.quranapp.ui.screens.quran
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -64,7 +65,8 @@ fun QuranScreen(
                         .weight(1f)
                         .height(50.dp)
                         .clip(RoundedCornerShape(50))
-                        .background(White),
+                        .background(White)
+                        .border(1.dp, DeepEmerald, RoundedCornerShape(50)),
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = White,
                         unfocusedContainerColor = White,

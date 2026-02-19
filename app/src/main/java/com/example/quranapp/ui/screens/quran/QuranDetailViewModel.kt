@@ -22,7 +22,15 @@ data class QuranDetailUiState(
     val error: String? = null,
     val sessionProgress: Int = 0,
     val targetMinutes: Int = 5,
-    val showReward: Boolean = false
+    val showReward: Boolean = false,
+    // Bookmark
+    val bookmarkSurah: Int = 0,
+    val bookmarkAyah: Int = 0,
+    // Font size
+    val arabicFontSize: Float = 28f,
+    // Adjacent surah names for flow navigation
+    val nextSurahName: String? = null,
+    val prevSurahName: String? = null
 )
 
 class QuranDetailViewModel(application: Application) : AndroidViewModel(application) {
@@ -38,6 +46,8 @@ class QuranDetailViewModel(application: Application) : AndroidViewModel(applicat
 
     init {
         observeProgress()
+        observeBookmark()
+        observeFontSize()
         startSessionTimer()
     }
 
@@ -50,6 +60,25 @@ class QuranDetailViewModel(application: Application) : AndroidViewModel(applicat
         viewModelScope.launch {
             userPrefs.targetMinutes.collect { target ->
                 _uiState.value = _uiState.value.copy(targetMinutes = target)
+            }
+        }
+    }
+
+    private fun observeBookmark() {
+        viewModelScope.launch {
+            repository.getBookmarkFlow().collect { bookmark ->
+                _uiState.value = _uiState.value.copy(
+                    bookmarkSurah = bookmark?.surahNumber ?: 0,
+                    bookmarkAyah = bookmark?.ayahNumber ?: 0
+                )
+            }
+        }
+    }
+
+    private fun observeFontSize() {
+        viewModelScope.launch {
+            userPrefs.arabicFontSize.collect { size ->
+                _uiState.value = _uiState.value.copy(arabicFontSize = size)
             }
         }
     }
@@ -84,10 +113,16 @@ class QuranDetailViewModel(application: Application) : AndroidViewModel(applicat
                     )
                 }
 
+                // Load adjacent surah names for flow navigation
+                val nextName = if (number < 114) repository.getSurahNameByNumber(number + 1) else null
+                val prevName = if (number > 1) repository.getSurahNameByNumber(number - 1) else null
+
                 _uiState.value = _uiState.value.copy(
                     surahDetail = detail,
                     pages = pages,
-                    isLoading = false
+                    isLoading = false,
+                    nextSurahName = nextName,
+                    prevSurahName = prevName
                 )
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
@@ -111,6 +146,23 @@ class QuranDetailViewModel(application: Application) : AndroidViewModel(applicat
                 surahName = currentSurahName,
                 isPageMode = _uiState.value.isPageMode
             )
+        }
+    }
+
+    fun saveBookmark(ayahNumber: Int) {
+        if (currentSurahNumber == 0) return
+        viewModelScope.launch {
+            repository.saveBookmark(
+                surahNumber = currentSurahNumber,
+                ayahNumber = ayahNumber,
+                surahName = currentSurahName
+            )
+        }
+    }
+
+    fun updateFontSize(size: Float) {
+        viewModelScope.launch {
+            userPrefs.saveArabicFontSize(size)
         }
     }
 

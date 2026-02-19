@@ -40,7 +40,11 @@ data class HomeUiState(
     val quranTargetMinutes: Int = 5,
     val lastReadSurah: String? = null,
     val lastReadNumber: Int = 1,
-    val lastReadAyah: Int = 1
+    val lastReadAyah: Int = 1,
+    // Manual Bookmark
+    val bookmarkSurah: String? = null,
+    val bookmarkSurahNumber: Int = 0,
+    val bookmarkAyah: Int = 0
 )
 
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
@@ -58,6 +62,19 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         startPrayerCountdown()
         observeLastRead()
         observeGoals()
+        observeBookmark()
+    }
+
+    private fun observeBookmark() {
+        viewModelScope.launch {
+            quranRepository.getBookmarkFlow().collect { bookmark ->
+                _uiState.value = _uiState.value.copy(
+                    bookmarkSurah = bookmark?.surahName,
+                    bookmarkSurahNumber = bookmark?.surahNumber ?: 0,
+                    bookmarkAyah = bookmark?.ayahNumber ?: 0
+                )
+            }
+        }
     }
 
     private fun loadSavedLocation() {

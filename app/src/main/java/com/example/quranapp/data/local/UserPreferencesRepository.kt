@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.doublePreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -25,6 +26,7 @@ class UserPreferencesRepository(private val context: Context) {
         private val KEY_LAST_SAVED_DATE = stringPreferencesKey("last_saved_date")
         private val KEY_LAST_LAT = doublePreferencesKey("last_lat")
         private val KEY_LAST_LON = doublePreferencesKey("last_lon")
+        private val KEY_ARABIC_FONT_SIZE = floatPreferencesKey("arabic_font_size")
 
         // Per-prayer notification toggles
         private val PRAYER_NOTIFICATION_KEYS = mapOf(
@@ -50,6 +52,19 @@ class UserPreferencesRepository(private val context: Context) {
         val lat = prefs[KEY_LAST_LAT] ?: -6.1753
         val lon = prefs[KEY_LAST_LON] ?: 106.8312
         Pair(lat, lon)
+    }
+
+    /**
+     * Observe ukuran font Arabic (default 28f sp)
+     */
+    val arabicFontSize: Flow<Float> = context.dataStore.data.map { prefs ->
+        prefs[KEY_ARABIC_FONT_SIZE] ?: 28f
+    }
+
+    suspend fun saveArabicFontSize(size: Float) {
+        context.dataStore.edit { prefs ->
+            prefs[KEY_ARABIC_FONT_SIZE] = size
+        }
     }
 
     /**

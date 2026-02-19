@@ -52,53 +52,29 @@ fun AlMatsuratCard(
 ) {
     Card(
         modifier = modifier
-            .fillMaxWidth()
-            .height(110.dp), // Restored to compact banner size
-        shape = RoundedCornerShape(26.dp),
-        elevation = CardDefaults.cardElevation(8.dp),
+            .fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        elevation = CardDefaults.cardElevation(2.dp),
         onClick = { onClick(if (type == "Pagi") "MORNING" else "EVENING") }
     ) {
         Box(
             modifier = Modifier
-                .fillMaxSize()
-                .background(brush = MidnightGradient),
-            contentAlignment = Alignment.Center // Center content vertically & horizontally
+                .fillMaxWidth()
+                .background(brush = MidnightGradient)
         ) {
-            // Decorative background pattern/shape
-            Box(
-                modifier = Modifier
-                    .align(Alignment.CenterEnd)
-                    .offset(x = 30.dp, y = 30.dp)
-                    .size(120.dp)
-                    .clip(CircleShape)
-                    .background(White.copy(alpha = 0.05f))
-            )
-
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(20.dp),
+                    .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Book icon
-                Box(
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(CircleShape)
-                        .background(White.copy(alpha = 0.15f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.MenuBook,
-                        contentDescription = null,
-                        tint = GoldAccent,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(16.dp))
-
-                // Title + type badge
+                Icon(
+                    imageVector = Icons.Default.MenuBook,
+                    contentDescription = null,
+                    tint = GoldAccent,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(14.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = "Al-Ma'tsurat",
@@ -106,37 +82,19 @@ fun AlMatsuratCard(
                         fontWeight = FontWeight.Bold,
                         color = White
                     )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(GoldAccent.copy(alpha = 0.9f))
-                            .padding(horizontal = 10.dp, vertical = 4.dp)
-                    ) {
-                        Text(
-                            text = type.uppercase(),
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = DeepEmeraldDark
-                        )
-                    }
-                }
-
-                // Arrow circle
-                Box(
-                    modifier = Modifier
-                        .size(36.dp)
-                        .clip(CircleShape)
-                        .background(White.copy(alpha = 0.1f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowForward,
-                        contentDescription = "Open",
-                        tint = White,
-                        modifier = Modifier.size(18.dp)
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = "Dzikir ${type}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = White.copy(alpha = 0.7f)
                     )
                 }
+                Icon(
+                    imageVector = Icons.Default.ArrowForward,
+                    contentDescription = "Open",
+                    tint = White.copy(alpha = 0.5f),
+                    modifier = Modifier.size(18.dp)
+                )
             }
         }
     }
