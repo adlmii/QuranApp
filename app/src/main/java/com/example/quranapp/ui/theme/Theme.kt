@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 import com.example.quranapp.ui.theme.CreamBackground
+
 private val LightColorScheme = lightColorScheme(
     primary = DeepEmerald,
     onPrimary = White,
@@ -37,6 +38,29 @@ private val LightColorScheme = lightColorScheme(
     onSurfaceVariant = TextGray
 )
 
+private val DarkColorScheme = darkColorScheme(
+    primary = MediumEmerald,
+    onPrimary = DeepEmeraldDark,
+    primaryContainer = DeepEmerald,
+    onPrimaryContainer = LightEmerald,
+
+    secondary = GoldAccent,
+    onSecondary = DeepEmeraldDark,
+    secondaryContainer = Color(0xFF8D6E63),
+    onSecondaryContainer = GoldLight,
+
+    tertiary = BrightEmerald,
+    onTertiary = DeepEmeraldDark,
+
+    background = Color(0xFF121212),
+    onBackground = Color(0xFFE0E0E0),
+
+    surface = Color(0xFF1E1E1E),
+    onSurface = Color(0xFFE0E0E0),
+    surfaceVariant = Color(0xFF2C2C2C),
+    onSurfaceVariant = Color(0xFFB0B0B0)
+)
+
 @Composable
 fun QuranAppTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -44,17 +68,19 @@ fun QuranAppTheme(
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = LightColorScheme
-    // Note: Nanti bisa kita tambahkan logika DarkMode di sini jika perlu
+    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
 
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            // Mengubah warna Status Bar agar selaras dengan background Cream
-            window.statusBarColor = CreamBackground.toArgb()
-            // Mengatur ikon status bar menjadi gelap (karena backgroundnya terang/cream)
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = true
+            if (darkTheme) {
+                window.statusBarColor = Color(0xFF121212).toArgb()
+                WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = false
+            } else {
+                window.statusBarColor = CreamBackground.toArgb()
+                WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = true
+            }
         }
     }
 

@@ -93,7 +93,9 @@ fun AppNavigation() {
             composable(Screen.Calendar.route) {
                 com.example.quranapp.ui.screens.calendar.CalendarScreen(navController = navController)
             }
-            composable(Screen.Settings.route) { androidx.compose.material3.Text("Settings") }
+            composable(Screen.Settings.route) {
+                com.example.quranapp.ui.screens.settings.SettingsScreen(navController = navController)
+            }
         }
     }
 }

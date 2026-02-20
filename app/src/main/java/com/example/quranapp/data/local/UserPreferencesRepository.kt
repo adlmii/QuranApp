@@ -27,6 +27,8 @@ class UserPreferencesRepository(private val context: Context) {
         private val KEY_LAST_LAT = doublePreferencesKey("last_lat")
         private val KEY_LAST_LON = doublePreferencesKey("last_lon")
         private val KEY_ARABIC_FONT_SIZE = floatPreferencesKey("arabic_font_size")
+        private val KEY_THEME_MODE = intPreferencesKey("theme_mode") // 0: System, 1: Light, 2: Dark
+        private val KEY_LANGUAGE = stringPreferencesKey("app_language") // "in" | "en" | "" for system
 
         // Per-prayer notification toggles
         private val PRAYER_NOTIFICATION_KEYS = mapOf(
@@ -64,6 +66,40 @@ class UserPreferencesRepository(private val context: Context) {
     suspend fun saveArabicFontSize(size: Float) {
         context.dataStore.edit { prefs ->
             prefs[KEY_ARABIC_FONT_SIZE] = size
+        }
+    }
+
+    /**
+     * Observe theme mode (default 0: System)
+     */
+    val themeMode: Flow<Int> = context.dataStore.data.map { prefs ->
+        prefs[KEY_THEME_MODE] ?: 0
+    }
+
+    /**
+     * Save theme mode preference
+     * @param mode 0: System, 1: Light, 2: Dark
+     */
+    suspend fun saveThemeMode(mode: Int) {
+        context.dataStore.edit { prefs ->
+            prefs[KEY_THEME_MODE] = mode
+        }
+    }
+
+    /**
+     * Observe app language (default "" = system)
+     */
+    val language: Flow<String> = context.dataStore.data.map { prefs ->
+        prefs[KEY_LANGUAGE] ?: ""
+    }
+
+    /**
+     * Save app language preference
+     * @param code "in" | "en" | "" for system
+     */
+    suspend fun saveLanguage(code: String) {
+        context.dataStore.edit { prefs ->
+            prefs[KEY_LANGUAGE] = code
         }
     }
 

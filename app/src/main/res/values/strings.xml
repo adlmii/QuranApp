@@ -142,4 +142,23 @@
     <!-- Error Messages -->
     <string name="error_generic">Error</string>
     <string name="error_retry">Coba lagi...</string>
+
+    <!-- Settings Screen -->
+    <string name="title_settings_global">Pengaturan</string>
+    <string name="cat_worship_goals">Target Ibadah</string>
+    <string name="cat_appearance_global">Tema Aplikasi</string>
+    <string name="label_quran_target">Target Tilawah Harian</string>
+    <string name="desc_quran_target">Atur target menit membaca Al-Qur\'an setiap hari</string>
+    <string name="goal_value">%1$d menit</string>
+    <string name="label_app_theme">Tema</string>
+    <string name="theme_system">Ikuti Sistem</string>
+    <string name="theme_light">Mode Terang</string>
+    <string name="theme_dark">Mode Gelap</string>
+    <string name="label_version">Versi Aplikasi</string>
+    <string name="app_version_val">1.0.0 Emerald</string>
+    <string name="cat_language">Bahasa Aplikasi</string>
+    <string name="label_app_language">Pilih Bahasa</string>
+    <string name="lang_indonesian">Bahasa Indonesia</string>
+    <string name="lang_english">English</string>
+    <string name="lang_system">Ikuti Sistem</string>
 </resources>

@@ -142,4 +142,23 @@
     <!-- Error Messages -->
     <string name="error_generic">Error</string>
     <string name="error_retry">Retry...</string>
+
+    <!-- Settings Screen -->
+    <string name="title_settings_global">Settings</string>
+    <string name="cat_worship_goals">Worship Goals</string>
+    <string name="cat_appearance_global">Appearance</string>
+    <string name="label_quran_target">Daily Quran Reading Target</string>
+    <string name="desc_quran_target">Set your daily target for reading the Quran in minutes</string>
+    <string name="goal_value">%1$d min</string>
+    <string name="label_app_theme">Theme</string>
+    <string name="theme_system">Follow System</string>
+    <string name="theme_light">Light Mode</string>
+    <string name="theme_dark">Dark Mode</string>
+    <string name="label_version">App Version</string>
+    <string name="app_version_val">1.0.0 Emerald</string>
+    <string name="cat_language">App Language</string>
+    <string name="label_app_language">Select Language</string>
+    <string name="lang_indonesian">Bahasa Indonesia</string>
+    <string name="lang_english">English</string>
+    <string name="lang_system">Follow System</string>
 </resources>
