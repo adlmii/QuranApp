@@ -19,6 +19,8 @@
     <string name="notif_syuruq_body">Matahari telah terbit. Waktu Dhuha sebentar lagi!</string>
     <string name="notif_post_title">🌿 Sudah Sholat %1$s?</string>
     <string name="notif_post_body">Jangan lupa catat progres sholatmu hari ini ya 🌿</string>
+    <string name="notif_alkahfi_title">📖 Sunnah Malam Jumat</string>
+    <string name="notif_alkahfi_body">Malam Jumat telah tiba. Yuk, luangkan waktu untuk membaca Surah Al-Kahfi 🌿</string>
 
     <!-- Quran Detail -->
     <string name="mode_halaman_title">Mode Halaman</string>
@@ -31,6 +33,7 @@
     <string name="prayer_fajr">Subuh</string>
     <string name="prayer_syuruq">Syuruq</string>
     <string name="prayer_dhuhr">Dzuhur</string>
+    <string name="prayer_jumat">Sholat Jumat</string>
     <string name="prayer_asr">Ashar</string>
     <string name="prayer_maghrib">Maghrib</string>
     <string name="prayer_isha">Isya</string>

@@ -5,6 +5,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import com.example.quranapp.R
 import com.example.quranapp.data.repository.PrayerRepository
 import java.util.Calendar
 import java.util.Date
@@ -25,6 +26,22 @@ class PrayerAlarmScheduler(private val context: Context) {
         private const val RC_MATSURAT_PETANG = 101
         private const val RC_DAILY_GOAL = 102
         private const val RC_HIJRI_CHANGE = 103
+        private const val RC_ALKAHFI_REMINDER = 104
+
+        private const val ALKAHFI_DELAY_MINUTES = 30
+    }
+
+    /**
+     * Get display name for prayer. On Friday, "Dhuhr" becomes "Sholat Jumat".
+     */
+    private fun getPrayerDisplayName(originalName: String, prayerTime: Date): String {
+        val cal = Calendar.getInstance().apply { time = prayerTime }
+        val isFriday = cal.get(Calendar.DAY_OF_WEEK) == Calendar.FRIDAY
+        return if (isFriday && originalName == "Dhuhr") {
+            context.getString(R.string.prayer_jumat)
+        } else {
+            originalName
+        }
     }
 
     /**
@@ -36,6 +53,7 @@ class PrayerAlarmScheduler(private val context: Context) {
 
         prayers.forEachIndexed { index, (name, time, skipPreReminder) ->
             val prayerTimeMs = time.time
+            val displayName = getPrayerDisplayName(name, time)
 
             // Pre-reminder (10 min before) — skip for Sunrise
             if (!skipPreReminder) {
@@ -44,7 +62,7 @@ class PrayerAlarmScheduler(private val context: Context) {
                     scheduleAlarm(
                         triggerTime = preReminderMs,
                         requestCode = index * 10 + PRE_REMINDER,
-                        prayerName = name,
+                        prayerName = displayName,
                         isPreReminder = true
                     )
                 }
@@ -55,7 +73,7 @@ class PrayerAlarmScheduler(private val context: Context) {
                 scheduleAlarm(
                     triggerTime = prayerTimeMs,
                     requestCode = index * 10 + ADZAN,
-                    prayerName = name,
+                    prayerName = displayName,
                     isPreReminder = false
                 )
             }
@@ -68,7 +86,7 @@ class PrayerAlarmScheduler(private val context: Context) {
                         triggerTime = postPrayerMs,
                         requestCode = index * 10 + POST_PRAYER,
                         notificationType = "post_prayer",
-                        extraData = name
+                        extraData = displayName
                     )
                 }
             }
@@ -126,6 +144,18 @@ class PrayerAlarmScheduler(private val context: Context) {
                 triggerTime = maghribTime.time,
                 requestCode = RC_HIJRI_CHANGE,
                 notificationType = "hijri_change"
+            )
+        }
+
+        // Al-Kahfi Reminder: Thursday night, 30 min after Maghrib (malam Jumat = Kamis setelah Maghrib)
+        val maghribCal = Calendar.getInstance().apply { time = maghribTime }
+        val isThursday = maghribCal.get(Calendar.DAY_OF_WEEK) == Calendar.THURSDAY
+        val alkahfiMs = maghribTime.time + ALKAHFI_DELAY_MINUTES * 60 * 1000L
+        if (isThursday && alkahfiMs > now) {
+            scheduleTypedAlarm(
+                triggerTime = alkahfiMs,
+                requestCode = RC_ALKAHFI_REMINDER,
+                notificationType = "alkahfi_reminder"
             )
         }
     }
@@ -200,8 +230,8 @@ class PrayerAlarmScheduler(private val context: Context) {
      */
     fun cancelAll() {
         // Prayer alarms: 0..59 (6 prayers * 10 offset range)
-        // Extra alarms: 100..103
-        val codes = (0 until 60) + listOf(RC_MATSURAT_PAGI, RC_MATSURAT_PETANG, RC_DAILY_GOAL, RC_HIJRI_CHANGE)
+        // Extra alarms: 100..104
+        val codes = (0 until 60) + listOf(RC_MATSURAT_PAGI, RC_MATSURAT_PETANG, RC_DAILY_GOAL, RC_HIJRI_CHANGE, RC_ALKAHFI_REMINDER)
         for (i in codes) {
             val intent = Intent(context, PrayerNotificationReceiver::class.java)
             val pendingIntent = PendingIntent.getBroadcast(

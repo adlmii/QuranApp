@@ -19,6 +19,8 @@
     <string name="notif_syuruq_body">The sun has risen. Duha time is coming!</string>
     <string name="notif_post_title">🌿 Have you prayed %1$s?</string>
     <string name="notif_post_body">Don\'t forget to record your prayer progress today 🌿</string>
+    <string name="notif_alkahfi_title">📖 Friday Night Sunnah</string>
+    <string name="notif_alkahfi_body">Friday night has arrived. Take time to read Surah Al-Kahfi 🌿</string>
 
     <!-- Quran Detail -->
     <string name="mode_halaman_title">Page Mode</string>
@@ -31,6 +33,7 @@
     <string name="prayer_fajr">Fajr</string>
     <string name="prayer_syuruq">Sunrise</string>
     <string name="prayer_dhuhr">Dhuhr</string>
+    <string name="prayer_jumat">Friday Prayer</string>
     <string name="prayer_asr">Asr</string>
     <string name="prayer_maghrib">Maghrib</string>
     <string name="prayer_isha">Isha</string>

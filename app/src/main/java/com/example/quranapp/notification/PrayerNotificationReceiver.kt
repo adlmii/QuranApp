@@ -137,6 +137,15 @@ class PrayerNotificationReceiver : BroadcastReceiver() {
                     }
                 }
             }
+
+            "alkahfi_reminder" -> {
+                showNotification(
+                    context,
+                    "alkahfi_reminder".hashCode(),
+                    context.getString(R.string.notif_alkahfi_title),
+                    context.getString(R.string.notif_alkahfi_body)
+                )
+            }
         }
     }
 
