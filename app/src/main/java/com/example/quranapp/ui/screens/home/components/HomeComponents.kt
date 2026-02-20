@@ -47,10 +47,15 @@ fun QuranProgressCard(
 
 @Composable
 fun AlMatsuratCard(
-    type: String,
+    matsuratKey: String, // "MORNING" | "EVENING"
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val typeLabel = if (matsuratKey == "EVENING") {
+        stringResource(R.string.matsurat_petang)
+    } else {
+        stringResource(R.string.matsurat_pagi)
+    }
     Card(
         modifier = modifier
             .fillMaxWidth(),
@@ -85,7 +90,7 @@ fun AlMatsuratCard(
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = "${androidx.compose.ui.res.stringResource(com.example.quranapp.R.string.matsurat_prefix)} ${type}",
+                        text = "${stringResource(R.string.matsurat_prefix)} $typeLabel",
                         style = MaterialTheme.typography.bodySmall,
                         color = White.copy(alpha = 0.7f)
                     )

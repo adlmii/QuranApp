@@ -4,8 +4,8 @@
     <!-- Home & Prayer ViewModels -->
     <string name="label_calculating">Menghitung...</string>
     <string name="label_now">Sekarang</string>
-    <string name="countdown_hours_mins">dalam %1$dh %2$dm</string>
-    <string name="countdown_mins_secs">dalam %1$dm %2$ds</string>
+    <string name="countdown_hours_mins">dalam %1$dj %2$dm</string>
+    <string name="countdown_mins_secs">dalam %1$dm %2$dd</string>
     <string name="matsurat_pagi">Pagi</string>
     <string name="matsurat_petang">Petang</string>
     <string name="location_unknown">Lokasi Tidak Diketahui</string>
@@ -152,7 +152,7 @@
     <string name="cat_appearance_global">Tema Aplikasi</string>
     <string name="label_quran_target">Target Tilawah Harian</string>
     <string name="desc_quran_target">Atur target menit membaca Al-Qur\'an setiap hari</string>
-    <string name="goal_value">%1$d menit</string>
+    <string name="goal_value">%1$d min</string>
     <string name="label_app_theme">Tema</string>
     <string name="theme_system">Ikuti Sistem</string>
     <string name="theme_light">Mode Terang</string>

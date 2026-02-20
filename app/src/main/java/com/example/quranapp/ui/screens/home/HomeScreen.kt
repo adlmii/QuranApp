@@ -118,7 +118,7 @@ fun HomeScreen(
 
             // ── Al-Ma'tsurat ──
             AlMatsuratCard(
-                type = uiState.matsuratType,
+                matsuratKey = uiState.matsuratKey,
                 onClick = { onNavigateToMatsurat(uiState.matsuratKey) }
             )
 
