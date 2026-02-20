@@ -23,12 +23,14 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.quranapp.R
 import com.example.quranapp.ui.components.AppHeader
 import com.example.quranapp.ui.theme.*
 import kotlin.math.abs
@@ -66,7 +68,7 @@ fun QiblaScreen(
     Scaffold(
         topBar = {
             AppHeader(
-                title = "Qibla Finder",
+                title = stringResource(R.string.title_qibla_finder),
                 onBackClick = { navController.popBackStack() },
                 backgroundColor = CreamBackground,
                 contentColor = DeepEmerald
@@ -90,7 +92,7 @@ fun QiblaScreen(
                 PermissionRequestUI()
             } else {
                 Text(
-                    text = if (isAligned) "You are facing Qibla" else "Rotate your phone",
+                    text = if (isAligned) stringResource(R.string.qibla_aligned) else stringResource(R.string.qibla_rotate_phone),
                     style = MaterialTheme.typography.titleMedium,
                     color = if (isAligned) DeepEmerald else TextGray,
                     fontWeight = FontWeight.SemiBold
@@ -321,13 +323,13 @@ fun InfoCard(
         ) {
             Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    text = "Qibla Direction",
+                    text = stringResource(R.string.label_qibla_direction),
                     style = MaterialTheme.typography.labelMedium,
                     color = TextGray
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "${qiblaBearing.toInt()}°",
+                    text = "${qiblaBearing.toInt()}${stringResource(R.string.unit_degree)}",
                     style = MaterialTheme.typography.headlineMedium,
                     color = if (isAligned) GoldAccent else DeepEmerald,
                     fontWeight = FontWeight.Bold
@@ -346,13 +348,13 @@ fun InfoCard(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Current Heading",
+                    text = stringResource(R.string.label_current_heading),
                     style = MaterialTheme.typography.labelMedium,
                     color = TextGray
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "${currentHeading.toInt()}°",
+                    text = "${currentHeading.toInt()}${stringResource(R.string.unit_degree)}",
                     style = MaterialTheme.typography.headlineMedium,
                     color = DeepEmerald,
                     fontWeight = FontWeight.Normal
@@ -373,7 +375,7 @@ fun PermissionRequestUI() {
                 modifier = Modifier.size(48.dp)
             )
             Spacer(modifier = Modifier.height(16.dp))
-            Text("Location Permission Required", color = TextGray)
+            Text(stringResource(R.string.permission_location_required), color = TextGray)
         }
     }
 }

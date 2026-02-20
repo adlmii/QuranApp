@@ -22,9 +22,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.example.quranapp.R
 import com.example.quranapp.ui.theme.*
 import com.example.quranapp.ui.components.GenericProgressCard
 
@@ -43,7 +45,7 @@ fun PrayerProgressCard(
     GenericProgressCard(
         progress = progress,
         mainText = "$count/$total",
-        subText = "prayed",
+        subText = stringResource(R.string.label_prayed),
         modifier = modifier
     )
 }
@@ -66,7 +68,7 @@ fun ImsakSunriseBar(
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = "Imsak $imsakTime  |  Sunrise $sunriseTime",
+            text = stringResource(R.string.imsak_sunrise_format, imsakTime, sunriseTime),
             style = MaterialTheme.typography.labelMedium,
             fontWeight = FontWeight.Medium,
             color = DeepEmerald,
@@ -183,7 +185,7 @@ fun PrayerItem(
                         .padding(horizontal = 8.dp, vertical = 2.dp)
                 ) {
                     Text(
-                        text = "Now",
+                        text = stringResource(R.string.badge_now),
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Bold,
                         color = GoldAccent
@@ -223,7 +225,7 @@ fun PrayerItem(
             // Notification icon (clickable toggle)
             Icon(
                 imageVector = if (isNotificationOn) Icons.Default.Notifications else Icons.Default.NotificationsOff,
-                contentDescription = "Toggle Notification",
+                contentDescription = stringResource(R.string.content_desc_toggle_notification),
                 tint = if (isNotificationOn) GoldAccent.copy(alpha = 0.7f) else White.copy(alpha = 0.25f),
                 modifier = Modifier
                     .size(20.dp)
@@ -260,7 +262,7 @@ fun MarkAllPrayedButton(
         contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp)
     ) {
         Text(
-            text = if (enabled) "Mark all as prayed" else "Track upcoming prayer soon",
+            text = if (enabled) stringResource(R.string.button_mark_all_prayed) else stringResource(R.string.button_track_upcoming),
             style = MaterialTheme.typography.labelLarge,
             fontWeight = FontWeight.Bold,
             color = contentColor

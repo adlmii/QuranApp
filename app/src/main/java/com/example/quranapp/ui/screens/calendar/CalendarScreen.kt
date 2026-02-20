@@ -9,9 +9,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.quranapp.R
 import com.example.quranapp.ui.components.AppHeader
 import com.example.quranapp.ui.screens.calendar.components.*
 import com.example.quranapp.ui.theme.*
@@ -26,7 +28,7 @@ fun CalendarScreen(
     Scaffold(
         topBar = {
             AppHeader(
-                title = "Kalender Islam",
+                title = stringResource(R.string.title_islamic_calendar),
                 onBackClick = { navController.popBackStack() },
                 backgroundColor = CreamBackground,
                 contentColor = DeepEmerald

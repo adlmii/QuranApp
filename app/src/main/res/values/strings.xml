@@ -71,4 +71,75 @@
     <string name="settings_tajwid">Warna Tajwid</string>
     <string name="notif_hijri_month_title">🌙 Pergantian Bulan Hijriah</string>
     <string name="notif_hijri_month_body">Selamat memasuki bulan %1$s. Semoga berkah! 🌙</string>
+
+    <!-- Prayer Components -->
+    <string name="label_prayed">Sholat</string>
+    <string name="imsak_sunrise_format">Imsak %1$s  |  Sunrise %2$s</string>
+    <string name="badge_now">Sekarang</string>
+    <string name="badge_next">Berikutnya</string>
+    <string name="button_mark_all_prayed">Tandai semua sudah sholat</string>
+    <string name="button_track_upcoming">Lacak sholat yang akan datang</string>
+    <string name="label_ongoing">Sedang Berlangsung</string>
+    <string name="content_desc_toggle_notification">Toggle Notifikasi</string>
+
+    <!-- Qibla Screen -->
+    <string name="title_qibla_finder">Pencari Qibla</string>
+    <string name="qibla_aligned">Anda menghadap Qibla</string>
+    <string name="qibla_rotate_phone">Putar ponsel Anda</string>
+    <string name="label_qibla_direction">Arah Qibla</string>
+    <string name="label_current_heading">Arah Saat Ini</string>
+    <string name="permission_location_required">Izin Lokasi Diperlukan</string>
+    <string name="unit_degree">°</string>
+
+    <!-- Al-Matsurat Screen -->
+    <string name="title_almatsurat">Al-Ma\'tsurat</string>
+    <string name="subtitle_dzikir_pagi">Dzikir Pagi</string>
+    <string name="subtitle_dzikir_petang">Dzikir Petang</string>
+    <string name="label_no_translation">Tidak ada terjemahan</string>
+
+    <!-- Calendar Screen -->
+    <string name="title_islamic_calendar">Kalender Islam</string>
+    <string name="content_desc_prev_month">Bulan Sebelumnya</string>
+    <string name="content_desc_next_month">Bulan Berikutnya</string>
+    <string name="day_mon">Sen</string>
+    <string name="day_tue">Sel</string>
+    <string name="day_wed">Rab</string>
+    <string name="day_thu">Kam</string>
+    <string name="day_fri">Jum</string>
+    <string name="day_sat">Sab</string>
+    <string name="day_sun">Ahd</string>
+
+    <!-- Bookmark Card -->
+    <string name="card_bookmark_title">Lanjut Tilawah</string>
+    <string name="bookmark_format">%1$s · Ayat %2$d</string>
+    <string name="content_desc_open">Buka</string>
+
+    <!-- Common Components -->
+    <string name="label_locating">Mencari lokasi...</string>
+    <string name="content_desc_location">Lokasi</string>
+
+    <!-- Navigation Routes -->
+    <string name="nav_home">Beranda</string>
+    <string name="nav_prayers">Sholat</string>
+    <string name="nav_quran">Al-Qur\'an</string>
+    <string name="nav_qibla">Qibla</string>
+    <string name="nav_calendar">Kalender</string>
+    <string name="nav_settings">Pengaturan</string>
+    <string name="nav_almatsurat">Al-Ma\'tsurat</string>
+    <string name="nav_detail">Detail</string>
+
+    <!-- Notifications -->
+    <string name="notif_channel_name">Notifikasi Sholat</string>
+    <string name="notif_channel_desc">Notifikasi waktu sholat dan pengingat</string>
+    <string name="notif_default_prayer">Sholat</string>
+    <string name="notif_matsurat_pagi_title">📖 Dzikir Pagi</string>
+    <string name="notif_matsurat_pagi_body">Waktu yang tepat untuk Dzikir Pagi. Yuk, baca Al-Ma\'tsurat sekarang 📖</string>
+    <string name="notif_matsurat_petang_title">📖 Dzikir Petang</string>
+    <string name="notif_matsurat_petang_body">Waktu yang tepat untuk Dzikir Petang. Yuk, baca Al-Ma\'tsurat sekarang 📖</string>
+    <string name="notif_quran_goal_title">✨ Sedikit Lagi!</string>
+    <string name="notif_quran_goal_body">Baca Quran sebentar lagi yuk untuk mencapai target harimu ✨</string>
+
+    <!-- Error Messages -->
+    <string name="error_generic">Error</string>
+    <string name="error_retry">Coba lagi...</string>
 </resources>

@@ -71,4 +71,75 @@
     <string name="settings_tajwid">Tajweed Colors</string>
     <string name="notif_hijri_month_title">🌙 New Hijri Month</string>
     <string name="notif_hijri_month_body">Welcome to the month of %1$s. Have a blessed one! 🌙</string>
+
+    <!-- Prayer Components -->
+    <string name="label_prayed">Prayed</string>
+    <string name="imsak_sunrise_format">Imsak %1$s  |  Sunrise %2$s</string>
+    <string name="badge_now">Now</string>
+    <string name="badge_next">Next</string>
+    <string name="button_mark_all_prayed">Mark all as prayed</string>
+    <string name="button_track_upcoming">Track upcoming prayer soon</string>
+    <string name="label_ongoing">Ongoing</string>
+    <string name="content_desc_toggle_notification">Toggle Notification</string>
+
+    <!-- Qibla Screen -->
+    <string name="title_qibla_finder">Qibla Finder</string>
+    <string name="qibla_aligned">You are facing Qibla</string>
+    <string name="qibla_rotate_phone">Rotate your phone</string>
+    <string name="label_qibla_direction">Qibla Direction</string>
+    <string name="label_current_heading">Current Heading</string>
+    <string name="permission_location_required">Location Permission Required</string>
+    <string name="unit_degree">°</string>
+
+    <!-- Al-Matsurat Screen -->
+    <string name="title_almatsurat">Al-Ma\'tsurat</string>
+    <string name="subtitle_dzikir_pagi">Morning Dhikr</string>
+    <string name="subtitle_dzikir_petang">Evening Dhikr</string>
+    <string name="label_no_translation">No translation available</string>
+
+    <!-- Calendar Screen -->
+    <string name="title_islamic_calendar">Islamic Calendar</string>
+    <string name="content_desc_prev_month">Previous Month</string>
+    <string name="content_desc_next_month">Next Month</string>
+    <string name="day_mon">Mon</string>
+    <string name="day_tue">Tue</string>
+    <string name="day_wed">Wed</string>
+    <string name="day_thu">Thu</string>
+    <string name="day_fri">Fri</string>
+    <string name="day_sat">Sat</string>
+    <string name="day_sun">Sun</string>
+
+    <!-- Bookmark Card -->
+    <string name="card_bookmark_title">Continue Reading</string>
+    <string name="bookmark_format">%1$s · Ayah %2$d</string>
+    <string name="content_desc_open">Open</string>
+
+    <!-- Common Components -->
+    <string name="label_locating">Locating...</string>
+    <string name="content_desc_location">Location</string>
+
+    <!-- Navigation Routes -->
+    <string name="nav_home">Home</string>
+    <string name="nav_prayers">Prayers</string>
+    <string name="nav_quran">Quran</string>
+    <string name="nav_qibla">Qibla</string>
+    <string name="nav_calendar">Calendar</string>
+    <string name="nav_settings">Settings</string>
+    <string name="nav_almatsurat">Al-Ma\'tsurat</string>
+    <string name="nav_detail">Detail</string>
+
+    <!-- Notifications -->
+    <string name="notif_channel_name">Prayer Notifications</string>
+    <string name="notif_channel_desc">Prayer time notifications and reminders</string>
+    <string name="notif_default_prayer">Prayer</string>
+    <string name="notif_matsurat_pagi_title">📖 Morning Dhikr</string>
+    <string name="notif_matsurat_pagi_body">Perfect time for Morning Dhikr. Let\'s read Al-Ma\'tsurat now 📖</string>
+    <string name="notif_matsurat_petang_title">📖 Evening Dhikr</string>
+    <string name="notif_matsurat_petang_body">Perfect time for Evening Dhikr. Let\'s read Al-Ma\'tsurat now 📖</string>
+    <string name="notif_quran_goal_title">✨ Almost There!</string>
+    <string name="notif_quran_goal_body">Read Quran a bit more to reach your daily goal ✨</string>
+
+    <!-- Error Messages -->
+    <string name="error_generic">Error</string>
+    <string name="error_retry">Retry...</string>
 </resources>

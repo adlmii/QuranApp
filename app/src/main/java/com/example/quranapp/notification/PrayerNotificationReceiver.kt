@@ -18,7 +18,6 @@ class PrayerNotificationReceiver : BroadcastReceiver() {
 
     companion object {
         const val CHANNEL_ID = "prayer_notifications"
-        const val CHANNEL_NAME = "Prayer Notifications"
     }
 
     override fun onReceive(context: Context, intent: Intent) {
@@ -59,7 +58,7 @@ class PrayerNotificationReceiver : BroadcastReceiver() {
     private fun handleTypedNotification(context: Context, type: String, intent: Intent) {
         when (type) {
             "post_prayer" -> {
-                val prayerName = intent.getStringExtra("extra_data") ?: "Sholat"
+                val prayerName = intent.getStringExtra("extra_data") ?: context.getString(R.string.notif_default_prayer)
                 showNotification(
                     context,
                     "post_prayer_$prayerName".hashCode(),
@@ -72,8 +71,8 @@ class PrayerNotificationReceiver : BroadcastReceiver() {
                 showNotification(
                     context,
                     "matsurat_pagi".hashCode(),
-                    "📖 Dzikir Pagi",
-                    "Waktu yang tepat untuk Dzikir Pagi. Yuk, baca Al-Ma'tsurat sekarang 📖"
+                    context.getString(R.string.notif_matsurat_pagi_title),
+                    context.getString(R.string.notif_matsurat_pagi_body)
                 )
             }
 
@@ -81,8 +80,8 @@ class PrayerNotificationReceiver : BroadcastReceiver() {
                 showNotification(
                     context,
                     "matsurat_petang".hashCode(),
-                    "📖 Dzikir Petang",
-                    "Waktu yang tepat untuk Dzikir Petang. Yuk, baca Al-Ma'tsurat sekarang 📖"
+                    context.getString(R.string.notif_matsurat_petang_title),
+                    context.getString(R.string.notif_matsurat_petang_body)
                 )
             }
 
@@ -99,8 +98,8 @@ class PrayerNotificationReceiver : BroadcastReceiver() {
                             showNotification(
                                 context,
                                 "quran_goal".hashCode(),
-                                "✨ Sedikit Lagi!",
-                                "Baca Quran sebentar lagi yuk untuk mencapai target harimu ✨"
+                                context.getString(R.string.notif_quran_goal_title),
+                                context.getString(R.string.notif_quran_goal_body)
                             )
                         }
                     } finally {
@@ -160,10 +159,10 @@ class PrayerNotificationReceiver : BroadcastReceiver() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 CHANNEL_ID,
-                CHANNEL_NAME,
+                context.getString(R.string.notif_channel_name),
                 NotificationManager.IMPORTANCE_HIGH
             ).apply {
-                description = "Notifikasi waktu sholat dan pengingat"
+                description = context.getString(R.string.notif_channel_desc)
                 enableVibration(true)
             }
 

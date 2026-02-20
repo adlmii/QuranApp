@@ -18,8 +18,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.quranapp.R
 import com.example.quranapp.ui.theme.*
 import androidx.compose.ui.unit.sp
 import androidx.compose.material.icons.filled.Timer
@@ -28,7 +30,7 @@ import androidx.compose.material.icons.filled.Timer
 fun AppHeader(
     gregorianDate: String,
     hijriDate: String,
-    location: String = "Locating...",
+    location: String = "",
     onDateClick: (() -> Unit)? = null
 ) {
     Row(
@@ -66,13 +68,13 @@ fun AppHeader(
         ) {
             Icon(
                 Icons.Default.LocationOn,
-                contentDescription = "Location",
+                contentDescription = stringResource(R.string.content_desc_location),
                 tint = DeepEmerald,
                 modifier = Modifier.size(14.dp)
             )
             Spacer(modifier = Modifier.width(4.dp))
             Text(
-                text = location,
+                text = location.ifEmpty { stringResource(R.string.label_locating) },
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.Bold,
                 color = DeepEmerald
@@ -146,7 +148,7 @@ fun PrayerCard(
                         .padding(horizontal = 12.dp, vertical = 6.dp)
                 ) {
                     Text(
-                        text = if (isNow) "Now" else "Next",
+                        text = if (isNow) stringResource(R.string.badge_now) else stringResource(R.string.badge_next),
                         color = if (isNow) DeepEmerald else White,
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Bold
@@ -180,7 +182,7 @@ fun PrayerCard(
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = if (isNow) "Sedang Berlangsung" else countDown,
+                        text = if (isNow) stringResource(R.string.label_ongoing) else countDown,
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Medium,
                         color = GoldAccent

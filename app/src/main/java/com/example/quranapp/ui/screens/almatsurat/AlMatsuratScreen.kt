@@ -14,12 +14,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.quranapp.R
 import com.example.quranapp.data.model.AlMatsurat
 import com.example.quranapp.data.model.MatsuratType
 import com.example.quranapp.ui.components.AppCard
@@ -55,8 +57,8 @@ fun AlMatsuratScreen(
         SetStatusBarColor(CreamBackground)
 
         AppHeader(
-            title = "Al-Ma'tsurat",
-            subtitle = if (type == MatsuratType.MORNING) "Dzikir Pagi" else "Dzikir Petang",
+            title = stringResource(R.string.title_almatsurat),
+            subtitle = if (type == MatsuratType.MORNING) stringResource(R.string.subtitle_dzikir_pagi) else stringResource(R.string.subtitle_dzikir_petang),
             onBackClick = { navController.popBackStack() },
             backgroundColor = CreamBackground,
             contentColor = DeepEmerald
@@ -134,7 +136,7 @@ fun SlidingMatsuratCard(item: AlMatsurat) {
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = item.translation ?: "Tidak ada terjemahan",
+                                text = item.translation ?: stringResource(R.string.label_no_translation),
                                 style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 26.sp),
                                 color = TextGray,
                                 textAlign = TextAlign.Center,

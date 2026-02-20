@@ -15,9 +15,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.quranapp.R
 import com.example.quranapp.data.model.IslamicEvent
 import com.example.quranapp.ui.screens.calendar.CalendarDay
 import com.example.quranapp.ui.theme.*
@@ -49,7 +51,7 @@ fun MonthNavigator(
             IconButton(onClick = onPrevious) {
                 Icon(
                     Icons.Default.ChevronLeft,
-                    contentDescription = "Bulan Sebelumnya",
+                    contentDescription = stringResource(R.string.content_desc_prev_month),
                     tint = DeepEmerald,
                     modifier = Modifier.size(28.dp)
                 )
@@ -73,7 +75,7 @@ fun MonthNavigator(
             IconButton(onClick = onNext) {
                 Icon(
                     Icons.Default.ChevronRight,
-                    contentDescription = "Bulan Berikutnya",
+                    contentDescription = stringResource(R.string.content_desc_next_month),
                     tint = DeepEmerald,
                     modifier = Modifier.size(28.dp)
                 )
@@ -86,7 +88,16 @@ fun MonthNavigator(
 // Day Headers (Sen - Ahd)
 // ─────────────────────────────────────────────
 
-private val dayHeaders = listOf("Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Ahd")
+@Composable
+private fun getDayHeaders(): List<String> = listOf(
+    stringResource(R.string.day_mon),
+    stringResource(R.string.day_tue),
+    stringResource(R.string.day_wed),
+    stringResource(R.string.day_thu),
+    stringResource(R.string.day_fri),
+    stringResource(R.string.day_sat),
+    stringResource(R.string.day_sun)
+)
 
 @Composable
 fun DayHeaderRow() {
@@ -94,7 +105,7 @@ fun DayHeaderRow() {
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
-        dayHeaders.forEach { day ->
+        getDayHeaders().forEach { day ->
             Box(
                 modifier = Modifier.weight(1f),
                 contentAlignment = Alignment.Center

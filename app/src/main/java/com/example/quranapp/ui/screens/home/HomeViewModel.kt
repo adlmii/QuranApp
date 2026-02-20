@@ -185,8 +185,8 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         } catch (e: Exception) {
             e.printStackTrace()
             _uiState.value = _uiState.value.copy(
-                nextPrayerName = "Error",
-                timeToNextPrayer = "Retry..."
+                nextPrayerName = getApplication<Application>().getString(com.example.quranapp.R.string.error_generic),
+                timeToNextPrayer = getApplication<Application>().getString(com.example.quranapp.R.string.error_retry)
             )
         }
     }
