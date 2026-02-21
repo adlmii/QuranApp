@@ -4,9 +4,24 @@ import android.content.Context
 import android.content.res.Configuration
 import android.os.Build
 import android.os.LocaleList
+import com.example.quranapp.data.local.UserPreferencesRepository
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import java.util.Locale
 
 object LocaleHelper {
+
+    fun getLocalizedContext(context: Context): Context {
+        val languageCode = runBlocking {
+            try {
+                val userPrefs = UserPreferencesRepository(context)
+                userPrefs.language.first()
+            } catch (e: Exception) {
+                ""
+            }
+        }
+        return wrapContext(context, languageCode)
+    }
 
     /**
      * Apply saved language to context.

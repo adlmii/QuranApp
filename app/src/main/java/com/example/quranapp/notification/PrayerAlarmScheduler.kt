@@ -15,25 +15,18 @@ class PrayerAlarmScheduler(private val context: Context) {
     private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
     companion object {
-        // Request code offsets: prayer index * 10 + alert type
-        // Alert type: 0 = pre-reminder, 1 = adzan, 2 = post-prayer check
         private const val PRE_REMINDER = 0
         private const val ADZAN = 1
         private const val POST_PRAYER = 2
-
-        // Fixed request codes for extra notifications (100+)
         private const val RC_MATSURAT_PAGI = 100
         private const val RC_MATSURAT_PETANG = 101
         private const val RC_DAILY_GOAL = 102
         private const val RC_HIJRI_CHANGE = 103
         private const val RC_ALKAHFI_REMINDER = 104
-
         private const val ALKAHFI_DELAY_MINUTES = 30
     }
 
-    /**
-     * Get display name for prayer. On Friday, "Dhuhr" becomes "Sholat Jumat".
-     */
+    
     private fun getPrayerDisplayName(originalName: String, prayerTime: Date): String {
         val cal = Calendar.getInstance().apply { time = prayerTime }
         val isFriday = cal.get(Calendar.DAY_OF_WEEK) == Calendar.FRIDAY

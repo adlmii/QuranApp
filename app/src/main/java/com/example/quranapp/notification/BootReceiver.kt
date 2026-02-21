@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import com.example.quranapp.data.local.UserPreferencesRepository
 import com.example.quranapp.data.repository.PrayerRepository
+import com.example.quranapp.util.LocaleHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -19,11 +20,12 @@ class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action != Intent.ACTION_BOOT_COMPLETED) return
 
+        val localizedContext = LocaleHelper.getLocalizedContext(context)
         val pendingResult = goAsync()
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 // Load saved location from DataStore
-                val userPrefs = UserPreferencesRepository(context)
+                val userPrefs = UserPreferencesRepository(localizedContext)
                 val (lat, lon) = userPrefs.lastLocation.first()
 
                 // Calculate prayer times for today
@@ -41,7 +43,7 @@ class BootReceiver : BroadcastReceiver() {
                     Triple(prayerRepository.getPrayerNameClean(com.batoulapps.adhan.Prayer.ISHA), prayerTimes.isha, false)
                 )
 
-                val scheduler = PrayerAlarmScheduler(context)
+                val scheduler = PrayerAlarmScheduler(localizedContext)
                 scheduler.cancelAll()
                 scheduler.scheduleAll(prayers)
                 scheduler.scheduleExtras(

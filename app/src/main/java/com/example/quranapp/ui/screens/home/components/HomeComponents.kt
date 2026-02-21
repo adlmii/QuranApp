@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -17,7 +17,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.quranapp.ui.theme.*
 import com.example.quranapp.ui.components.GenericProgressCard
-import com.example.quranapp.ui.theme.CalligraphyIcon
 import androidx.compose.ui.unit.sp
 import androidx.compose.material.icons.filled.DateRange
 
@@ -96,7 +95,7 @@ fun AlMatsuratCard(
                     )
                 }
                 Icon(
-                    imageVector = Icons.Default.ArrowForward,
+                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                     contentDescription = "Open",
                     tint = White.copy(alpha = 0.5f),
                     modifier = Modifier.size(18.dp)
@@ -268,7 +267,7 @@ fun CalendarEntryCard(
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Default.ArrowForward,
+                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                         contentDescription = "Open Calendar",
                         tint = White,
                         modifier = Modifier.size(16.dp)

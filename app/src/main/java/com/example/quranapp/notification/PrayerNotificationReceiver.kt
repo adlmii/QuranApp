@@ -9,6 +9,7 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import com.example.quranapp.R
 import com.example.quranapp.data.local.UserPreferencesRepository
+import com.example.quranapp.util.LocaleHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -21,14 +22,16 @@ class PrayerNotificationReceiver : BroadcastReceiver() {
     }
 
     override fun onReceive(context: Context, intent: Intent) {
-        createNotificationChannel(context)
+        val localizedContext = LocaleHelper.getLocalizedContext(context)
+
+        createNotificationChannel(localizedContext)
 
         val notificationType = intent.getStringExtra("notification_type")
 
         if (notificationType != null) {
-            handleTypedNotification(context, notificationType, intent)
+            handleTypedNotification(localizedContext, notificationType, intent)
         } else {
-            handlePrayerNotification(context, intent)
+            handlePrayerNotification(localizedContext, intent)
         }
     }
 
@@ -114,10 +117,10 @@ class PrayerNotificationReceiver : BroadcastReceiver() {
                     try {
                         val tomorrow = java.time.LocalDate.now().plusDays(1)
                         val hijri = java.time.chrono.HijrahDate.from(tomorrow)
-                        
+
                         // Check if it is the start of a new Hijri month
                         val dayOfMonth = hijri.get(java.time.temporal.ChronoField.DAY_OF_MONTH)
-                        
+
                         if (dayOfMonth == 1) {
                             val formatter = java.time.format.DateTimeFormatter.ofPattern(
                                 "MMMM yyyy", java.util.Locale.getDefault()

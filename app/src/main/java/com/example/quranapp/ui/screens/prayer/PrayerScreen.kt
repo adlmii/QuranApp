@@ -110,7 +110,7 @@ fun PrayerScreen(
                     PrayerCard(
                         prayerName = uiState.nextPrayerName,
                         prayerTime = uiState.nextPrayerTime,
-                        countDown = uiState.timeToNextPrayer,
+                        countDown = uiState.timeToNextPrayer.asString(),
                         isNow = uiState.isCurrentPrayerNow,
                         nowLabel = uiState.currentPrayerLabel,
                         modifier = Modifier.weight(1f)
@@ -149,7 +149,7 @@ fun PrayerScreen(
                     isNow = prayer.isNow,
                     isPassed = prayer.isPassed,
                     isNotificationOn = prayer.isNotificationOn,
-                    countdown = prayer.countdown,
+                    countdown = prayer.countdown.asString(),
                     onCheckClick = {
                         viewModel.togglePrayed(index)
                     },

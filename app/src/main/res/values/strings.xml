@@ -158,7 +158,7 @@
     <string name="theme_light">Mode Terang</string>
     <string name="theme_dark">Mode Gelap</string>
     <string name="label_version">Versi Aplikasi</string>
-    <string name="app_version_val">1.0.0 Emerald</string>
+    <string name="app_version_val">1.0.0</string>
     <string name="cat_language">Bahasa Aplikasi</string>
     <string name="label_app_language">Pilih Bahasa</string>
     <string name="lang_indonesian">Bahasa Indonesia</string>

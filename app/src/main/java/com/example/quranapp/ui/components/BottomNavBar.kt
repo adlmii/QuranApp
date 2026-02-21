@@ -17,7 +17,6 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.quranapp.R
 import com.example.quranapp.ui.navigation.Screen
 import com.example.quranapp.ui.theme.DeepEmerald
-import com.example.quranapp.ui.theme.LightEmerald
 import com.example.quranapp.ui.theme.White
 import com.example.quranapp.ui.theme.GoldAccent
 
@@ -31,7 +30,6 @@ fun BottomNavBar(navController: NavHostController) {
         Screen.Settings
     )
 
-    // Add a shadow/elevation to the nav bar
     Surface(
         shadowElevation = 16.dp,
         color = Color.Transparent
@@ -93,7 +91,7 @@ fun BottomNavBar(navController: NavHostController) {
                     },
                     selected = isSelected,
                     colors = NavigationBarItemDefaults.colors(
-                        indicatorColor = Color.Transparent, // No pill indicator
+                        indicatorColor = Color.Transparent,
                         selectedIconColor = GoldAccent,
                         selectedTextColor = GoldAccent,
                         unselectedIconColor = White.copy(alpha = 0.6f),

@@ -3,13 +3,12 @@ package com.example.quranapp.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.quranapp.ui.theme.DeepEmerald
@@ -23,7 +22,6 @@ fun AppHeader(
     contentColor: Color = Color.White,
     actions: @Composable RowScope.() -> Unit = {}
 ) {
-    // Only apply gradient if the background color matches our primary DeepEmerald
     val modifier = if (backgroundColor == DeepEmerald) {
         Modifier
             .fillMaxWidth()
@@ -44,7 +42,7 @@ fun AppHeader(
             if (onBackClick != null) {
                 IconButton(onClick = onBackClick) {
                     Icon(
-                        imageVector = Icons.Default.ArrowBack,
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Back",
                         tint = contentColor
                     )
@@ -55,7 +53,7 @@ fun AppHeader(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.headlineSmall, // Slightly larger
+                    style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                     color = contentColor
                 )

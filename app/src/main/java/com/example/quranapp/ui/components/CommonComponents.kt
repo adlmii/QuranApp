@@ -1,6 +1,5 @@
 package com.example.quranapp.ui.components
 
-import androidx.compose.animation.core.InfiniteTransition
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -89,12 +88,12 @@ fun AppHeader(
 
 @Composable
 fun PrayerCard(
+    modifier: Modifier = Modifier,
     prayerName: String,
     prayerTime: String,
     countDown: String,
     isNow: Boolean = false,
-    nowLabel: String = "",
-    modifier: Modifier = Modifier
+    nowLabel: String = ""
 ) {
     // Pulse animation for "Now" state
     val pulseAlpha: Float = if (isNow) {

@@ -2,28 +2,27 @@ package com.example.quranapp.ui.screens.prayer
 
 import android.app.Application
 import android.content.Context
-import android.location.Geocoder
 import android.os.Build
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.batoulapps.adhan.Prayer
-import com.batoulapps.adhan.PrayerTimes
 import com.example.quranapp.data.repository.PrayerRepository
 import com.example.quranapp.data.local.QuranAppDatabase
 import com.example.quranapp.data.local.UserPreferencesRepository
 import com.example.quranapp.data.local.entity.PrayerStatusEntity
 import com.example.quranapp.notification.PrayerAlarmScheduler
+import com.example.quranapp.util.DateUtil
+import com.example.quranapp.util.LocationUtil
+import com.example.quranapp.util.PrayerFormatUtil
+import com.example.quranapp.util.UiText
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.isActive
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.time.LocalDate
-import java.time.chrono.HijrahDate
 import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
@@ -36,7 +35,7 @@ data class PrayerItemState(
     val isNext: Boolean = false,
     val isNow: Boolean = false,
     val isPassed: Boolean = false,
-    val countdown: String = ""
+    val countdown: UiText = UiText.DynamicString("")
 )
 
 data class PrayerUiState(
@@ -45,7 +44,7 @@ data class PrayerUiState(
     val totalPrayer: Int = 5,
     val nextPrayerName: String = "--",
     val nextPrayerTime: String = "--:--",
-    val timeToNextPrayer: String = "",
+    val timeToNextPrayer: UiText = UiText.DynamicString(""),
     val isCurrentPrayerNow: Boolean = false,
     val currentPrayerLabel: String = "",
     val imsakTime: String = "--:--",
@@ -69,16 +68,17 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
     private val userPrefs = UserPreferencesRepository(application)
     private val alarmScheduler = PrayerAlarmScheduler(application)
 
-    // In-memory cache of prayer statuses loaded from DB
     private val prayedStatusMap = mutableMapOf<String, Boolean>()
-    // In-memory cache of notification prefs
     private val notificationPrefsMap = mutableMapOf<String, Boolean>()
-    // Flag to avoid scheduling alarms every second
     private var alarmsScheduled = false
 
     init {
+        _uiState.value = _uiState.value.copy(
+            gregorianDate = DateUtil.getGregorianDate(),
+            hijriDate = DateUtil.getHijriDate()
+        )
+
         loadSavedLocation()
-        updateDateInfo()
         loadPrayerStatuses()
         observeNotificationPrefs()
         startPrayerCountdown()
@@ -89,6 +89,10 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
             userPrefs.lastLocation.collect { (savedLat, savedLon) ->
                 lat = savedLat
                 lon = savedLon
+
+                val district = LocationUtil.getAddressName(savedLat, savedLon, getApplication())
+                _uiState.value = _uiState.value.copy(location = district)
+
                 return@collect
             }
         }
@@ -97,29 +101,11 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
     fun updateLocation(latitude: Double, longitude: Double, context: Context) {
         lat = latitude
         lon = longitude
-        alarmsScheduled = false // Reschedule on location change
+        alarmsScheduled = false
         viewModelScope.launch {
-            getAddressName(latitude, longitude, context)
+            val district = LocationUtil.getAddressName(latitude, longitude, context)
+            _uiState.value = _uiState.value.copy(location = district)
             userPrefs.saveLastLocation(latitude, longitude)
-        }
-    }
-
-    private suspend fun getAddressName(lat: Double, lon: Double, context: Context) {
-        withContext(Dispatchers.IO) {
-            try {
-                val geocoder = Geocoder(context, Locale.getDefault())
-                @Suppress("DEPRECATION")
-                val addresses = geocoder.getFromLocation(lat, lon, 1)
-
-                if (!addresses.isNullOrEmpty()) {
-                    val address = addresses[0]
-                    val district = address.subLocality ?: address.locality ?: "Unknown"
-                    _uiState.value = _uiState.value.copy(location = district)
-                }
-            } catch (e: Exception) {
-                val unknown = getApplication<Application>().getString(com.example.quranapp.R.string.location_unknown)
-                _uiState.value = _uiState.value.copy(location = unknown)
-            }
         }
     }
 
@@ -132,9 +118,6 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    /**
-     * Load prayer statuses for today from Room and observe reactively
-     */
     private fun loadPrayerStatuses() {
         viewModelScope.launch {
             prayerStatusDao.getPrayerStatusByDate(getTodayString()).collect { statusList ->
@@ -147,15 +130,12 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    /**
-     * Observe notification preferences from DataStore
-     */
     private fun observeNotificationPrefs() {
         viewModelScope.launch {
             userPrefs.notificationPrefs.collect { prefs ->
                 notificationPrefsMap.clear()
                 notificationPrefsMap.putAll(prefs)
-                alarmsScheduled = false // Reschedule with updated prefs
+                alarmsScheduled = false
                 calculatePrayerTimes()
             }
         }
@@ -164,8 +144,7 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
     fun togglePrayed(index: Int) {
         val currentList = _uiState.value.prayerList.toMutableList()
         val item = currentList[index]
-        
-        // Allow checklist if prayer is passed or currently in "Now" state
+
         if (item.isPassed || item.isNow) {
             val newStatus = !item.isPrayed
             currentList[index] = item.copy(isPrayed = newStatus)
@@ -177,7 +156,6 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                 canMarkAll = currentList.any { (it.isPassed || it.isNow) && !it.isPrayed }
             )
 
-            // Persist to Room
             viewModelScope.launch {
                 prayerStatusDao.upsertPrayerStatus(
                     PrayerStatusEntity(
@@ -204,7 +182,7 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     fun markAllPrayed() {
-        val currentList = _uiState.value.prayerList.map { 
+        val currentList = _uiState.value.prayerList.map {
             if (it.isPassed || it.isNow) it.copy(isPrayed = true) else it
         }
         _uiState.value = _uiState.value.copy(
@@ -213,51 +191,24 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
             canMarkAll = false
         )
 
-        // Persist all to Room
         viewModelScope.launch {
             prayerStatusDao.markAllPrayed(getTodayString())
-        }
-    }
-
-    private fun updateDateInfo() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val today = LocalDate.now()
-            val formatter = DateTimeFormatter.ofPattern("EEEE, d MMMM", Locale.ENGLISH)
-            val hijrahDate = HijrahDate.from(today)
-            val hijriFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.ENGLISH)
-
-            _uiState.value = _uiState.value.copy(
-                gregorianDate = today.format(formatter),
-                hijriDate = hijriFormatter.format(hijrahDate)
-            )
         }
     }
 
     private fun calculatePrayerTimes() {
         try {
             val schedule = prayerRepository.calculatePrayerTimes(lat, lon)
-            
+
             val nextPrayer = schedule.nextPrayer
             val nextPrayerTimeDate = schedule.nextPrayerTime
             val now = System.currentTimeMillis()
 
-            // Countdown to next prayer
-            val diffMillis = if (nextPrayerTimeDate != null) nextPrayerTimeDate.time - now else 0L
-            val countdownText = if (diffMillis > 0) {
-                val hours = diffMillis / (1000 * 60 * 60)
-                val minutes = (diffMillis / (1000 * 60)) % 60
-                val seconds = (diffMillis / 1000) % 60
-
-                if (hours > 0) getApplication<Application>().getString(com.example.quranapp.R.string.countdown_hours_mins, hours, minutes) 
-                else getApplication<Application>().getString(com.example.quranapp.R.string.countdown_mins_secs, minutes, seconds)
-            } else {
-                getApplication<Application>().getString(com.example.quranapp.R.string.label_now)
-            }
+            val countdownText = PrayerFormatUtil.getCountdownText(nextPrayerTimeDate)
 
             val formatter = SimpleDateFormat("h:mm a", Locale.ENGLISH)
             val imsakTime = schedule.imsak
             val sunriseTime = schedule.sunrise
-
             val prayerTimes = schedule.prayerTimes
 
             val rawList = listOf(
@@ -269,14 +220,16 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
             )
 
             val uiList = rawList.map { (_, timeDate, type) ->
-                val prayerName = getPrayerNameString(type)
+                val prayerNameUiText = PrayerFormatUtil.getPrayerName(type)
+                val prayerNameStr = prayerNameUiText.asString(getApplication())
+
                 val isPassed = now >= timeDate.time
                 val isNow = schedule.isInGracePeriod && schedule.currentPrayer == type
-                val wasPrayed = prayedStatusMap[prayerName] ?: false
-                val isNotifOn = notificationPrefsMap[prayerName] ?: true
+                val wasPrayed = prayedStatusMap[prayerNameStr] ?: false
+                val isNotifOn = notificationPrefsMap[prayerNameStr] ?: true
 
                 PrayerItemState(
-                    name = prayerName,
+                    name = prayerNameStr,
                     time = formatter.format(timeDate).lowercase(),
                     isNext = (nextPrayer == type && !isNow),
                     isNow = isNow,
@@ -284,9 +237,9 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                     isPassed = isPassed && !isNow,
                     isNotificationOn = isNotifOn,
                     countdown = when {
-                        isNow -> getApplication<Application>().getString(com.example.quranapp.R.string.label_now)
+                        isNow -> UiText.StringResource(com.example.quranapp.R.string.label_now)
                         nextPrayer == type -> countdownText
-                        else -> ""
+                        else -> UiText.DynamicString("")
                     }
                 )
             }
@@ -295,13 +248,11 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                 SimpleDateFormat("HH:mm", Locale.getDefault()).format(nextPrayerTimeDate)
             } else "--:--"
 
-            // Determine card label for PrayerCard
             val isNowActive = schedule.isInGracePeriod && schedule.currentPrayer != null
-            val currentLabel = if (isNowActive && schedule.currentPrayer != null) {
-                getPrayerNameString(schedule.currentPrayer)
-            } else ""
+            val currentLabelUiText = if (isNowActive && schedule.currentPrayer != null) {
+                PrayerFormatUtil.getPrayerName(schedule.currentPrayer)
+            } else UiText.DynamicString("")
 
-            // When in grace period, show current prayer's time on the card
             val cardTime = if (isNowActive && schedule.currentPrayer != null) {
                 val currentPrayerDate = prayerTimes.timeForPrayer(schedule.currentPrayer)
                 if (currentPrayerDate != null) {
@@ -309,8 +260,8 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                 } else formattedNextTime
             } else formattedNextTime
 
-            val cardName = if (isNowActive) currentLabel
-                else getPrayerNameString(nextPrayer)
+            val cardName = if (isNowActive) currentLabelUiText.asString(getApplication())
+            else PrayerFormatUtil.getPrayerName(nextPrayer).asString(getApplication())
 
             _uiState.value = _uiState.value.copy(
                 prayerList = uiList,
@@ -318,14 +269,13 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                 nextPrayerTime = cardTime,
                 timeToNextPrayer = countdownText,
                 isCurrentPrayerNow = isNowActive,
-                currentPrayerLabel = currentLabel,
+                currentPrayerLabel = currentLabelUiText.asString(getApplication()),
                 imsakTime = formatter.format(imsakTime).lowercase(),
                 sunriseTime = formatter.format(sunriseTime).lowercase(),
                 prayedCount = uiList.count { it.isPrayed },
                 canMarkAll = uiList.any { (it.isPassed || it.isNow) && !it.isPrayed }
             )
 
-            // Schedule notification alarms (only once, not every second)
             if (!alarmsScheduled) {
                 scheduleAlarms(schedule)
                 alarmsScheduled = true
@@ -338,10 +288,9 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
 
     private fun scheduleAlarms(schedule: com.example.quranapp.data.repository.PrayerSchedule) {
         val prayerTimes = schedule.prayerTimes
-        // Triple: (Prayer, Date, skipPreReminder)
         val prayers = listOf(
             Triple(Prayer.FAJR, prayerTimes.fajr, false),
-            Triple(Prayer.SUNRISE, prayerTimes.sunrise, true), // Sunrise: only exact time, no pre-reminder
+            Triple(Prayer.SUNRISE, prayerTimes.sunrise, true),
             Triple(Prayer.DHUHR, prayerTimes.dhuhr, false),
             Triple(Prayer.ASR, prayerTimes.asr, false),
             Triple(Prayer.MAGHRIB, prayerTimes.maghrib, false),
@@ -361,19 +310,6 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
             asrTime = prayerTimes.asr,
             maghribTime = prayerTimes.maghrib
         )
-    }
-
-    private fun getPrayerNameString(prayer: Prayer): String {
-        val resId = when(prayer) {
-            Prayer.FAJR -> com.example.quranapp.R.string.prayer_fajr
-            Prayer.SUNRISE -> com.example.quranapp.R.string.prayer_syuruq
-            Prayer.DHUHR -> com.example.quranapp.R.string.prayer_dhuhr
-            Prayer.ASR -> com.example.quranapp.R.string.prayer_asr
-            Prayer.MAGHRIB -> com.example.quranapp.R.string.prayer_maghrib
-            Prayer.ISHA -> com.example.quranapp.R.string.prayer_isha
-            else -> return "--"
-        }
-        return getApplication<Application>().getString(resId)
     }
 
     private fun getTodayString(): String {
