@@ -5,112 +5,72 @@ import com.example.quranapp.data.model.Ayah
 import com.example.quranapp.data.model.AyahSearchResult
 import com.example.quranapp.data.model.SurahDetail
 import com.example.quranapp.data.local.QuranAppDatabase
+import com.example.quranapp.data.local.QuranContentDatabase
 import com.example.quranapp.data.local.entity.AyahSearchFts
 import com.example.quranapp.data.local.entity.ManualBookmarkEntity
 import com.example.quranapp.data.local.entity.RecentQuranEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
-import org.json.JSONObject
 
 class QuranRepository(private val context: Context) {
 
-    private val db = QuranAppDatabase.getInstance(context)
-    private val recentQuranDao = db.recentQuranDao()
-    private val ayahSearchDao = db.ayahSearchDao()
-    private val bookmarkDao = db.manualBookmarkDao()
+    // User state database (bookmarks, prayer, recent, FTS search)
+    private val appDb = QuranAppDatabase.getInstance(context)
+    private val recentQuranDao = appDb.recentQuranDao()
+    private val ayahSearchDao = appDb.ayahSearchDao()
+    private val bookmarkDao = appDb.manualBookmarkDao()
+
+    // Quran content database (read-only, pre-populated from quran.db)
+    private val contentDb = QuranContentDatabase.getInstance(context)
+    private val surahDao = contentDb.surahDao()
+    private val quranDao = contentDb.quranDao()
 
     suspend fun getSurahDetail(surahNumber: Int): SurahDetail? = withContext(Dispatchers.IO) {
         try {
-            // 1. Load Arabic Text (Uthmani Hafs)
-            // Structure: { "quran": [ { "chapter": 1, "verse": 1, "text": "..." }, ... ] }
-            val arabicString = context.assets.open("quran_uthmani.json").bufferedReader().use { it.readText() }
-            val arabicRoot = JSONObject(arabicString)
-            val arabicVerses = arabicRoot.getJSONArray("quran")
-            
-            // 2. Load Translation (Indonesian Ministry)
-            // Structure: { "quran": [ { "chapter": 1, "verse": 1, "text": "..." }, ... ] }
-            val transString = context.assets.open("quran_translation_indo.json").bufferedReader().use { it.readText() }
-            val transRoot = JSONObject(transString)
-            val transVerses = transRoot.getJSONArray("quran")
+            val surah = surahDao.getById(surahNumber) ?: return@withContext null
+            val ayahEntities = quranDao.getAyahsBySurah(surahNumber)
 
-            // 3. Filter and Map Data
-            val ayahs = ArrayList<Ayah>()
-            
-            // Map Translation for O(1) lookup
-            val translationMap =  HashMap<Int, String>() // Verse Number -> Text
-            for (i in 0 until transVerses.length()) {
-                val tObj = transVerses.getJSONObject(i)
-                if (tObj.getInt("chapter") == surahNumber) {
-                    translationMap[tObj.getInt("verse")] = tObj.getString("text")
-                }
+            val ayahs = ayahEntities.map { entity ->
+                Ayah(
+                    number = entity.verseNumber,
+                    arabic = entity.textUthmani,
+                    translation = entity.translationId,
+                    page = entity.pageNumber,
+                    juz = entity.juzNumber,
+                    manzil = 0,
+                    hizbQuarter = 0
+                )
             }
 
-            for (i in 0 until arabicVerses.length()) {
-                val aObj = arabicVerses.getJSONObject(i)
-                if (aObj.getInt("chapter") == surahNumber) {
-                    val verseNum = aObj.getInt("verse")
-                    val arabicText = aObj.getString("text")
-                    val translationText = translationMap[verseNum] ?: ""
-                    
-                    ayahs.add(
-                        Ayah(
-                            number = verseNum,
-                            arabic = arabicText,
-                            translation = translationText,
-                            page = 0,
-                            juz = 0,
-                            manzil = 0,
-                            hizbQuarter = 0
-                        )
-                    )
-                }
-            }
-
-            // Get Metadata for Surah objects
-            val surahMetadata = getSurahMetadata(surahNumber)
-
-            return@withContext SurahDetail(
-                number = surahNumber,
-                name = surahMetadata?.name ?: "",
-                arabicName = surahMetadata?.arabicName ?: "",
-                englishName = surahMetadata?.englishName ?: "",
-                ayahCount = ayahs.size,
-                type = surahMetadata?.type ?: "",
+            SurahDetail(
+                number = surah.id,
+                name = surah.nameSimple,
+                arabicName = surah.nameArabic,
+                englishName = surah.nameSimple,
+                ayahCount = surah.versesCount,
+                type = surah.revelationPlace,
                 ayahs = ayahs
             )
-
         } catch (e: Exception) {
             e.printStackTrace()
             null
         }
     }
 
-    private suspend fun getSurahMetadata(surahNumber: Int): com.example.quranapp.data.model.Surah? {
-        val list = getSurahList()
-        return list.find { it.number == surahNumber }
-    }
-
     suspend fun getSurahList(): List<com.example.quranapp.data.model.Surah> = withContext(Dispatchers.IO) {
         try {
-            val jsonString = context.assets.open("surah_list_metadata.json").bufferedReader().use { it.readText() }
-            val surahsArray = org.json.JSONArray(jsonString)
-            val surahList = ArrayList<com.example.quranapp.data.model.Surah>()
-
-            for (i in 0 until surahsArray.length()) {
-                val obj = surahsArray.getJSONObject(i)
-                surahList.add(
-                    com.example.quranapp.data.model.Surah(
-                        number = obj.getInt("number"),
-                        name = obj.getString("englishName"),
-                        englishName = obj.getString("englishNameTranslation"),
-                        arabicName = obj.getString("name"),
-                        ayahCount = obj.getInt("numberOfAyahs"),
-                        type = obj.getString("revelationType")
-                    )
+            val entities = surahDao.getAll()
+            entities.map { entity ->
+                com.example.quranapp.data.model.Surah(
+                    number = entity.id,
+                    name = entity.nameSimple,
+                    englishName = entity.nameSimple,
+                    arabicName = entity.nameArabic,
+                    ayahCount = entity.versesCount,
+                    type = entity.revelationPlace
                 )
             }
-            surahList
         } catch (e: Exception) {
             e.printStackTrace()
             emptyList()
@@ -119,30 +79,42 @@ class QuranRepository(private val context: Context) {
 
     suspend fun getJuzList(): List<com.example.quranapp.data.model.Juz> = withContext(Dispatchers.IO) {
         try {
-            val jsonString = context.assets.open("juz_list_metadata.json").bufferedReader().use { it.readText() }
-            val juzArray = org.json.JSONArray(jsonString)
+            val juzNumbers = quranDao.getDistinctJuzNumbers()
             val juzList = ArrayList<com.example.quranapp.data.model.Juz>()
 
-            for (i in 0 until juzArray.length()) {
-                val jObj = juzArray.getJSONObject(i)
-                val sArray = jObj.getJSONArray("surahs")
+            for (juzNum in juzNumbers) {
+                val firstAyahs = quranDao.getFirstAyahPerSurahInJuz(juzNum)
+                val lastAyahs = quranDao.getLastAyahPerSurahInJuz(juzNum)
+
+                // Build a map of surahId -> last verse number in this juz
+                val lastVerseMap = lastAyahs.associate { it.surahId to it.verseNumber }
+
                 val surahEntries = ArrayList<com.example.quranapp.data.model.JuzSurahEntry>()
-                
-                for (k in 0 until sArray.length()) {
-                    val sObj = sArray.getJSONObject(k)
+                for (firstAyah in firstAyahs) {
+                    val surah = surahDao.getById(firstAyah.surahId)
+                    val lastVerse = lastVerseMap[firstAyah.surahId] ?: firstAyah.verseNumber
+                    val totalVerses = surah?.versesCount ?: lastVerse
+
+                    // Determine ayah range string
+                    val ayahRange = if (firstAyah.verseNumber == 1 && lastVerse == totalVerses) {
+                        "All"
+                    } else {
+                        "${firstAyah.verseNumber}-${lastVerse}"
+                    }
+
                     surahEntries.add(
                         com.example.quranapp.data.model.JuzSurahEntry(
-                            surahNumber = sObj.getInt("surahNumber"),
-                            surahName = sObj.getString("surahName"),
-                            arabicName = sObj.getString("arabicName"),
-                            ayahRange = sObj.getString("ayahRange")
+                            surahNumber = firstAyah.surahId,
+                            surahName = surah?.nameSimple ?: "Surah ${firstAyah.surahId}",
+                            arabicName = surah?.nameArabic ?: "",
+                            ayahRange = ayahRange
                         )
                     )
                 }
-                
+
                 juzList.add(
                     com.example.quranapp.data.model.Juz(
-                        number = jObj.getInt("number"),
+                        number = juzNum,
                         surahs = surahEntries
                     )
                 )
@@ -207,45 +179,36 @@ class QuranRepository(private val context: Context) {
      * Public wrapper to get surah name by number (for flow navigation)
      */
     suspend fun getSurahNameByNumber(surahNumber: Int): String? {
-        return getSurahMetadata(surahNumber)?.englishName
+        return surahDao.getById(surahNumber)?.nameSimple
     }
 
     // ── Ayah Search (FTS) ──
 
     /**
-     * Populate FTS index from JSON assets on first launch.
+     * Populate FTS index from Quran content database on first launch.
      * Skips if already populated.
      */
     suspend fun populateSearchIndex() = withContext(Dispatchers.IO) {
         try {
             if (ayahSearchDao.count() > 0) return@withContext
 
-            // Load surah metadata for name lookup
-            val surahMetaString = context.assets.open("surah_list_metadata.json").bufferedReader().use { it.readText() }
-            val surahMetaArray = org.json.JSONArray(surahMetaString)
-            val surahNameMap = HashMap<Int, String>()
-            for (i in 0 until surahMetaArray.length()) {
-                val obj = surahMetaArray.getJSONObject(i)
-                surahNameMap[obj.getInt("number")] = obj.getString("englishName")
-            }
+            val surahEntities = surahDao.getAll()
+            val surahNameMap = surahEntities.associate { it.id to it.nameSimple }
 
-            // Load translations
-            val transString = context.assets.open("quran_translation_indo.json").bufferedReader().use { it.readText() }
-            val transRoot = JSONObject(transString)
-            val transVerses = transRoot.getJSONArray("quran")
-
+            // Load all ayahs from content database
             val entries = ArrayList<AyahSearchFts>(6236)
-            for (i in 0 until transVerses.length()) {
-                val obj = transVerses.getJSONObject(i)
-                val chapter = obj.getInt("chapter")
-                entries.add(
-                    AyahSearchFts(
-                        surahNumber = chapter,
-                        ayahNumber = obj.getInt("verse"),
-                        surahName = surahNameMap[chapter] ?: "Surah $chapter",
-                        textTranslation = obj.getString("text")
+            for (surah in surahEntities) {
+                val ayahs = quranDao.getAyahsBySurah(surah.id)
+                for (ayah in ayahs) {
+                    entries.add(
+                        AyahSearchFts(
+                            surahNumber = ayah.surahId,
+                            ayahNumber = ayah.verseNumber,
+                            surahName = surahNameMap[ayah.surahId] ?: "Surah ${ayah.surahId}",
+                            textTranslation = ayah.translationId
+                        )
                     )
-                )
+                }
             }
 
             // Insert in batches
@@ -291,4 +254,3 @@ class QuranRepository(private val context: Context) {
         }
     }
 }
-
