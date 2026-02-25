@@ -164,6 +164,8 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                         isPrayed = newStatus
                     )
                 )
+                alarmsScheduled = false
+                calculatePrayerTimes()
             }
         }
     }
@@ -192,7 +194,17 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
         )
 
         viewModelScope.launch {
-            prayerStatusDao.markAllPrayed(getTodayString())
+            currentList.filter { it.isPassed || it.isNow }.forEach { item ->
+                prayerStatusDao.upsertPrayerStatus(
+                    PrayerStatusEntity(
+                        date = getTodayString(),
+                        prayerName = item.name,
+                        isPrayed = true
+                    )
+                )
+            }
+            alarmsScheduled = false
+            calculatePrayerTimes()
         }
     }
 
@@ -297,9 +309,12 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
             Triple(Prayer.ISHA, prayerTimes.isha, false)
         )
 
+        alarmScheduler.cancelAll()
         val enabledPrayers = prayers.filter { (type, _, _) ->
             val name = prayerRepository.getPrayerName(type)
-            notificationPrefsMap[name] ?: true
+            val isNotifOn = notificationPrefsMap[name] ?: true
+            val isPrayed = prayedStatusMap[name] ?: false
+            isNotifOn && !isPrayed
         }.map { (type, time, skipPre) ->
             Triple(prayerRepository.getPrayerNameClean(type), time, skipPre)
         }

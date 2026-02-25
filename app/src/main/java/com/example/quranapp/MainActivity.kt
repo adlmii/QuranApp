@@ -15,10 +15,22 @@ import com.example.quranapp.ui.navigation.AppNavigation
 import com.example.quranapp.ui.theme.QuranAppTheme
 import com.example.quranapp.util.LocaleHelper
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import android.content.Intent
 
 class MainActivity : ComponentActivity() {
+    private val _pendingRouteRequest = MutableSharedFlow<String>(extraBufferCapacity = 1)
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        intent.getStringExtra("target_route")?.let {
+            _pendingRouteRequest.tryEmit(it)
+        }
+    }
+
     override fun attachBaseContext(newBase: Context) {
         val prefs = UserPreferencesRepository(newBase)
         val lang = runBlocking { prefs.language.first() }
@@ -27,6 +39,10 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        intent?.getStringExtra("target_route")?.let {
+            _pendingRouteRequest.tryEmit(it)
+        }
         
         val userPrefs = UserPreferencesRepository(this)
         
@@ -56,7 +72,7 @@ class MainActivity : ComponentActivity() {
             }
             
             QuranAppTheme(darkTheme = isDarkTheme) {
-                AppNavigation()
+                AppNavigation(pendingRouteFlow = _pendingRouteRequest.asSharedFlow())
             }
         }
     }

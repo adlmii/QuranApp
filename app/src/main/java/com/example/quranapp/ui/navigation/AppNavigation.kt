@@ -16,10 +16,25 @@ import com.example.quranapp.ui.screens.quran.QuranScreen
 import com.example.quranapp.ui.screens.quran.QuranDetailScreen
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import androidx.compose.runtime.LaunchedEffect
+import kotlinx.coroutines.flow.SharedFlow
 
 @Composable
-fun AppNavigation() {
+fun AppNavigation(pendingRouteFlow: SharedFlow<String>? = null) {
     val navController = rememberNavController()
+
+    LaunchedEffect(pendingRouteFlow) {
+        pendingRouteFlow?.collect { route ->
+            navController.navigate(route) {
+                // Navigate and possibly clear backstack up to Home
+                popUpTo(Screen.Home.route) {
+                    saveState = true
+                }
+                launchSingleTop = true
+                restoreState = true
+            }
+        }
+    }
 
     // Cek rute saat ini
     val navBackStackEntry by navController.currentBackStackEntryAsState()

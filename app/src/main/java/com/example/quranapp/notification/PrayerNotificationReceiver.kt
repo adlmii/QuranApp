@@ -55,7 +55,7 @@ class PrayerNotificationReceiver : BroadcastReceiver() {
             body = context.getString(R.string.notif_prayer_body, prayerName)
         }
 
-        showNotification(context, notificationId, title, body)
+        showNotification(context, notificationId, title, body, "prayers")
     }
 
     private fun handleTypedNotification(context: Context, type: String, intent: Intent) {
@@ -66,7 +66,8 @@ class PrayerNotificationReceiver : BroadcastReceiver() {
                     context,
                     "post_prayer_$prayerName".hashCode(),
                     context.getString(R.string.notif_post_title, prayerName),
-                    context.getString(R.string.notif_post_body)
+                    context.getString(R.string.notif_post_body),
+                    "prayers"
                 )
             }
 
@@ -75,7 +76,8 @@ class PrayerNotificationReceiver : BroadcastReceiver() {
                     context,
                     "matsurat_pagi".hashCode(),
                     context.getString(R.string.notif_matsurat_pagi_title),
-                    context.getString(R.string.notif_matsurat_pagi_body)
+                    context.getString(R.string.notif_matsurat_pagi_body),
+                    "al_matsurat/MORNING"
                 )
             }
 
@@ -84,7 +86,8 @@ class PrayerNotificationReceiver : BroadcastReceiver() {
                     context,
                     "matsurat_petang".hashCode(),
                     context.getString(R.string.notif_matsurat_petang_title),
-                    context.getString(R.string.notif_matsurat_petang_body)
+                    context.getString(R.string.notif_matsurat_petang_body),
+                    "al_matsurat/EVENING"
                 )
             }
 
@@ -102,7 +105,8 @@ class PrayerNotificationReceiver : BroadcastReceiver() {
                                 context,
                                 "quran_goal".hashCode(),
                                 context.getString(R.string.notif_quran_goal_title),
-                                context.getString(R.string.notif_quran_goal_body)
+                                context.getString(R.string.notif_quran_goal_body),
+                                "home"
                             )
                         }
                     } finally {
@@ -131,7 +135,8 @@ class PrayerNotificationReceiver : BroadcastReceiver() {
                                 context,
                                 "hijri_change".hashCode(),
                                 context.getString(R.string.notif_hijri_month_title),
-                                context.getString(R.string.notif_hijri_month_body, monthStr)
+                                context.getString(R.string.notif_hijri_month_body, monthStr),
+                                "home"
                             )
                         }
                     } catch (e: Exception) {
@@ -146,19 +151,34 @@ class PrayerNotificationReceiver : BroadcastReceiver() {
                     context,
                     "alkahfi_reminder".hashCode(),
                     context.getString(R.string.notif_alkahfi_title),
-                    context.getString(R.string.notif_alkahfi_body)
+                    context.getString(R.string.notif_alkahfi_body),
+                    "quran_detail/18?ayahNumber=1"
                 )
             }
         }
     }
 
-    private fun showNotification(context: Context, id: Int, title: String, body: String) {
+    private fun showNotification(context: Context, id: Int, title: String, body: String, targetRoute: String? = null) {
+        val intent = Intent(context, com.example.quranapp.MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            if (targetRoute != null) {
+                putExtra("target_route", targetRoute)
+            }
+        }
+        val pendingIntent = android.app.PendingIntent.getActivity(
+            context,
+            id,
+            intent,
+            android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
+        )
+
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentTitle(title)
             .setContentText(body)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
+            .setContentIntent(pendingIntent)
             .setCategory(NotificationCompat.CATEGORY_REMINDER)
             .build()
 
