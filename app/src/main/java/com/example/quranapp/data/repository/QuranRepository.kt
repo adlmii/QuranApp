@@ -6,7 +6,9 @@ import com.example.quranapp.data.model.AyahSearchResult
 import com.example.quranapp.data.model.SurahDetail
 import com.example.quranapp.data.local.QuranAppDatabase
 import com.example.quranapp.data.local.QuranContentDatabase
+import com.example.quranapp.data.local.entity.AyahEntity
 import com.example.quranapp.data.local.entity.AyahSearchFts
+import com.example.quranapp.data.local.entity.AyahWithSurahName
 import com.example.quranapp.data.local.entity.ManualBookmarkEntity
 import com.example.quranapp.data.local.entity.RecentQuranEntity
 import kotlinx.coroutines.Dispatchers
@@ -25,6 +27,16 @@ class QuranRepository(private val context: Context) {
     private val contentDb = QuranContentDatabase.getInstance(context)
     private val surahDao = contentDb.surahDao()
     private val quranDao = contentDb.quranDao()
+
+    // ── Mode Halaman (Mushaf Page View) ──
+
+    /**
+     * Get all ayahs on a specific page as a reactive Flow.
+     * Used by the Mushaf pager screen.
+     */
+    fun getAyahsByPage(pageNumber: Int): Flow<List<AyahWithSurahName>> {
+        return quranDao.getAyahsByPage(pageNumber)
+    }
 
     suspend fun getSurahDetail(surahNumber: Int): SurahDetail? = withContext(Dispatchers.IO) {
         try {

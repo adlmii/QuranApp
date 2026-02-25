@@ -3,6 +3,8 @@ package com.example.quranapp.data.local.dao
 import androidx.room.Dao
 import androidx.room.Query
 import com.example.quranapp.data.local.entity.AyahEntity
+import com.example.quranapp.data.local.entity.AyahWithSurahName
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface QuranDao {
@@ -11,9 +13,15 @@ interface QuranDao {
     @Query("SELECT * FROM ayah WHERE surah_id = :surahId ORDER BY verse_number ASC")
     suspend fun getAyahsBySurah(surahId: Int): List<AyahEntity>
 
-    /** Mode Per Halaman (Mushaf View): get all ayahs on a specific page */
-    @Query("SELECT * FROM ayah WHERE page_number = :pageNumber ORDER BY surah_id ASC, verse_number ASC")
-    suspend fun getAyahsByPage(pageNumber: Int): List<AyahEntity>
+    /** Mode Per Halaman (Mushaf View): get all ayahs on a specific page with Surah metadata */
+    @Query("""
+        SELECT a.*, s.name_arabic, s.name_simple 
+        FROM ayah a 
+        INNER JOIN surah s ON a.surah_id = s.id 
+        WHERE a.page_number = :pageNumber 
+        ORDER BY a.surah_id ASC, a.verse_number ASC
+    """)
+    fun getAyahsByPage(pageNumber: Int): Flow<List<AyahWithSurahName>>
 
     /** Get all ayahs in a specific juz */
     @Query("SELECT * FROM ayah WHERE juz_number = :juzNumber ORDER BY surah_id ASC, verse_number ASC")

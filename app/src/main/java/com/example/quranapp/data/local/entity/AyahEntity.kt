@@ -1,6 +1,7 @@
 package com.example.quranapp.data.local.entity
 
 import androidx.room.ColumnInfo
+import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
@@ -21,4 +22,10 @@ data class AyahEntity(
     @ColumnInfo(name = "juz_number") val juzNumber: Int,
     @ColumnInfo(name = "text_uthmani") val textUthmani: String,
     @ColumnInfo(name = "translation_id") val translationId: String
+)
+
+data class AyahWithSurahName(
+    @Embedded val ayah: AyahEntity,
+    @ColumnInfo(name = "name_arabic") val surahNameArabic: String,
+    @ColumnInfo(name = "name_simple") val surahNameSimple: String
 )

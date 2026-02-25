@@ -3,6 +3,8 @@ package com.example.quranapp.ui.screens.quran
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.quranapp.data.local.entity.AyahEntity
+import com.example.quranapp.data.local.entity.AyahWithSurahName
 import com.example.quranapp.data.model.AyahSearchResult
 import com.example.quranapp.data.model.Juz
 import com.example.quranapp.data.model.JuzSurahEntry
@@ -11,9 +13,12 @@ import com.example.quranapp.data.repository.QuranRepository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.util.concurrent.ConcurrentHashMap
 
 
 data class QuranHomeUiState(
@@ -46,6 +51,26 @@ class QuranViewModel(application: Application) : AndroidViewModel(application) {
         // Populate FTS search index in background (no-op if already populated)
         viewModelScope.launch {
             repository.populateSearchIndex()
+        }
+    }
+
+    // ── Mode Halaman (Mushaf Page View) ──
+
+    // Cache StateFlows per page to prevent recreation on recomposition (prevents flicker)
+    private val pageDataCache = ConcurrentHashMap<Int, StateFlow<List<AyahWithSurahName>>>()
+
+    /**
+     * Get all ayahs on a specific Quran page as a StateFlow.
+     * Used by QuranMushafScreen's HorizontalPager.
+     */
+    fun getPageData(pageNumber: Int): StateFlow<List<AyahWithSurahName>> {
+        return pageDataCache.getOrPut(pageNumber) {
+            repository.getAyahsByPage(pageNumber)
+                .stateIn(
+                    scope = viewModelScope,
+                    started = SharingStarted.WhileSubscribed(5000),
+                    initialValue = emptyList()
+                )
         }
     }
 

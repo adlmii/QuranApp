@@ -3,15 +3,20 @@ package com.example.quranapp.ui.screens.quran
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.quranapp.data.local.entity.AyahEntity
+import com.example.quranapp.data.local.entity.AyahWithSurahName
 import com.example.quranapp.data.model.SurahDetail
 import com.example.quranapp.data.model.Ayah
 import com.example.quranapp.data.repository.QuranRepository
 import com.example.quranapp.data.local.UserPreferencesRepository
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
+import java.util.concurrent.ConcurrentHashMap
 
 
 data class QuranDetailUiState(
@@ -168,5 +173,25 @@ class QuranDetailViewModel(application: Application) : AndroidViewModel(applicat
 
     fun toggleViewMode() {
         _uiState.value = _uiState.value.copy(isPageMode = !_uiState.value.isPageMode)
+    }
+
+    // ── Mode Halaman (Mushaf Page View) ──
+
+    // Cache StateFlows per page to prevent recreation on recomposition (prevents flicker)
+    private val pageDataCache = ConcurrentHashMap<Int, StateFlow<List<AyahWithSurahName>>>()
+
+    /**
+     * Get all ayahs on a specific Quran page as a StateFlow.
+     * Cached to prevent flicker when HorizontalPager recomposes.
+     */
+    fun getPageData(pageNumber: Int): StateFlow<List<AyahWithSurahName>> {
+        return pageDataCache.getOrPut(pageNumber) {
+            repository.getAyahsByPage(pageNumber)
+                .stateIn(
+                    scope = viewModelScope,
+                    started = SharingStarted.WhileSubscribed(5000),
+                    initialValue = emptyList()
+                )
+        }
     }
 }

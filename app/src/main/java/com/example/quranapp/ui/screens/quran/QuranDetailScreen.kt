@@ -1,6 +1,7 @@
 package com.example.quranapp.ui.screens.quran
 
 import QuranSettingsSheet
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -9,6 +10,8 @@ import com.example.quranapp.ui.theme.CreamBackground
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -24,6 +27,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -36,6 +40,13 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.ui.res.stringResource
 import com.example.quranapp.ui.theme.*
 import androidx.compose.ui.text.font.FontFamily
+import com.example.quranapp.util.QuranTextUtil
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.util.lerp
+import kotlin.math.absoluteValue
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.Column
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -48,6 +59,7 @@ fun QuranDetailScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var showSettings by remember { mutableStateOf(false) }
+    var currentMushafSurahName by remember { mutableStateOf<String?>(null) }
     val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(surahNumber) {
@@ -110,7 +122,7 @@ fun QuranDetailScreen(
     Scaffold(
         topBar = {
             DetailHeader(
-                title = uiState.surahDetail?.name ?: stringResource(R.string.label_loading),
+                title = if (uiState.isPageMode && currentMushafSurahName != null) currentMushafSurahName!! else (uiState.surahDetail?.name ?: stringResource(R.string.label_loading)),
                 onBack = { navController.popBackStack() },
                 isPageMode = uiState.isPageMode,
                 onToggleMode = { viewModel.toggleViewMode() },
@@ -154,34 +166,114 @@ fun QuranDetailScreen(
                 } else {
                     uiState.surahDetail?.let { detail ->
                         if (uiState.isPageMode) {
-                            // Page Mode — Placeholder
-                            Box(
-                                contentAlignment = Alignment.Center,
+                            // Page Mode — Mushaf HorizontalPager
+                            // Find the page containing the requested ayah, or fallback to the start of the Surah
+                            val startPage = detail.ayahs.find { it.number == initialAyah }?.page 
+                                ?: detail.ayahs.firstOrNull()?.page ?: 1
+                            val pagerState = rememberPagerState(
+                                initialPage = startPage - 1, // 0-indexed
+                                pageCount = { 604 }
+                            )
+
+                            HorizontalPager(
+                                state = pagerState,
+                                reverseLayout = true, // Swipe dari kanan ke kiri (khas Arab)
                                 modifier = Modifier.fillMaxSize()
-                            ) {
-                                Column(
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.Center
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Menu,
-                                        contentDescription = null,
-                                        tint = DeepEmerald.copy(alpha = 0.3f),
-                                        modifier = Modifier.size(64.dp)
-                                    )
-                                    Spacer(modifier = Modifier.height(16.dp))
-                                    Text(
-                                        text = stringResource(id = R.string.mode_halaman_title),
-                                        style = MaterialTheme.typography.titleLarge,
-                                        fontWeight = FontWeight.Bold,
-                                        color = DeepEmerald
-                                    )
-                                    Spacer(modifier = Modifier.height(8.dp))
-                                    Text(
-                                        text = stringResource(id = R.string.mode_halaman_desc),
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = TextGray
-                                    )
+                            ) { pageIndex ->
+                                val actualPage = pageIndex + 1
+                                val ayahsOnPage by viewModel.getPageData(actualPage).collectAsState()
+
+                                // Update current mushaf surah name strictly for the active page
+                                LaunchedEffect(pagerState.currentPage, ayahsOnPage) {
+                                    if (pageIndex == pagerState.currentPage && ayahsOnPage.isNotEmpty()) {
+                                        currentMushafSurahName = ayahsOnPage.first().surahNameSimple
+                                    }
+                                }
+
+                                if (ayahsOnPage.isNotEmpty()) {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .padding(16.dp)
+                                            .graphicsLayer {
+                                                // 3D Paper Flip Effect
+                                                val pageOffset = (
+                                                    (pagerState.currentPage - pageIndex) + pagerState.currentPageOffsetFraction
+                                                ).absoluteValue
+
+                                                // Put the camera farther away for a less distorted 3D effect
+                                                cameraDistance = 8 * density
+                                                
+                                                // Opacity fades out slightly at the extreme edges of the flip
+                                                alpha = lerp(
+                                                    start = 0.5f,
+                                                    stop = 1f,
+                                                    fraction = 1f - pageOffset.coerceIn(0f, 1f)
+                                                )
+                                                
+                                                // Rotate along the Y-axis to simulate page turning
+                                                // 90 degrees means perfectly edge-on (invisible)
+                                                rotationY = lerp(
+                                                    start = 0f,
+                                                    stop = 90f,
+                                                    fraction = pageOffset.coerceIn(0f, 1f)
+                                                )
+                                            }
+                                            .verticalScroll(rememberScrollState()),
+                                        contentAlignment = Alignment.TopCenter
+                                    ) {
+                                        Column(modifier = Modifier.fillMaxWidth()) {
+                                            // Header for the physical page (Juz & Primary Surah)
+                                            val firstAyah = ayahsOnPage.first().ayah
+                                            val primarySurah = ayahsOnPage.first().surahNameArabic
+                                            MushafPageHeader(juzNumber = firstAyah.juzNumber, surahName = primarySurah)
+
+                                            // Group ayahs on this page by their Surah
+                                            val ayahsBySurah = ayahsOnPage.groupBy { it.ayah.surahId }
+
+                                            ayahsBySurah.forEach { (surahId, ayahsInSurah) ->
+                                                val isFirstAyah = ayahsInSurah.any { it.ayah.verseNumber == 1 }
+
+                                                // Draw Header & Basmalah if this is the start of the Surah
+                                                if (isFirstAyah) {
+                                                    val surahName = ayahsInSurah.first().surahNameArabic
+                                                    MushafSurahHeader(surahName = surahName)
+
+                                                    // Draw Basmalah for all Surahs except Al-Fatihah (1) and At-Tawbah (9)
+                                                    if (surahId != 1 && surahId != 9) {
+                                                        MushafBasmalah()
+                                                    }
+                                                }
+
+                                                // Combine texts for this Surah
+                                                val combinedText = ayahsInSurah.joinToString(separator = "") { item ->
+                                                    val cleanText = item.ayah.textUthmani.replace("\u06DD", "").trimEnd()
+                                                    cleanText + QuranTextUtil.formatAyahNumber(item.ayah.verseNumber)
+                                                }
+
+                                                Text(
+                                                    text = combinedText,
+                                                    fontFamily = UthmaniHafs,
+                                                    fontSize = uiState.arabicFontSize.sp,
+                                                    // Increase base line height slightly to prevent descending harakat clipping 
+                                                    lineHeight = (uiState.arabicFontSize * 2.0f).sp,
+                                                    textAlign = TextAlign.Justify,
+                                                    color = TextBlack,
+                                                    style = androidx.compose.ui.text.TextStyle(
+                                                        textDirection = TextDirection.Rtl
+                                                    ),
+                                                    modifier = Modifier.fillMaxWidth()
+                                                )
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    Box(
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        CircularProgressIndicator(color = DeepEmerald)
+                                    }
                                 }
                             }
                         } else {
@@ -268,6 +360,7 @@ fun QuranDetailScreen(
 @Composable
 fun DetailHeader(
     title: String,
+    subtitle: String? = null,
     onBack: () -> Unit,
     isPageMode: Boolean,
     onToggleMode: () -> Unit,
@@ -277,6 +370,7 @@ fun DetailHeader(
 ) {
     AppHeader(
         title = title,
+        subtitle = subtitle,
         onBackClick = onBack,
         backgroundColor = CreamBackground,
         contentColor = DeepEmerald,
