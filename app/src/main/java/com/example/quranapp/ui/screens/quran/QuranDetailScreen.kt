@@ -60,7 +60,16 @@ fun QuranDetailScreen(
     val uiState by viewModel.uiState.collectAsState()
     var showSettings by remember { mutableStateOf(false) }
     var currentMushafSurahName by remember { mutableStateOf<String?>(null) }
+    var currentMushafAyah by remember { mutableStateOf<Int?>(null) }
     val coroutineScope = rememberCoroutineScope()
+
+    val onToggleModeAction = {
+        if (uiState.isPageMode) {
+            viewModel.toggleViewMode(currentMushafAyah)
+        } else {
+            viewModel.toggleViewMode()
+        }
+    }
 
     LaunchedEffect(surahNumber) {
         viewModel.loadSurah(surahNumber)
@@ -97,13 +106,26 @@ fun QuranDetailScreen(
         }
     }
 
+    // Sync scroll from Mushaf mode to List mode
+    LaunchedEffect(uiState.targetScrollAyah, uiState.isPageMode) {
+        val target = uiState.targetScrollAyah
+        val ayahs = uiState.surahDetail?.ayahs
+        if (target != null && ayahs != null && ayahs.isNotEmpty() && !uiState.isPageMode) {
+            val hasBasmalah = surahNumber != 1 && surahNumber != 9
+            val headerOffset = if (hasBasmalah) 1 else 0
+            val targetIndex = (target - 1 + headerOffset).coerceIn(0, ayahs.size - 1 + headerOffset)
+            listState.scrollToItem(targetIndex)
+            viewModel.consumeTargetScrollAyah()
+        }
+    }
+
     // Settings Bottom Sheet
     if (showSettings) {
         QuranSettingsSheet(
             isPageMode = uiState.isPageMode,
             arabicFontSize = uiState.arabicFontSize,
             totalAyahs = uiState.surahDetail?.ayahs?.size ?: 0,
-            onToggleMode = { viewModel.toggleViewMode() },
+            onToggleMode = onToggleModeAction,
             onJumpToAyah = { ayahNum ->
                 val ayahs = uiState.surahDetail?.ayahs ?: return@QuranSettingsSheet
                 val hasBasmalah = surahNumber != 1 && surahNumber != 9
@@ -125,7 +147,7 @@ fun QuranDetailScreen(
                 title = if (uiState.isPageMode && currentMushafSurahName != null) currentMushafSurahName!! else (uiState.surahDetail?.name ?: stringResource(R.string.label_loading)),
                 onBack = { navController.popBackStack() },
                 isPageMode = uiState.isPageMode,
-                onToggleMode = { viewModel.toggleViewMode() },
+                onToggleMode = onToggleModeAction,
                 sessionProgress = uiState.sessionProgress,
                 targetMinutes = uiState.targetMinutes,
                 onSettingsClick = { showSettings = true }
@@ -186,7 +208,11 @@ fun QuranDetailScreen(
                                 // Update current mushaf surah name strictly for the active page
                                 LaunchedEffect(pagerState.currentPage, ayahsOnPage) {
                                     if (pageIndex == pagerState.currentPage && ayahsOnPage.isNotEmpty()) {
+                                        val firstVerse = ayahsOnPage.first().ayah.verseNumber
                                         currentMushafSurahName = ayahsOnPage.first().surahNameSimple
+                                        currentMushafAyah = firstVerse
+                                        // Save to Last Read history so the Home Screen card works for Mushaf reading
+                                        viewModel.saveLastRead(firstVerse)
                                     }
                                 }
 
@@ -224,9 +250,15 @@ fun QuranDetailScreen(
                                     ) {
                                         Column(modifier = Modifier.fillMaxWidth()) {
                                             // Header for the physical page (Juz & Primary Surah)
-                                            val firstAyah = ayahsOnPage.first().ayah
-                                            val primarySurah = ayahsOnPage.first().surahNameArabic
-                                            MushafPageHeader(juzNumber = firstAyah.juzNumber, surahName = primarySurah)
+                                            val firstAyahItem = ayahsOnPage.first()
+                                            val firstAyah = firstAyahItem.ayah
+                                            val primarySurah = firstAyahItem.surahNameArabic
+                                            MushafPageHeader(
+                                                juzNumber = firstAyah.juzNumber, 
+                                                surahName = primarySurah,
+                                                isBookmarked = uiState.bookmarkSurah == firstAyah.surahId && uiState.bookmarkAyah == firstAyah.verseNumber,
+                                                onBookmarkClick = { viewModel.saveBookmark(firstAyah.verseNumber) }
+                                            )
 
                                             // Group ayahs on this page by their Surah
                                             val ayahsBySurah = ayahsOnPage.groupBy { it.ayah.surahId }
@@ -253,15 +285,12 @@ fun QuranDetailScreen(
 
                                                 Text(
                                                     text = combinedText,
-                                                    fontFamily = UthmaniHafs,
-                                                    fontSize = uiState.arabicFontSize.sp,
-                                                    // Increase base line height slightly to prevent descending harakat clipping 
-                                                    lineHeight = (uiState.arabicFontSize * 2.0f).sp,
+                                                    style = HeadlineQuran.copy(
+                                                        fontSize = uiState.arabicFontSize.sp,
+                                                        lineHeight = (uiState.arabicFontSize * 1.8f).sp
+                                                    ),
                                                     textAlign = TextAlign.Justify,
                                                     color = TextBlack,
-                                                    style = androidx.compose.ui.text.TextStyle(
-                                                        textDirection = TextDirection.Rtl
-                                                    ),
                                                     modifier = Modifier.fillMaxWidth()
                                                 )
                                             }
@@ -463,8 +492,7 @@ fun AyahItem(
         // Arabic Text (Right Aligned)
         Text(
             text = ayah.arabic,
-            style = MaterialTheme.typography.headlineMedium.copy(
-                fontFamily = arabicFont,
+            style = HeadlineQuran.copy(
                 fontSize = arabicFontSize.sp,
                 lineHeight = (arabicFontSize * 1.8f).sp
             ),

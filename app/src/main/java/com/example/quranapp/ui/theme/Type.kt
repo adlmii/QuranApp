@@ -14,9 +14,9 @@ val UthmaniHafs = FontFamily(
 
 val HeadlineQuran = TextStyle(
     fontFamily = UthmaniHafs,
-    fontWeight = FontWeight.SemiBold,
+    fontWeight = FontWeight.Normal, // Updated from SemiBold for consistent Mushaf look
     fontSize = 28.sp,
-    lineHeight = 50.sp,
+    lineHeight = 50.sp, // ~1.8x fontSize
     letterSpacing = 0.sp
 )
 

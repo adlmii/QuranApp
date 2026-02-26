@@ -34,7 +34,10 @@ data class QuranHomeUiState(
     val ayahSearchResults: List<AyahSearchResult> = emptyList(),
     val isSearchingAyahs: Boolean = false,
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    // Bookmark
+    val bookmarkSurah: Int = 0,
+    val bookmarkAyah: Int = 0
 )
 
 class QuranViewModel(application: Application) : AndroidViewModel(application) {
@@ -51,6 +54,18 @@ class QuranViewModel(application: Application) : AndroidViewModel(application) {
         // Populate FTS search index in background (no-op if already populated)
         viewModelScope.launch {
             repository.populateSearchIndex()
+        }
+        observeBookmark()
+    }
+
+    private fun observeBookmark() {
+        viewModelScope.launch {
+            repository.getBookmarkFlow().collect { bookmark ->
+                _uiState.value = _uiState.value.copy(
+                    bookmarkSurah = bookmark?.surahNumber ?: 0,
+                    bookmarkAyah = bookmark?.ayahNumber ?: 0
+                )
+            }
         }
     }
 
@@ -71,6 +86,16 @@ class QuranViewModel(application: Application) : AndroidViewModel(application) {
                     started = SharingStarted.WhileSubscribed(5000),
                     initialValue = emptyList()
                 )
+        }
+    }
+
+    fun saveBookmark(surahNumber: Int, ayahNumber: Int, surahName: String) {
+        viewModelScope.launch {
+            repository.saveBookmark(
+                surahNumber = surahNumber,
+                ayahNumber = ayahNumber,
+                surahName = surahName
+            )
         }
     }
 

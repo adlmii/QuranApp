@@ -35,7 +35,9 @@ data class QuranDetailUiState(
     val arabicFontSize: Float = 28f,
     // Adjacent surah names for flow navigation
     val nextSurahName: String? = null,
-    val prevSurahName: String? = null
+    val prevSurahName: String? = null,
+    // Sync jump target when toggling
+    val targetScrollAyah: Int? = null
 )
 
 class QuranDetailViewModel(application: Application) : AndroidViewModel(application) {
@@ -171,8 +173,15 @@ class QuranDetailViewModel(application: Application) : AndroidViewModel(applicat
         }
     }
 
-    fun toggleViewMode() {
-        _uiState.value = _uiState.value.copy(isPageMode = !_uiState.value.isPageMode)
+    fun toggleViewMode(targetAyah: Int? = null) {
+        _uiState.value = _uiState.value.copy(
+            isPageMode = !_uiState.value.isPageMode,
+            targetScrollAyah = targetAyah
+        )
+    }
+
+    fun consumeTargetScrollAyah() {
+        _uiState.value = _uiState.value.copy(targetScrollAyah = null)
     }
 
     // ── Mode Halaman (Mushaf Page View) ──

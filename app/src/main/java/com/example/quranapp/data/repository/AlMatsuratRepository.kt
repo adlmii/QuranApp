@@ -9,8 +9,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.IOException
 
-
 import com.example.quranapp.data.repository.QuranRepository
+import com.example.quranapp.util.QuranTextUtil
 
 class AlMatsuratRepository(private val context: Context) {
 
@@ -64,7 +64,10 @@ class AlMatsuratRepository(private val context: Context) {
             
             if (targetVerses.isEmpty()) return item
 
-            val arabicText = targetVerses.joinToString(" " + "\u06DD" + " ") { it.arabic } + " " + "\u06DD"
+            val arabicText = targetVerses.joinToString(separator = "") {
+                val cleanText = it.arabic.replace("\u06DD".toRegex(), "").trimEnd()
+                cleanText + QuranTextUtil.formatAyahNumber(it.number)
+            }
             val translationText = targetVerses.joinToString(" ") { 
                 "${it.number}. ${it.translation}" 
             }

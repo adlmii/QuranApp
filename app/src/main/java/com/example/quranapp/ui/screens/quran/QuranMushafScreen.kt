@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.padding
@@ -17,6 +18,11 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -29,6 +35,7 @@ import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.quranapp.ui.theme.UthmaniHafs
+import com.example.quranapp.ui.theme.HeadlineQuran
 import com.example.quranapp.ui.theme.DeepEmerald
 import com.example.quranapp.ui.theme.TextBlack
 import com.example.quranapp.util.QuranTextUtil
@@ -41,6 +48,8 @@ import androidx.compose.foundation.verticalScroll
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun QuranMushafScreen(viewModel: QuranViewModel) {
+    val uiState by viewModel.uiState.collectAsState()
+    
     // Total 604 halaman dalam Mushaf Uthmani
     val pagerState = rememberPagerState(
         initialPage = 0,
@@ -86,9 +95,20 @@ fun QuranMushafScreen(viewModel: QuranViewModel) {
             ) {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     // Header for the physical page (Juz & Primary Surah)
-                    val firstAyah = ayahsOnPage.first().ayah
-                    val primarySurah = ayahsOnPage.first().surahNameArabic
-                    MushafPageHeader(juzNumber = firstAyah.juzNumber, surahName = primarySurah)
+                    val firstAyah = ayahsOnPage.first()
+                    val primarySurah = firstAyah.surahNameArabic
+                    MushafPageHeader(
+                        juzNumber = firstAyah.ayah.juzNumber, 
+                        surahName = primarySurah,
+                        isBookmarked = uiState.bookmarkSurah == firstAyah.ayah.surahId && uiState.bookmarkAyah == firstAyah.ayah.verseNumber,
+                        onBookmarkClick = { 
+                            viewModel.saveBookmark(
+                                surahNumber = firstAyah.ayah.surahId,
+                                ayahNumber = firstAyah.ayah.verseNumber,
+                                surahName = firstAyah.surahNameSimple
+                            ) 
+                        }
+                    )
 
                     // Group ayahs on this page by their Surah
                     val ayahsBySurah = ayahsOnPage.groupBy { it.ayah.surahId }
@@ -116,14 +136,9 @@ fun QuranMushafScreen(viewModel: QuranViewModel) {
 
                         Text(
                             text = combinedText,
-                            fontFamily = UthmaniHafs,
-                            fontSize = 26.sp,
-                            lineHeight = 52.sp,
+                            style = HeadlineQuran, // Uses standardized 28sp and 1.8x line height
                             textAlign = TextAlign.Justify,
                             color = TextBlack,
-                            style = androidx.compose.ui.text.TextStyle(
-                                textDirection = TextDirection.Rtl
-                            ),
                             modifier = Modifier.fillMaxWidth()
                         )
                     }
@@ -179,7 +194,12 @@ fun MushafBasmalah() {
 }
 
 @Composable
-fun MushafPageHeader(juzNumber: Int, surahName: String) {
+fun MushafPageHeader(
+    juzNumber: Int, 
+    surahName: String,
+    isBookmarked: Boolean = false,
+    onBookmarkClick: () -> Unit = {}
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -197,13 +217,27 @@ fun MushafPageHeader(juzNumber: Int, surahName: String) {
                 fontWeight = FontWeight.Bold,
                 color = DeepEmerald.copy(alpha = 0.7f)
             )
-            // Primary Surah on Page (Right side)
-            Text(
-                text = "سُورَة $surahName",
-                fontFamily = UthmaniHafs,
-                fontSize = 18.sp,
-                color = DeepEmerald.copy(alpha = 0.7f)
-            )
+            // Right side: Surah Name & Bookmark
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = "سُورَة $surahName",
+                    fontFamily = UthmaniHafs,
+                    fontSize = 18.sp,
+                    color = DeepEmerald.copy(alpha = 0.7f),
+                    modifier = Modifier.padding(end = 8.dp)
+                )
+                IconButton(
+                    onClick = onBookmarkClick,
+                    modifier = Modifier.size(24.dp)
+                ) {
+                    Icon(
+                        imageVector = if (isBookmarked) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
+                        contentDescription = "Bookmark Page",
+                        tint = if (isBookmarked) DeepEmerald else DeepEmerald.copy(alpha = 0.5f),
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
         }
         HorizontalDivider(
             color = DeepEmerald.copy(alpha = 0.2f),
