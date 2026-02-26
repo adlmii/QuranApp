@@ -14,4 +14,7 @@ interface ManualBookmarkDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun saveBookmark(entity: ManualBookmarkEntity)
+
+    @Query("DELETE FROM manual_bookmark WHERE id = 1")
+    suspend fun deleteBookmark()
 }

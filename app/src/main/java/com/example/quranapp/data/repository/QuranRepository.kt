@@ -187,6 +187,10 @@ class QuranRepository(private val context: Context) {
         )
     }
 
+    suspend fun deleteBookmark() {
+        bookmarkDao.deleteBookmark()
+    }
+
     /**
      * Public wrapper to get surah name by number (for flow navigation)
      */

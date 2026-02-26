@@ -111,10 +111,13 @@ fun QuranDetailScreen(
         val target = uiState.targetScrollAyah
         val ayahs = uiState.surahDetail?.ayahs
         if (target != null && ayahs != null && ayahs.isNotEmpty() && !uiState.isPageMode) {
-            val hasBasmalah = surahNumber != 1 && surahNumber != 9
-            val headerOffset = if (hasBasmalah) 1 else 0
-            val targetIndex = (target - 1 + headerOffset).coerceIn(0, ayahs.size - 1 + headerOffset)
-            listState.scrollToItem(targetIndex)
+            val ayahIndexInList = ayahs.indexOfFirst { it.number == target }
+            if (ayahIndexInList != -1) {
+                val hasBasmalah = surahNumber != 1 && surahNumber != 9
+                val headerOffset = if (hasBasmalah) 1 else 0
+                val targetIndex = ayahIndexInList + headerOffset
+                listState.scrollToItem(targetIndex)
+            }
             viewModel.consumeTargetScrollAyah()
         }
     }
@@ -257,7 +260,13 @@ fun QuranDetailScreen(
                                                 juzNumber = firstAyah.juzNumber, 
                                                 surahName = primarySurah,
                                                 isBookmarked = uiState.bookmarkSurah == firstAyah.surahId && uiState.bookmarkAyah == firstAyah.verseNumber,
-                                                onBookmarkClick = { viewModel.saveBookmark(firstAyah.verseNumber) }
+                                                onBookmarkClick = { 
+                                                    viewModel.saveBookmark(
+                                                        surahNumber = firstAyah.surahId,
+                                                        ayahNumber = firstAyah.verseNumber,
+                                                        surahName = primarySurah
+                                                    )
+                                                }
                                             )
 
                                             // Group ayahs on this page by their Surah

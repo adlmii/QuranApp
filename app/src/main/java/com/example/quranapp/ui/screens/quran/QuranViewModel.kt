@@ -91,11 +91,15 @@ class QuranViewModel(application: Application) : AndroidViewModel(application) {
 
     fun saveBookmark(surahNumber: Int, ayahNumber: Int, surahName: String) {
         viewModelScope.launch {
-            repository.saveBookmark(
-                surahNumber = surahNumber,
-                ayahNumber = ayahNumber,
-                surahName = surahName
-            )
+            if (_uiState.value.bookmarkSurah == surahNumber && _uiState.value.bookmarkAyah == ayahNumber) {
+                repository.deleteBookmark()
+            } else {
+                repository.saveBookmark(
+                    surahNumber = surahNumber,
+                    ayahNumber = ayahNumber,
+                    surahName = surahName
+                )
+            }
         }
     }
 

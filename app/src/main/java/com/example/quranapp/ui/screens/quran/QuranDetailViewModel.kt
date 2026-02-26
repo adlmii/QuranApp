@@ -159,11 +159,29 @@ class QuranDetailViewModel(application: Application) : AndroidViewModel(applicat
     fun saveBookmark(ayahNumber: Int) {
         if (currentSurahNumber == 0) return
         viewModelScope.launch {
-            repository.saveBookmark(
-                surahNumber = currentSurahNumber,
-                ayahNumber = ayahNumber,
-                surahName = currentSurahName
-            )
+            if (_uiState.value.bookmarkSurah == currentSurahNumber && _uiState.value.bookmarkAyah == ayahNumber) {
+                repository.deleteBookmark()
+            } else {
+                repository.saveBookmark(
+                    surahNumber = currentSurahNumber,
+                    ayahNumber = ayahNumber,
+                    surahName = currentSurahName
+                )
+            }
+        }
+    }
+
+    fun saveBookmark(surahNumber: Int, ayahNumber: Int, surahName: String) {
+        viewModelScope.launch {
+            if (_uiState.value.bookmarkSurah == surahNumber && _uiState.value.bookmarkAyah == ayahNumber) {
+                repository.deleteBookmark()
+            } else {
+                repository.saveBookmark(
+                    surahNumber = surahNumber,
+                    ayahNumber = ayahNumber,
+                    surahName = surahName
+                )
+            }
         }
     }
 
