@@ -67,9 +67,15 @@
     <!-- Settings Sheet -->
     <string name="settings_title">Reading Settings</string>
     <string name="settings_display_mode">Display Mode</string>
+    <string name="settings_section_display">DISPLAY</string>
+    <string name="settings_section_reading_mode">READING MODE</string>
     <string name="settings_mode_ayah">Ayah Mode</string>
+    <string name="settings_list">List</string>
+    <string name="settings_page">Page</string>
+    <string name="settings_keep_screen_on">Keep screen on while reading</string>
     <string name="settings_jump_title">Jump to Ayah</string>
     <string name="hint_ayah_range">1 – %1$d</string>
+    <string name="hint_go_to_ayah">Go to Ayah (1 - %1$d)</string>
     <string name="settings_font_size">Arabic Text Size</string>
     <string name="settings_tajwid">Tajweed Colors</string>
     <string name="notif_hijri_month_title">🌙 New Hijri Month</string>

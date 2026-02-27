@@ -37,7 +37,11 @@ data class QuranDetailUiState(
     val nextSurahName: String? = null,
     val prevSurahName: String? = null,
     // Sync jump target when toggling
-    val targetScrollAyah: Int? = null
+    val targetScrollAyah: Int? = null,
+    // Active Mushaf Page tracking for cross-surah limits
+    val activeMushafSurahId: Int = 0,
+    val activeMushafSurahTotalAyahs: Int = 0,
+    val targetPageJump: Int? = null
 )
 
 class QuranDetailViewModel(application: Application) : AndroidViewModel(application) {
@@ -200,6 +204,32 @@ class QuranDetailViewModel(application: Application) : AndroidViewModel(applicat
 
     fun consumeTargetScrollAyah() {
         _uiState.value = _uiState.value.copy(targetScrollAyah = null)
+    }
+
+    // ── Active Surah Tracking & Jumping (Page Mode) ──
+
+    fun updateActiveMushafSurah(surahId: Int) {
+        if (_uiState.value.activeMushafSurahId == surahId) return
+        viewModelScope.launch {
+            val surah = repository.getSurahById(surahId)
+            _uiState.value = _uiState.value.copy(
+                activeMushafSurahId = surahId,
+                activeMushafSurahTotalAyahs = surah?.versesCount ?: 0
+            )
+        }
+    }
+
+    fun jumpToAyahInPageMode(surahId: Int, ayahNumber: Int) {
+        viewModelScope.launch {
+            val pageNum = repository.getPageNumberForAyah(surahId, ayahNumber)
+            if (pageNum != null) {
+                _uiState.value = _uiState.value.copy(targetPageJump = pageNum)
+            }
+        }
+    }
+
+    fun consumeTargetPageJump() {
+        _uiState.value = _uiState.value.copy(targetPageJump = null)
     }
 
     // ── Mode Halaman (Mushaf Page View) ──

@@ -138,6 +138,14 @@ class QuranRepository(private val context: Context) {
         }
     }
 
+    suspend fun getSurahById(surahId: Int): com.example.quranapp.data.local.entity.SurahEntity? {
+        return surahDao.getById(surahId)
+    }
+
+    suspend fun getPageNumberForAyah(surahId: Int, verseNumber: Int): Int? {
+        return quranDao.getPageNumberForAyah(surahId, verseNumber)
+    }
+
     // ── Recent Quran (Last Read) — Room Database ──
 
     /**

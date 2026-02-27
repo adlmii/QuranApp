@@ -117,18 +117,34 @@ fun QuranDetailScreen(
 
     // Settings Bottom Sheet
     if (showSettings) {
+        val sheetTotalAyahs = if (uiState.isPageMode && uiState.activeMushafSurahTotalAyahs > 0) {
+            uiState.activeMushafSurahTotalAyahs
+        } else {
+            uiState.surahDetail?.ayahs?.size ?: 0
+        }
+        
+        val sheetSurahId = if (uiState.isPageMode && uiState.activeMushafSurahId > 0) {
+            uiState.activeMushafSurahId
+        } else {
+            surahNumber
+        }
+
         QuranSettingsSheet(
             isPageMode = uiState.isPageMode,
             arabicFontSize = uiState.arabicFontSize,
-            totalAyahs = uiState.surahDetail?.ayahs?.size ?: 0,
+            totalAyahs = sheetTotalAyahs,
             onToggleMode = onToggleModeAction,
             onJumpToAyah = { ayahNum ->
-                val ayahs = uiState.surahDetail?.ayahs ?: return@QuranSettingsSheet
-                val hasBasmalah = surahNumber != 1 && surahNumber != 9
-                val headerOffset = if (hasBasmalah) 1 else 0
-                val index = (ayahNum - 1 + headerOffset).coerceIn(0, ayahs.size - 1 + headerOffset)
-                coroutineScope.launch {
-                    listState.animateScrollToItem(index)
+                if (uiState.isPageMode) {
+                    viewModel.jumpToAyahInPageMode(sheetSurahId, ayahNum)
+                } else {
+                    val ayahs = uiState.surahDetail?.ayahs ?: return@QuranSettingsSheet
+                    val hasBasmalah = surahNumber != 1 && surahNumber != 9
+                    val headerOffset = if (hasBasmalah) 1 else 0
+                    val index = (ayahNum - 1 + headerOffset).coerceIn(0, ayahs.size - 1 + headerOffset)
+                    coroutineScope.launch {
+                        listState.animateScrollToItem(index)
+                    }
                 }
                 showSettings = false
             },
@@ -193,6 +209,14 @@ fun QuranDetailScreen(
                                 pageCount = { 604 }
                             )
 
+                            // Jump listener for jumping across Mushaf pages via Settings Sheet
+                            LaunchedEffect(uiState.targetPageJump) {
+                                uiState.targetPageJump?.let { targetPage ->
+                                    pagerState.animateScrollToPage(targetPage - 1)
+                                    viewModel.consumeTargetPageJump()
+                                }
+                            }
+
                             HorizontalPager(
                                 state = pagerState,
                                 reverseLayout = true, // Swipe dari kanan ke kiri (khas Arab)
@@ -204,9 +228,15 @@ fun QuranDetailScreen(
                                 // Update current mushaf surah name strictly for the active page
                                 LaunchedEffect(pagerState.currentPage, ayahsOnPage) {
                                     if (pageIndex == pagerState.currentPage && ayahsOnPage.isNotEmpty()) {
-                                        val firstVerse = ayahsOnPage.first().ayah.verseNumber
-                                        currentMushafSurahName = ayahsOnPage.first().surahNameSimple
+                                        val firstAyahItem = ayahsOnPage.first()
+                                        val firstVerse = firstAyahItem.ayah.verseNumber
+                                        val surahId = firstAyahItem.ayah.surahId
+                                        
+                                        currentMushafSurahName = firstAyahItem.surahNameSimple
                                         currentMushafAyah = firstVerse
+                                        
+                                        viewModel.updateActiveMushafSurah(surahId)
+                                        
                                         // Save to Last Read history so the Home Screen card works for Mushaf reading
                                         viewModel.saveLastRead(firstVerse)
                                     }

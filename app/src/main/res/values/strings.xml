@@ -67,9 +67,15 @@
     <!-- Settings Sheet -->
     <string name="settings_title">Pengaturan Baca</string>
     <string name="settings_display_mode">Mode Tampilan</string>
+    <string name="settings_section_display">TAMPILAN</string>
+    <string name="settings_section_reading_mode">MODE BACA</string>
     <string name="settings_mode_ayah">Mode Ayat</string>
+    <string name="settings_list">Daftar</string>
+    <string name="settings_page">Halaman</string>
+    <string name="settings_keep_screen_on">Biarkan layar menyala saat membaca</string>
     <string name="settings_jump_title">Lompat ke Ayat</string>
     <string name="hint_ayah_range">1 – %1$d</string>
+    <string name="hint_go_to_ayah">Lompat ke Ayat (1 - %1$d)</string>
     <string name="settings_font_size">Ukuran Teks Arab</string>
     <string name="settings_tajwid">Warna Tajwid</string>
     <string name="notif_hijri_month_title">🌙 Pergantian Bulan Hijriah</string>

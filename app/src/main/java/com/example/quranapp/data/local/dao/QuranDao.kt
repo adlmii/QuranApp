@@ -60,4 +60,8 @@ interface QuranDao {
     /** Total ayah count (for verification) */
     @Query("SELECT COUNT(*) FROM ayah")
     suspend fun count(): Int
+
+    /** Get page number for a specific ayah */
+    @Query("SELECT page_number FROM ayah WHERE surah_id = :surahId AND verse_number = :verseNumber LIMIT 1")
+    suspend fun getPageNumberForAyah(surahId: Int, verseNumber: Int): Int?
 }
