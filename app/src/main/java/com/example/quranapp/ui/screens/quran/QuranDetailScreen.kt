@@ -1,8 +1,5 @@
 package com.example.quranapp.ui.screens.quran
 
-import QuranSettingsSheet
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import com.example.quranapp.ui.theme.UthmaniHafs
@@ -14,16 +11,13 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.BookmarkBorder
-import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -35,8 +29,6 @@ import androidx.navigation.NavController
 import com.example.quranapp.data.model.Ayah
 import com.example.quranapp.R
 import com.example.quranapp.ui.components.AppHeader
-import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.ui.res.stringResource
 import com.example.quranapp.ui.theme.*
 import androidx.compose.ui.text.font.FontFamily
@@ -47,6 +39,7 @@ import kotlin.math.absoluteValue
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Column
+import com.example.quranapp.ui.screens.quran.components.QuranSettingsSheet
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -296,7 +289,8 @@ fun QuranDetailScreen(
                                                     text = combinedText,
                                                     style = HeadlineQuran.copy(
                                                         fontSize = uiState.arabicFontSize.sp,
-                                                        lineHeight = (uiState.arabicFontSize * 1.8f).sp
+                                                        lineHeight = (uiState.arabicFontSize * 1.8f).sp,
+                                                        textDirection = TextDirection.Rtl
                                                     ),
                                                     textAlign = TextAlign.Justify,
                                                     color = TextBlack,

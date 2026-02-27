@@ -136,7 +136,7 @@ fun QuranMushafScreen(viewModel: QuranViewModel) {
 
                         Text(
                             text = combinedText,
-                            style = HeadlineQuran, // Uses standardized 28sp and 1.8x line height
+                            style = HeadlineQuran.copy(textDirection = TextDirection.Rtl),
                             textAlign = TextAlign.Justify,
                             color = TextBlack,
                             modifier = Modifier.fillMaxWidth()

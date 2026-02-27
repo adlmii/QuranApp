@@ -1,21 +1,34 @@
-import androidx.compose.ui.res.stringResource
-import com.example.quranapp.R
+package com.example.quranapp.ui.screens.quran.components
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.AutoStories
+import androidx.compose.material.icons.rounded.ColorLens
+import androidx.compose.material.icons.rounded.FormatSize
+import androidx.compose.material.icons.rounded.MenuBook
+import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material.icons.rounded.TextFields
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.quranapp.R
 import com.example.quranapp.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -37,207 +50,319 @@ fun QuranSettingsSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         containerColor = CreamBackground,
-        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+        dragHandle = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                BottomSheetDefaults.DragHandle(color = DeepEmerald.copy(alpha = 0.4f))
+            }
+        },
+        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp)
-                .padding(bottom = 36.dp)
+                .padding(bottom = 40.dp)
         ) {
+            // Sheet Title
             Text(
                 text = stringResource(R.string.settings_title),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = DeepEmerald
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.ExtraBold,
+                color = DeepEmerald,
+                modifier = Modifier.padding(bottom = 24.dp)
             )
 
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // ── Display Mode Toggle ──
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Column {
-                    Text(
-                        text = stringResource(R.string.settings_display_mode),
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.SemiBold,
-                        color = TextBlack
-                    )
-                    Text(
-                        text = if (isPageMode) stringResource(R.string.mode_halaman_title) else stringResource(R.string.settings_mode_ayah),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = TextGray
-                    )
-                }
-                Switch(
-                    checked = isPageMode,
-                    onCheckedChange = { onToggleMode() },
-                    colors = SwitchDefaults.colors(
-                        checkedThumbColor = CreamBackground,
-                        checkedTrackColor = DeepEmerald
-                    )
-                )
-            }
-
-            HorizontalDivider(
-                modifier = Modifier.padding(vertical = 16.dp),
-                color = DividerColor
-            )
-
-            // ── Jump to Ayah ──
-            Text(
-                text = stringResource(R.string.settings_jump_title),
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.SemiBold,
-                color = TextBlack
-            )
-            Spacer(modifier = Modifier.height(10.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                TextField(
-                    value = jumpText,
-                    onValueChange = { jumpText = it.filter { c -> c.isDigit() } },
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(52.dp)
-                        .border(1.dp, DeepEmerald, RoundedCornerShape(50)),
-                    placeholder = {
+            // ── Card 1: Display Mode ──
+            SettingsCard {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(CircleShape)
+                            .background(LightEmerald.copy(alpha = 0.5f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = if (isPageMode) Icons.Rounded.AutoStories else Icons.Rounded.MenuBook,
+                            contentDescription = null,
+                            tint = DeepEmerald,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                    
+                    Spacer(modifier = Modifier.width(16.dp))
+                    
+                    Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = stringResource(R.string.hint_ayah_range, totalAyahs),
+                            text = stringResource(R.string.settings_display_mode),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = TextBlack
+                        )
+                        Text(
+                            text = if (isPageMode) stringResource(R.string.mode_halaman_title) else stringResource(R.string.settings_mode_ayah),
                             style = MaterialTheme.typography.bodyMedium,
                             color = TextGray
                         )
-                    },
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Number,
-                        imeAction = ImeAction.Go
-                    ),
-                    keyboardActions = KeyboardActions(
-                        onGo = {
-                            val num = jumpText.toIntOrNull()
-                            if (num != null && num in 1..totalAyahs) {
-                                onJumpToAyah(num)
-                                focusManager.clearFocus()
-                                jumpText = ""
-                            }
-                        }
-                    ),
-                    singleLine = true,
-                    shape = RoundedCornerShape(50),
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = LightEmerald.copy(alpha = 0.3f),
-                        unfocusedContainerColor = LightEmerald.copy(alpha = 0.2f),
-                        focusedIndicatorColor = androidx.compose.ui.graphics.Color.Transparent,
-                        unfocusedIndicatorColor = androidx.compose.ui.graphics.Color.Transparent,
-                        cursorColor = DeepEmerald,
-                        focusedTextColor = TextBlack,
-                        unfocusedTextColor = TextBlack
-                    ),
-                    textStyle = MaterialTheme.typography.bodyLarge.copy(
-                        fontWeight = FontWeight.SemiBold
+                    }
+
+                    Switch(
+                        checked = isPageMode,
+                        onCheckedChange = { onToggleMode() },
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = Color.White,
+                            checkedTrackColor = DeepEmerald,
+                            uncheckedThumbColor = TextGray,
+                            uncheckedTrackColor = DividerColor
+                        )
                     )
-                )
-                Button(
-                    onClick = {
-                        val num = jumpText.toIntOrNull()
-                        if (num != null && num in 1..totalAyahs) {
-                            onJumpToAyah(num)
-                            focusManager.clearFocus()
-                            jumpText = ""
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // ── Card 2: Jump to Ayah ──
+            SettingsCard {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Rounded.Search,
+                            contentDescription = null,
+                            tint = DeepEmerald,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = stringResource(R.string.settings_jump_title),
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = DeepEmerald
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        TextField(
+                            value = jumpText,
+                            onValueChange = { jumpText = it.filter { c -> c.isDigit() } },
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(52.dp)
+                                .border(1.dp, LightEmerald, RoundedCornerShape(12.dp)),
+                            placeholder = {
+                                Text(
+                                    text = stringResource(R.string.hint_ayah_range, totalAyahs),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = TextGray.copy(alpha = 0.8f)
+                                )
+                            },
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Number,
+                                imeAction = ImeAction.Go
+                            ),
+                            keyboardActions = KeyboardActions(
+                                onGo = {
+                                    val num = jumpText.toIntOrNull()
+                                    if (num != null && num in 1..totalAyahs) {
+                                        onJumpToAyah(num)
+                                        focusManager.clearFocus()
+                                        jumpText = ""
+                                    }
+                                }
+                            ),
+                            singleLine = true,
+                            shape = RoundedCornerShape(12.dp),
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = Color.White,
+                                unfocusedContainerColor = Color.White,
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color.Transparent,
+                                cursorColor = DeepEmerald,
+                                focusedTextColor = TextBlack,
+                                unfocusedTextColor = TextBlack
+                            ),
+                            textStyle = MaterialTheme.typography.bodyLarge.copy(
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        )
+
+                        Button(
+                            onClick = {
+                                val num = jumpText.toIntOrNull()
+                                if (num != null && num in 1..totalAyahs) {
+                                    onJumpToAyah(num)
+                                    focusManager.clearFocus()
+                                    jumpText = ""
+                                }
+                            },
+                            modifier = Modifier.height(52.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = DeepEmerald),
+                            shape = RoundedCornerShape(12.dp),
+                            contentPadding = PaddingValues(horizontal = 24.dp)
+                        ) {
+                            Text(
+                                text = "Go",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp
+                            )
                         }
-                    },
-                    modifier = Modifier.height(52.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = DeepEmerald),
-                    shape = RoundedCornerShape(50)
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // ── Card 3: Font Size ──
+            SettingsCard {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Rounded.FormatSize,
+                                contentDescription = null,
+                                tint = DeepEmerald,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = stringResource(R.string.settings_font_size),
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = DeepEmerald
+                            )
+                        }
+                        
+                        // Preview inside the header!
+                        Text(
+                            text = "بِسْمِ ٱللَّهِ",
+                            style = MaterialTheme.typography.titleLarge.copy(
+                                fontFamily = UthmaniHafs,
+                                fontSize = arabicFontSize.sp
+                            ),
+                            color = DeepEmerald
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.TextFields,
+                            contentDescription = "Small Font",
+                            tint = TextGray,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        
+                        Slider(
+                            value = arabicFontSize,
+                            onValueChange = onFontSizeChange,
+                            valueRange = 20f..44f,
+                            steps = 11,
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(horizontal = 8.dp),
+                            colors = SliderDefaults.colors(
+                                thumbColor = DeepEmerald,
+                                activeTrackColor = DeepEmerald,
+                                inactiveTrackColor = LightEmerald
+                            )
+                        )
+                        
+                        Icon(
+                            imageVector = Icons.Rounded.TextFields,
+                            contentDescription = "Large Font",
+                            tint = TextGray,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // ── Card 4: Tajwid (Coming Soon) ──
+            SettingsCard {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = stringResource(R.string.action_go),
-                        fontWeight = FontWeight.Bold
+                    Box(
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(CircleShape)
+                            .background(DividerColor),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.ColorLens,
+                            contentDescription = null,
+                            tint = TextGray,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                    
+                    Spacer(modifier = Modifier.width(16.dp))
+                    
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(R.string.settings_tajwid),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = TextGray
+                        )
+                        Text(
+                            text = stringResource(R.string.label_coming_soon),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = TextGray.copy(alpha = 0.7f)
+                        )
+                    }
+
+                    Switch(
+                        checked = false,
+                        onCheckedChange = { /* Coming soon */ },
+                        enabled = false,
+                        colors = SwitchDefaults.colors(
+                            disabledCheckedThumbColor = CreamBackground,
+                            disabledCheckedTrackColor = LightEmerald,
+                            disabledUncheckedThumbColor = CreamBackground,
+                            disabledUncheckedTrackColor = DividerColor
+                        )
                     )
                 }
             }
+        }
+    }
+}
 
-            HorizontalDivider(
-                modifier = Modifier.padding(vertical = 16.dp),
-                color = DividerColor
-            )
-
-            // ── Font Size Slider ──
-            Text(
-                text = stringResource(R.string.settings_font_size),
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.SemiBold,
-                color = TextBlack
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "بِسْمِ ٱللَّهِ",
-                style = MaterialTheme.typography.headlineMedium.copy(
-                    fontFamily = UthmaniHafs,
-                    fontSize = arabicFontSize.sp
-                ),
-                color = DeepEmerald
-            )
-            Slider(
-                value = arabicFontSize,
-                onValueChange = onFontSizeChange,
-                valueRange = 20f..44f,
-                steps = 11,
-                colors = SliderDefaults.colors(
-                    thumbColor = DeepEmerald,
-                    activeTrackColor = DeepEmerald,
-                    inactiveTrackColor = LightEmerald
-                )
-            )
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(stringResource(R.string.label_small), style = MaterialTheme.typography.labelSmall, color = TextGray)
-                Text(stringResource(R.string.label_large), style = MaterialTheme.typography.labelSmall, color = TextGray)
-            }
-
-            HorizontalDivider(
-                modifier = Modifier.padding(vertical = 16.dp),
-                color = DividerColor
-            )
-
-            // ── Tajwid (Coming Soon) ──
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Column {
-                    Text(
-                        text = stringResource(R.string.settings_tajwid),
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.SemiBold,
-                        color = TextBlack
-                    )
-                    Text(
-                        text = stringResource(R.string.label_coming_soon),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = TextGray
-                    )
-                }
-                Switch(
-                    checked = false,
-                    onCheckedChange = { /* Coming soon */ },
-                    enabled = false,
-                    colors = SwitchDefaults.colors(
-                        checkedThumbColor = CreamBackground,
-                        checkedTrackColor = DeepEmerald
-                    )
-                )
-            }
+@Composable
+private fun SettingsCard(content: @Composable () -> Unit) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        color = Color.White,
+        shadowElevation = 0.dp,
+        border = BorderStroke(1.dp, DividerColor.copy(alpha = 0.5f))
+    ) {
+        Box(modifier = Modifier.padding(16.dp)) {
+            content()
         }
     }
 }
