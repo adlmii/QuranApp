@@ -75,6 +75,17 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         observeLastRead()
         observeGoals()
         observeBookmark()
+        observeLanguage()
+    }
+
+    private fun observeLanguage() {
+        viewModelScope.launch {
+            userPrefs.language.collect {
+                _uiState.value = _uiState.value.copy(
+                    gregorianDate = DateUtil.getGregorianDate(getApplication())
+                )
+            }
+        }
     }
 
     private fun observeBookmark() {
