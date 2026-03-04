@@ -74,7 +74,7 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
 
     init {
         _uiState.value = _uiState.value.copy(
-            gregorianDate = DateUtil.getGregorianDate(),
+            gregorianDate = DateUtil.getGregorianDate(application),
             hijriDate = DateUtil.getHijriDate()
         )
 

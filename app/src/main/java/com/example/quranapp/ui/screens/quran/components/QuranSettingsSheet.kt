@@ -1,11 +1,10 @@
 package com.example.quranapp.ui.screens.quran.components
 
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.BorderStroke
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.Spring
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
@@ -23,18 +22,16 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.res.stringResource
 import com.example.quranapp.R
 import com.example.quranapp.ui.theme.*
 
@@ -44,9 +41,7 @@ fun QuranSettingsSheet(
     isPageMode: Boolean,
     arabicFontSize: Float,
     totalAyahs: Int,
-    isKeepScreenOn: Boolean = false,
     onToggleMode: () -> Unit,
-    onToggleKeepScreenOn: (Boolean) -> Unit = {},
     onJumpToAyah: (Int) -> Unit,
     onFontSizeChange: (Float) -> Unit,
     onDismiss: () -> Unit
@@ -60,16 +55,28 @@ fun QuranSettingsSheet(
         sheetState = sheetState,
         containerColor = CreamBackground,
         dragHandle = null,
-        shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
+        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
         tonalElevation = 0.dp
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp)
-                .padding(bottom = 48.dp, top = 24.dp)
+                .padding(bottom = 40.dp, top = 20.dp)
         ) {
-            // ── Top Bar (Settings + X) ──
+            // ── Drag Indicator ──
+            Box(
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .width(40.dp)
+                    .height(4.dp)
+                    .clip(RoundedCornerShape(50))
+                    .background(TextGray.copy(alpha = 0.25f))
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // ── Header Row ──
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -77,13 +84,13 @@ fun QuranSettingsSheet(
             ) {
                 Text(
                     text = stringResource(R.string.settings_title),
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.ExtraBold,
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
                     color = DeepEmerald
                 )
                 Surface(
                     shape = CircleShape,
-                    color = DividerColor.copy(alpha = 0.4f),
+                    color = LightEmerald,
                     modifier = Modifier
                         .size(36.dp)
                         .clickable { onDismiss() }
@@ -92,28 +99,94 @@ fun QuranSettingsSheet(
                         Icon(
                             imageVector = Icons.Rounded.Close,
                             contentDescription = "Close",
-                            tint = TextBlack,
-                            modifier = Modifier.size(20.dp)
+                            tint = DeepEmerald,
+                            modifier = Modifier.size(18.dp)
                         )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(28.dp))
 
-            // ── Display Section Header ──
-            SectionHeader(title = stringResource(R.string.settings_section_display))
+            // ══════════════════════════════════════════
+            // MODE BACA (Segmented Control)
+            // ══════════════════════════════════════════
+            Text(
+                text = stringResource(R.string.settings_section_reading_mode),
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 0.8.sp,
+                color = DeepEmerald.copy(alpha = 0.7f),
+                modifier = Modifier.padding(bottom = 12.dp, start = 4.dp)
+            )
 
-            // ── Jump to Ayah Pill ──
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(LightEmerald)
+                    .padding(4.dp)
+            ) {
+                // Sliding indicator
+                val offsetFraction by animateFloatAsState(
+                    targetValue = if (isPageMode) 1f else 0f,
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioLowBouncy,
+                        stiffness = Spring.StiffnessMediumLow
+                    ),
+                    label = "TabSlide"
+                )
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(0.5f)
+                        .fillMaxHeight()
+                        .graphicsLayer { translationX = size.width * offsetFraction }
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(brush = DeepEmeraldGradient)
+                )
+
+                Row(modifier = Modifier.fillMaxSize()) {
+                    ModeTab(
+                        text = stringResource(R.string.settings_list),
+                        icon = Icons.Rounded.Menu,
+                        isSelected = !isPageMode,
+                        modifier = Modifier.weight(1f),
+                        onClick = { if (isPageMode) onToggleMode() }
+                    )
+                    ModeTab(
+                        text = stringResource(R.string.settings_page),
+                        icon = Icons.Rounded.MenuBook,
+                        isSelected = isPageMode,
+                        modifier = Modifier.weight(1f),
+                        onClick = { if (!isPageMode) onToggleMode() }
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(28.dp))
+
+            // ══════════════════════════════════════════
+            // LOMPAT KE AYAT
+            // ══════════════════════════════════════════
+            Text(
+                text = stringResource(R.string.settings_section_display),
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 0.8.sp,
+                color = DeepEmerald.copy(alpha = 0.7f),
+                modifier = Modifier.padding(bottom = 12.dp, start = 4.dp)
+            )
+
             Surface(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(50),
-                color = Color.White,
-                shadowElevation = 2.dp,
-                border = BorderStroke(1.dp, DividerColor.copy(alpha = 0.3f))
+                shape = RoundedCornerShape(16.dp),
+                color = White,
+                shadowElevation = 1.dp
             ) {
                 Row(
-                    modifier = Modifier.padding(start = 24.dp, end = 8.dp, top = 6.dp, bottom = 6.dp),
+                    modifier = Modifier.padding(start = 20.dp, end = 6.dp, top = 4.dp, bottom = 4.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     TextField(
@@ -121,14 +194,18 @@ fun QuranSettingsSheet(
                         onValueChange = { jumpText = it.filter { c -> c.isDigit() } },
                         modifier = Modifier
                             .weight(1f)
-                            .height(52.dp),
+                            .height(48.dp),
                         placeholder = {
                             Text(
                                 text = stringResource(R.string.hint_go_to_ayah, totalAyahs),
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = TextGray.copy(alpha = 0.6f)
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = TextGray.copy(alpha = 0.5f)
                             )
                         },
+                        textStyle = MaterialTheme.typography.bodyLarge.copy(
+                            fontWeight = FontWeight.Medium,
+                            color = TextBlack
+                        ),
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Number,
                             imeAction = ImeAction.Go
@@ -149,18 +226,16 @@ fun QuranSettingsSheet(
                             unfocusedContainerColor = Color.Transparent,
                             focusedIndicatorColor = Color.Transparent,
                             unfocusedIndicatorColor = Color.Transparent,
-                            cursorColor = DeepEmerald,
-                            focusedTextColor = TextBlack,
-                            unfocusedTextColor = TextBlack
+                            cursorColor = DeepEmerald
                         )
                     )
-                    
-                    // Elegant Circular Action Button
+
+                    // Go button
                     Surface(
-                        shape = CircleShape,
+                        shape = RoundedCornerShape(12.dp),
                         color = DeepEmerald,
                         modifier = Modifier
-                            .size(44.dp)
+                            .size(40.dp)
                             .clickable {
                                 val num = jumpText.toIntOrNull()
                                 if (num != null && num in 1..totalAyahs) {
@@ -174,53 +249,52 @@ fun QuranSettingsSheet(
                             Icon(
                                 imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
                                 contentDescription = "Go",
-                                tint = Color.White,
-                                modifier = Modifier.size(20.dp)
+                                tint = White,
+                                modifier = Modifier.size(18.dp)
                             )
                         }
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
-            // ── Font Size Pill ──
+            // ══════════════════════════════════════════
+            // UKURAN FONT
+            // ══════════════════════════════════════════
             Surface(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(28.dp),
-                color = Color.White,
-                shadowElevation = 2.dp,
-                border = BorderStroke(1.dp, DividerColor.copy(alpha = 0.3f))
+                shape = RoundedCornerShape(16.dp),
+                color = White,
+                shadowElevation = 1.dp
             ) {
                 Column(
-                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 20.dp),
+                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Dynamic Arabic Text Preview
+                    // Live Arabic preview
                     Text(
                         text = "بِسْمِ ٱللَّهِ",
-                        style = HeadlineQuran.copy(
-                            fontSize = arabicFontSize.sp
-                        ),
+                        style = HeadlineQuran.copy(fontSize = arabicFontSize.sp),
                         color = DeepEmerald,
-                        modifier = Modifier.heightIn(min = 60.dp), // Prevent layout jumping
+                        modifier = Modifier
+                            .heightIn(min = 56.dp)
+                            .padding(vertical = 4.dp),
                         textAlign = TextAlign.Center
                     )
-                    
-                    Spacer(modifier = Modifier.height(8.dp))
-                    
+
+                    // Slider with labels
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "T",
-                            fontSize = 14.sp,
+                            text = "ع",
+                            style = MaterialTheme.typography.bodySmall,
                             fontWeight = FontWeight.Bold,
-                            color = TextGray
+                            color = TextGray.copy(alpha = 0.6f)
                         )
-                        
-                        @OptIn(ExperimentalMaterial3Api::class)
+
                         Slider(
                             value = arabicFontSize,
                             onValueChange = onFontSizeChange,
@@ -228,10 +302,10 @@ fun QuranSettingsSheet(
                             steps = 11,
                             modifier = Modifier
                                 .weight(1f)
-                                .padding(horizontal = 16.dp),
+                                .padding(horizontal = 12.dp),
                             colors = SliderDefaults.colors(
                                 thumbColor = DeepEmerald,
-                                activeTrackColor = DeepEmerald,
+                                activeTrackColor = MediumEmerald,
                                 inactiveTrackColor = LightEmerald,
                                 inactiveTickColor = Color.Transparent,
                                 activeTickColor = Color.Transparent
@@ -239,133 +313,30 @@ fun QuranSettingsSheet(
                             thumb = {
                                 Box(
                                     modifier = Modifier
-                                        .size(24.dp)
+                                        .size(22.dp)
                                         .clip(CircleShape)
                                         .background(DeepEmerald)
-                                        .border(2.dp, Color.White, CircleShape)
                                 )
                             }
                         )
-                        
+
                         Text(
-                            text = "T",
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.ExtraBold,
-                            color = TextGray
+                            text = "ع",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = TextGray.copy(alpha = 0.6f)
                         )
                     }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // ── Reading Mode Section Header ──
-            SectionHeader(title = stringResource(R.string.settings_section_reading_mode))
-
-            // ── Segmented Control (List vs Page) ──
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(64.dp)
-                    .clip(RoundedCornerShape(50))
-                    .background(Color(0xFFF0F4F4))
-                    .padding(6.dp)
-            ) {
-                // Smooth sliding animation
-                val offsetFraction by androidx.compose.animation.core.animateFloatAsState(
-                    targetValue = if (isPageMode) 1f else 0f,
-                    animationSpec = androidx.compose.animation.core.spring(
-                        dampingRatio = androidx.compose.animation.core.Spring.DampingRatioNoBouncy,
-                        stiffness = androidx.compose.animation.core.Spring.StiffnessLow
-                    ),
-                    label = "TabIndicator"
-                )
-
-                // The Sliding Indicator
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth(0.5f)
-                        .fillMaxHeight()
-                        .graphicsLayer {
-                            translationX = size.width * offsetFraction
-                        }
-                        .clip(RoundedCornerShape(50))
-                        .background(brush = DeepEmeraldGradient)
-                        .shadow(elevation = 2.dp, shape = RoundedCornerShape(50), clip = false)
-                )
-
-                Row(modifier = Modifier.fillMaxSize()) {
-                    // List Option
-                    SettingsTabButton(
-                        text = stringResource(R.string.settings_list),
-                        icon = Icons.Rounded.Menu,
-                        isSelected = !isPageMode,
-                        modifier = Modifier.weight(1f),
-                        onClick = { if (isPageMode) onToggleMode() }
-                    )
-                    
-                    // Page Option
-                    SettingsTabButton(
-                        text = stringResource(R.string.settings_page),
-                        icon = Icons.Rounded.MenuBook,
-                        isSelected = isPageMode,
-                        modifier = Modifier.weight(1f),
-                        onClick = { if (!isPageMode) onToggleMode() }
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // ── Keep Screen On Pill ──
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(24.dp),
-                color = Color.White,
-                shadowElevation = 2.dp,
-                border = BorderStroke(1.dp, DividerColor.copy(alpha = 0.3f))
-            ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 18.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = stringResource(R.string.settings_keep_screen_on),
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.Medium,
-                        color = TextBlack
-                    )
-                    Switch(
-                        checked = isKeepScreenOn,
-                        onCheckedChange = onToggleKeepScreenOn,
-                        colors = SwitchDefaults.colors(
-                            checkedThumbColor = Color.White,
-                            checkedTrackColor = DeepEmerald,
-                            uncheckedThumbColor = TextGray,
-                            uncheckedTrackColor = DividerColor
-                        )
-                    )
                 }
             }
         }
     }
 }
 
-@Composable
-fun SectionHeader(title: String) {
-    Text(
-        text = title,
-        style = MaterialTheme.typography.titleSmall,
-        fontWeight = FontWeight.Bold,
-        letterSpacing = 0.8.sp,
-        color = DeepEmerald.copy(alpha = 0.8f),
-        modifier = Modifier.padding(bottom = 12.dp, start = 4.dp)
-    )
-}
+// ── Reusable Tab Component ──
 
 @Composable
-fun SettingsTabButton(
+private fun ModeTab(
     modifier: Modifier = Modifier,
     text: String,
     icon: androidx.compose.ui.graphics.vector.ImageVector,
@@ -373,8 +344,9 @@ fun SettingsTabButton(
     onClick: () -> Unit
 ) {
     val contentColor by animateColorAsState(
-        targetValue = if (isSelected) Color.White else TextGray,
-        animationSpec = tween(300), label = ""
+        targetValue = if (isSelected) White else TextGray,
+        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+        label = "TabColor"
     )
 
     Box(
@@ -382,7 +354,7 @@ fun SettingsTabButton(
             .fillMaxHeight()
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
-                indication = null, // Disable ripple for smooth transition
+                indication = null,
                 onClick = onClick
             ),
         contentAlignment = Alignment.Center
@@ -395,12 +367,12 @@ fun SettingsTabButton(
                 imageVector = icon,
                 contentDescription = null,
                 tint = contentColor,
-                modifier = Modifier.size(20.dp)
+                modifier = Modifier.size(18.dp)
             )
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(6.dp))
             Text(
                 text = text,
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold,
                 color = contentColor
             )

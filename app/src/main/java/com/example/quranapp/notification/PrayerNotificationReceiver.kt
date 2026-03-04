@@ -43,6 +43,8 @@ class PrayerNotificationReceiver : BroadcastReceiver() {
 
         val title: String
         val body: String
+        // Vibrate for actual prayer time (not pre-reminder, not Syuruq)
+        val shouldVibrate = !isPreReminder && prayerName != "Syuruq"
 
         if (isPreReminder) {
             title = context.getString(R.string.notif_pre_title, prayerName)
@@ -55,7 +57,7 @@ class PrayerNotificationReceiver : BroadcastReceiver() {
             body = context.getString(R.string.notif_prayer_body, prayerName)
         }
 
-        showNotification(context, notificationId, title, body, "prayers")
+        showNotification(context, notificationId, title, body, "prayers", shouldVibrate)
     }
 
     private fun handleTypedNotification(context: Context, type: String, intent: Intent) {
@@ -158,7 +160,17 @@ class PrayerNotificationReceiver : BroadcastReceiver() {
         }
     }
 
-    private fun showNotification(context: Context, id: Int, title: String, body: String, targetRoute: String? = null) {
+    // 3-pulse vibration: delay, vib, pause, vib, pause, vib
+    private val PRAYER_VIBRATION_PATTERN = longArrayOf(0, 400, 200, 400, 200, 400)
+
+    private fun showNotification(
+        context: Context,
+        id: Int,
+        title: String,
+        body: String,
+        targetRoute: String? = null,
+        withVibration: Boolean = false
+    ) {
         val intent = Intent(context, com.example.quranapp.MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             if (targetRoute != null) {
@@ -172,7 +184,7 @@ class PrayerNotificationReceiver : BroadcastReceiver() {
             android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
         )
 
-        val notification = NotificationCompat.Builder(context, CHANNEL_ID)
+        val builder = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentTitle(title)
             .setContentText(body)
@@ -180,11 +192,14 @@ class PrayerNotificationReceiver : BroadcastReceiver() {
             .setAutoCancel(true)
             .setContentIntent(pendingIntent)
             .setCategory(NotificationCompat.CATEGORY_REMINDER)
-            .build()
+
+        if (withVibration) {
+            builder.setVibrate(PRAYER_VIBRATION_PATTERN)
+        }
 
         val notificationManager =
             context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.notify(id, notification)
+        notificationManager.notify(id, builder.build())
     }
 
     private fun createNotificationChannel(context: Context) {
@@ -196,6 +211,7 @@ class PrayerNotificationReceiver : BroadcastReceiver() {
             ).apply {
                 description = context.getString(R.string.notif_channel_desc)
                 enableVibration(true)
+                vibrationPattern = PRAYER_VIBRATION_PATTERN
             }
 
             val notificationManager =

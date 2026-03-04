@@ -64,7 +64,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         val nowHour = calendar.get(java.util.Calendar.HOUR_OF_DAY)
         val isMorning = nowHour < 14
         _uiState.value = _uiState.value.copy(
-            gregorianDate = DateUtil.getGregorianDate(),
+            gregorianDate = DateUtil.getGregorianDate(application),
             hijriDate = DateUtil.getHijriDate(),
             matsuratType = application.getString(if (isMorning) R.string.matsurat_pagi else R.string.matsurat_petang),
             matsuratKey = if (isMorning) "MORNING" else "EVENING",
