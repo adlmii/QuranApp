@@ -29,6 +29,7 @@ class UserPreferencesRepository(private val context: Context) {
         private val KEY_ARABIC_FONT_SIZE = floatPreferencesKey("arabic_font_size")
         private val KEY_THEME_MODE = intPreferencesKey("theme_mode") // 0: System, 1: Light, 2: Dark
         private val KEY_LANGUAGE = stringPreferencesKey("app_language") // "in" | "en" | "" for system
+        private val KEY_QURAN_PAGE_MODE = booleanPreferencesKey("quran_page_mode") // true = Page, false = List
 
         // Per-prayer notification toggles
         private val PRAYER_NOTIFICATION_KEYS = mapOf(
@@ -66,6 +67,19 @@ class UserPreferencesRepository(private val context: Context) {
     suspend fun saveArabicFontSize(size: Float) {
         context.dataStore.edit { prefs ->
             prefs[KEY_ARABIC_FONT_SIZE] = size
+        }
+    }
+
+    /**
+     * Observe Quran reading mode (true = Page, false = List)
+     */
+    val quranPageMode: Flow<Boolean> = context.dataStore.data.map { prefs ->
+        prefs[KEY_QURAN_PAGE_MODE] ?: false
+    }
+
+    suspend fun saveQuranPageMode(isPageMode: Boolean) {
+        context.dataStore.edit { prefs ->
+            prefs[KEY_QURAN_PAGE_MODE] = isPageMode
         }
     }
 

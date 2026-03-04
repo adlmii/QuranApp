@@ -56,11 +56,37 @@ fun QuranDetailScreen(
     var currentMushafAyah by remember { mutableStateOf<Int?>(null) }
     val coroutineScope = rememberCoroutineScope()
 
-    val onToggleModeAction = {
+    val arabicFont = UthmaniHafs
+
+    // Scroll tracking state — declared early so toggle lambda can reference it
+    val listState = rememberLazyListState()
+
+    val onToggleModeAction: () -> Unit = {
         if (uiState.isPageMode) {
+            // Page → List: pass first ayah of current page so List scrolls to it at top
             viewModel.toggleViewMode(currentMushafAyah)
         } else {
-            viewModel.toggleViewMode()
+            // List → Page: find the page containing the first visible ayah
+            val ayahs = uiState.surahDetail?.ayahs
+            if (ayahs != null && ayahs.isNotEmpty()) {
+                val hasPrevCard = surahNumber > 1 && uiState.prevSurahName != null
+                val hasBasmalah = surahNumber != 1 && surahNumber != 9
+                val headerOffset = (if (hasPrevCard) 1 else 0) + (if (hasBasmalah) 1 else 0)
+                val ayahIndex = (listState.firstVisibleItemIndex - headerOffset).coerceIn(0, ayahs.size - 1)
+                val currentAyah = ayahs[ayahIndex]
+                coroutineScope.launch {
+                    val pageNum = viewModel.getPageForAyah(surahNumber, currentAyah.number)
+                    if (pageNum != null) {
+                        viewModel.toggleViewMode() // switch to page mode
+                        // targetPageJump will be set to navigate pager
+                        viewModel.jumpToAyahInPageMode(surahNumber, currentAyah.number)
+                    } else {
+                        viewModel.toggleViewMode()
+                    }
+                }
+            } else {
+                viewModel.toggleViewMode()
+            }
         }
     }
 
@@ -68,19 +94,15 @@ fun QuranDetailScreen(
         viewModel.loadSurah(surahNumber)
     }
 
-    val arabicFont = UthmaniHafs
-
-    // Scroll tracking state
-    val listState = rememberLazyListState()
-
     // Scroll to initial ayah after content loads
     LaunchedEffect(uiState.surahDetail) {
         val ayahs = uiState.surahDetail?.ayahs ?: return@LaunchedEffect
         if (initialAyah > 1 && ayahs.isNotEmpty()) {
+            val hasPrevCard = surahNumber > 1 && uiState.prevSurahName != null
             val hasBasmalah = surahNumber != 1 && surahNumber != 9
-            val headerOffset = if (hasBasmalah) 1 else 0
+            val headerOffset = (if (hasPrevCard) 1 else 0) + (if (hasBasmalah) 1 else 0)
             val targetIndex = (initialAyah - 1 + headerOffset).coerceIn(0, ayahs.size - 1 + headerOffset)
-            listState.scrollToItem(targetIndex)
+            listState.scrollToItem(targetIndex, scrollOffset = 0)
         }
     }
 
@@ -90,9 +112,10 @@ fun QuranDetailScreen(
         // Debounce: wait 500ms before saving to avoid excessive writes
         delay(500)
         val ayahs = uiState.surahDetail?.ayahs ?: return@LaunchedEffect
-        // firstVisibleItemIndex accounts for header items (basmalah = 1 item offset for most surahs)
+        // firstVisibleItemIndex accounts for header items (prev surah card + basmalah)
+        val hasPrevCard = surahNumber > 1 && uiState.prevSurahName != null
         val hasBasmalah = surahNumber != 1 && surahNumber != 9
-        val headerOffset = if (hasBasmalah) 1 else 0
+        val headerOffset = (if (hasPrevCard) 1 else 0) + (if (hasBasmalah) 1 else 0)
         val ayahIndex = (firstVisibleItem - headerOffset).coerceIn(0, ayahs.size - 1)
         if (ayahs.isNotEmpty()) {
             viewModel.saveLastRead(ayahs[ayahIndex].number)
@@ -106,10 +129,11 @@ fun QuranDetailScreen(
         if (target != null && ayahs != null && ayahs.isNotEmpty() && !uiState.isPageMode) {
             val ayahIndexInList = ayahs.indexOfFirst { it.number == target }
             if (ayahIndexInList != -1) {
+                val hasPrevCard = surahNumber > 1 && uiState.prevSurahName != null
                 val hasBasmalah = surahNumber != 1 && surahNumber != 9
-                val headerOffset = if (hasBasmalah) 1 else 0
+                val headerOffset = (if (hasPrevCard) 1 else 0) + (if (hasBasmalah) 1 else 0)
                 val targetIndex = ayahIndexInList + headerOffset
-                listState.scrollToItem(targetIndex)
+                listState.scrollToItem(targetIndex, scrollOffset = 0)
             }
             viewModel.consumeTargetScrollAyah()
         }
@@ -139,8 +163,9 @@ fun QuranDetailScreen(
                     viewModel.jumpToAyahInPageMode(sheetSurahId, ayahNum)
                 } else {
                     val ayahs = uiState.surahDetail?.ayahs ?: return@QuranSettingsSheet
+                    val hasPrevCard = surahNumber > 1 && uiState.prevSurahName != null
                     val hasBasmalah = surahNumber != 1 && surahNumber != 9
-                    val headerOffset = if (hasBasmalah) 1 else 0
+                    val headerOffset = (if (hasPrevCard) 1 else 0) + (if (hasBasmalah) 1 else 0)
                     val index = (ayahNum - 1 + headerOffset).coerceIn(0, ayahs.size - 1 + headerOffset)
                     coroutineScope.launch {
                         listState.animateScrollToItem(index)

@@ -59,6 +59,7 @@ class QuranDetailViewModel(application: Application) : AndroidViewModel(applicat
         observeProgress()
         observeBookmark()
         observeFontSize()
+        observeViewMode()
         startSessionTimer()
     }
 
@@ -90,6 +91,14 @@ class QuranDetailViewModel(application: Application) : AndroidViewModel(applicat
         viewModelScope.launch {
             userPrefs.arabicFontSize.collect { size ->
                 _uiState.value = _uiState.value.copy(arabicFontSize = size)
+            }
+        }
+    }
+
+    private fun observeViewMode() {
+        viewModelScope.launch {
+            userPrefs.quranPageMode.collect { isPage ->
+                _uiState.value = _uiState.value.copy(isPageMode = isPage)
             }
         }
     }
@@ -196,10 +205,22 @@ class QuranDetailViewModel(application: Application) : AndroidViewModel(applicat
     }
 
     fun toggleViewMode(targetAyah: Int? = null) {
+        val newMode = !_uiState.value.isPageMode
         _uiState.value = _uiState.value.copy(
-            isPageMode = !_uiState.value.isPageMode,
+            isPageMode = newMode,
             targetScrollAyah = targetAyah
         )
+        viewModelScope.launch {
+            userPrefs.saveQuranPageMode(newMode)
+        }
+    }
+
+    /**
+     * Get the Mushaf page number for a given surah + ayah.
+     * Used when switching from List mode to Page mode.
+     */
+    suspend fun getPageForAyah(surahId: Int, ayahNumber: Int): Int? {
+        return repository.getPageNumberForAyah(surahId, ayahNumber)
     }
 
     fun consumeTargetScrollAyah() {
