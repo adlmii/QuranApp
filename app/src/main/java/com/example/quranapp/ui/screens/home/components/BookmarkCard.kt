@@ -32,7 +32,10 @@ fun BookmarkCard(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.primary)
+                .background(
+                    brush = if (androidx.compose.foundation.isSystemInDarkTheme()) 
+                        DarkBookmarkGradient else DeepEmeraldGradient
+                )
         ) {
             Row(
                 modifier = Modifier

@@ -46,17 +46,14 @@ class MainActivity : ComponentActivity() {
         
         val userPrefs = UserPreferencesRepository(this)
         
+        // Read theme synchronously BEFORE setContent to prevent flash of wrong theme
+        val initialThemeMode = runBlocking { userPrefs.themeMode.first() }
+        
         setContent {
-            var themeMode by remember { mutableStateOf(0) }
+            var themeMode by remember { mutableStateOf(initialThemeMode) }
             val systemDarkTheme = isSystemInDarkTheme()
             
-            LaunchedEffect(Unit) {
-                lifecycleScope.launch {
-                    themeMode = userPrefs.themeMode.first()
-                }
-            }
-            
-            // Observe theme mode changes reactively
+            // Observe theme mode changes reactively (for live updates from Settings)
             LaunchedEffect(Unit) {
                 lifecycleScope.launch {
                     userPrefs.themeMode.collect { mode ->

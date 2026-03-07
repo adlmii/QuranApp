@@ -167,13 +167,13 @@ fun RecentSurahItem(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(4.dp))
-                            .background(MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f))
+                            .background(MaterialTheme.colorScheme.secondary.copy(alpha = 0.3f))
                             .padding(horizontal = 6.dp, vertical = 2.dp)
                     ) {
                         Text(
                             text = stringResource(R.string.label_last_read),
                             style = MaterialTheme.typography.labelSmall,
-                            color = androidx.compose.ui.graphics.Color(0xFF8D6E63),
+                            color = MaterialTheme.colorScheme.secondary,
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold
                         )

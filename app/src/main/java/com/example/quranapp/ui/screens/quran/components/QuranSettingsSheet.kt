@@ -138,13 +138,15 @@ fun QuranSettingsSheet(
                     label = "TabSlide"
                 )
 
+                val isDark = androidx.compose.foundation.isSystemInDarkTheme()
+
                 Box(
                     modifier = Modifier
                         .fillMaxWidth(0.5f)
                         .fillMaxHeight()
                         .graphicsLayer { translationX = size.width * offsetFraction }
                         .clip(RoundedCornerShape(12.dp))
-                        .background(brush = DeepEmeraldGradient)
+                        .background(brush = if (isDark) DarkTabIndicatorGradient else DeepEmeraldGradient)
                 )
 
                 Row(modifier = Modifier.fillMaxSize()) {

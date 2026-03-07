@@ -62,13 +62,14 @@ fun QuranTabSelector(
         )
 
         // The Sliding Indicator (Gradient background)
+        val isDark = androidx.compose.foundation.isSystemInDarkTheme()
         Box(
             modifier = Modifier
                 .offset(x = indicatorOffset)
                 .width(tabWidth)
                 .fillMaxHeight()
                 .clip(RoundedCornerShape(24.dp))
-                .background(brush = DeepEmeraldGradient)
+                .background(brush = if (isDark) DarkTabIndicatorGradient else DeepEmeraldGradient)
                 .shadow(elevation = 4.dp, shape = RoundedCornerShape(24.dp), clip = false)
         )
 
@@ -143,8 +144,8 @@ fun SurahItem(
                 modifier = Modifier
                     .size(42.dp)
                     .clip(CircleShape)
-                    .border(1.dp, MaterialTheme.colorScheme.primaryContainer, CircleShape)
-                    .background(MaterialTheme.colorScheme.background),
+                    .border(1.5.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f), CircleShape)
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
                 contentAlignment = Alignment.Center
             ) {
                 Text(

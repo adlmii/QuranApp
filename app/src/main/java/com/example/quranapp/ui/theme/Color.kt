@@ -53,6 +53,15 @@ val SageGradient = Brush.linearGradient(
     colors = listOf(Color(0xFF4da0b0), Color(0xFFd39d38)) // Artistic teal to gold
 )
 
+// Dark mode specific gradients
+val DarkTabIndicatorGradient = Brush.linearGradient(
+    colors = listOf(Color(0xFF1B6B5A), Color(0xFF0D4A3A)) // Brighter emerald for dark tab indicators
+)
+
+val DarkBookmarkGradient = Brush.linearGradient(
+    colors = listOf(Color(0xFF1B5E50), Color(0xFF0A3D32)) // Subdued emerald for dark bookmark card
+)
+
 // Qibla specific
 val QiblaActive = GoldAccent
 val CompassShadow = Color(0x40000000)
