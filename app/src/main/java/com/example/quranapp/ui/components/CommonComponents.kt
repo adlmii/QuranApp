@@ -47,13 +47,13 @@ fun AppHeader(
                 text = gregorianDate,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                color = DeepEmerald
+                color = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = hijriDate,
                 style = MaterialTheme.typography.bodySmall,
-                color = TextGray
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
 
@@ -61,14 +61,14 @@ fun AppHeader(
         Row(
             modifier = Modifier
                 .clip(RoundedCornerShape(50))
-                .background(LightEmerald)
+                .background(MaterialTheme.colorScheme.primaryContainer)
                 .padding(start = 10.dp, end = 14.dp, top = 6.dp, bottom = 6.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
                 Icons.Default.LocationOn,
                 contentDescription = stringResource(R.string.content_desc_location),
-                tint = DeepEmerald,
+                tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(14.dp)
             )
             Spacer(modifier = Modifier.width(4.dp))
@@ -76,7 +76,7 @@ fun AppHeader(
                 text = location.ifEmpty { stringResource(R.string.label_locating) },
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.Bold,
-                color = DeepEmerald
+                color = MaterialTheme.colorScheme.primary
             )
         }
     }

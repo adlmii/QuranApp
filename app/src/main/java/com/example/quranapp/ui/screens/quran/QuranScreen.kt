@@ -44,9 +44,9 @@ fun QuranScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(CreamBackground)
+            .background(MaterialTheme.colorScheme.background)
     ) {
-        SetStatusBarColor(CreamBackground)
+        SetStatusBarColor(MaterialTheme.colorScheme.background)
         
         if (isSearchActive) {
             // ── Search Header ──
@@ -62,30 +62,30 @@ fun QuranScreen(
                         viewModel.onSearchQueryChange(it) 
                         if (selectedTab != 0) selectedTab = 0
                     },
-                    placeholder = { Text(stringResource(R.string.hint_search), color = TextGray.copy(alpha = 0.7f)) },
+                    placeholder = { Text(stringResource(R.string.hint_search), color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)) },
                     modifier = Modifier
                         .weight(1f)
                         .height(50.dp)
                         .clip(RoundedCornerShape(50))
-                        .background(White)
-                        .border(1.dp, DeepEmerald, RoundedCornerShape(50)),
+                        .background(MaterialTheme.colorScheme.surface)
+                        .border(1.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(50)),
                     colors = TextFieldDefaults.colors(
-                        focusedContainerColor = White,
-                        unfocusedContainerColor = White,
+                        focusedContainerColor = MaterialTheme.colorScheme.surface,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent,
-                        cursorColor = DeepEmerald,
-                        focusedTextColor = TextBlack,
-                        unfocusedTextColor = TextBlack
+                        cursorColor = MaterialTheme.colorScheme.primary,
+                        focusedTextColor = MaterialTheme.colorScheme.onBackground,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onBackground
                     ),
                     singleLine = true,
                     leadingIcon = {
-                        Icon(Icons.Default.Search, contentDescription = null, tint = DeepEmerald)
+                        Icon(Icons.Default.Search, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                     },
                     trailingIcon = {
                         if (uiState.searchQuery.isNotEmpty()) {
                             IconButton(onClick = { viewModel.onSearchQueryChange("") }) {
-                                Icon(Icons.Default.Clear, contentDescription = "Clear", tint = TextGray)
+                                Icon(Icons.Default.Clear, contentDescription = "Clear", tint = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                         }
                     },
@@ -101,7 +101,7 @@ fun QuranScreen(
                 ) {
                     Text(
                         text = stringResource(R.string.action_cancel), 
-                        color = DeepEmerald, 
+                        color = MaterialTheme.colorScheme.primary, 
                         fontWeight = FontWeight.SemiBold,
                         style = MaterialTheme.typography.labelLarge
                     )
@@ -112,14 +112,14 @@ fun QuranScreen(
             AppHeader(
                 title = stringResource(R.string.title_quran),
                 onBackClick = { navController.popBackStack() },
-                backgroundColor = CreamBackground,
-                contentColor = DeepEmerald,
+                backgroundColor = MaterialTheme.colorScheme.background,
+                contentColor = MaterialTheme.colorScheme.primary,
                 actions = {
                     IconButton(onClick = { isSearchActive = true }) {
                         Icon(
                             imageVector = Icons.Default.Search,
                             contentDescription = "Search",
-                            tint = DeepEmerald
+                            tint = MaterialTheme.colorScheme.primary
                         )
                     }
                 }
@@ -142,7 +142,7 @@ fun QuranScreen(
         // ── Content ──
         if (uiState.isLoading) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = DeepEmerald)
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
             }
         } else if (uiState.error != null) {
              Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -193,7 +193,7 @@ fun QuranScreen(
                                     contentAlignment = Alignment.Center
                                 ) {
                                     CircularProgressIndicator(
-                                        color = DeepEmerald,
+                                        color = MaterialTheme.colorScheme.primary,
                                         modifier = Modifier.size(24.dp),
                                         strokeWidth = 2.dp
                                     )
@@ -205,7 +205,7 @@ fun QuranScreen(
                                     text = stringResource(R.string.title_ayah_results),
                                     style = MaterialTheme.typography.titleSmall,
                                     fontWeight = FontWeight.Bold,
-                                    color = DeepEmerald,
+                                    color = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
                                 )
                             }
@@ -234,7 +234,7 @@ fun QuranScreen(
                                         .padding(top = 40.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Text(stringResource(R.string.label_no_results), color = TextGray)
+                                    Text(stringResource(R.string.label_no_results), color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
                             }
                         }
@@ -261,7 +261,7 @@ fun QuranScreen(
                                 text = "${stringResource(R.string.label_juz)} ${juz.number}",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
-                                color = DeepEmerald,
+                                color = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
                             )
                         }

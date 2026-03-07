@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:startColor="#004D40"
+                android:centerColor="#00352D"
+                android:endColor="#001A14"
+                android:angle="135" />
+            <corners android:radius="20dp" />
+        </shape>
+    </item>
+    <!-- Subtle inner glow -->
+    <item
+        android:left="1dp"
+        android:top="1dp"
+        android:right="1dp"
+        android:bottom="1dp">
+        <shape android:shape="rectangle">
+            <gradient
+                android:startColor="#00695C"
+                android:centerColor="#003D33"
+                android:endColor="#001A14"
+                android:angle="135" />
+            <corners android:radius="19dp" />
+        </shape>
+    </item>
+</layer-list>

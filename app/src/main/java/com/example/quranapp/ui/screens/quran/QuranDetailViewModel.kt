@@ -123,14 +123,6 @@ class QuranDetailViewModel(application: Application) : AndroidViewModel(applicat
                 if (detail != null) {
                     currentSurahNumber = detail.number
                     currentSurahName = detail.name
-
-                    // Save initial last read position to Room
-                    repository.saveLastRead(
-                        surahNumber = detail.number,
-                        ayahNumber = 1,
-                        surahName = detail.name,
-                        isPageMode = _uiState.value.isPageMode
-                    )
                 }
 
                 // Load adjacent surah names for flow navigation

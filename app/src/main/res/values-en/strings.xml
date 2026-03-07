@@ -4,6 +4,7 @@
     <!-- Home & Prayer ViewModels -->
     <string name="label_calculating">Calculating...</string>
     <string name="label_now">Now</string>
+    <string name="widget_next_prayer">NEXT PRAYER</string>
     <string name="countdown_hours_mins">in %1$dh %2$dm</string>
     <string name="countdown_mins_secs">in %1$dm %2$ds</string>
     <string name="matsurat_pagi">Morning</string>

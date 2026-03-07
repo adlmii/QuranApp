@@ -73,10 +73,10 @@ fun HomeScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(CreamBackground)
+            .background(MaterialTheme.colorScheme.background)
             .padding(horizontal = 20.dp)
     ) {
-        SetStatusBarColor(CreamBackground)
+        SetStatusBarColor(MaterialTheme.colorScheme.background)
 
         // ── Sticky Header ──
         Spacer(modifier = Modifier.height(24.dp))
@@ -139,7 +139,7 @@ fun HomeScreen(
                 text = stringResource(R.string.title_recents),
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold,
-                color = DeepEmerald
+                color = MaterialTheme.colorScheme.primary
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -155,7 +155,7 @@ fun HomeScreen(
                 Text(
                     text = stringResource(R.string.label_no_history),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = TextGray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 

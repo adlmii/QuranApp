@@ -36,8 +36,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.quranapp.ui.theme.UthmaniHafs
 import com.example.quranapp.ui.theme.HeadlineQuran
-import com.example.quranapp.ui.theme.DeepEmerald
-import com.example.quranapp.ui.theme.TextBlack
 import com.example.quranapp.util.QuranTextUtil
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.util.lerp
@@ -138,7 +136,7 @@ fun QuranMushafScreen(viewModel: QuranViewModel) {
                             text = combinedText,
                             style = HeadlineQuran.copy(textDirection = TextDirection.Rtl),
                             textAlign = TextAlign.Justify,
-                            color = TextBlack,
+                            color = MaterialTheme.colorScheme.onBackground,
                             modifier = Modifier.fillMaxWidth()
                         )
                     }
@@ -164,7 +162,7 @@ fun MushafSurahHeader(surahName: String) {
             .padding(vertical = 12.dp)
             .border(
                 width = 1.dp,
-                color = DeepEmerald,
+                color = MaterialTheme.colorScheme.primary,
                 shape = RoundedCornerShape(8.dp)
             )
             .padding(vertical = 8.dp),
@@ -174,7 +172,7 @@ fun MushafSurahHeader(surahName: String) {
             text = "سُورَة $surahName",
             fontFamily = UthmaniHafs,
             fontSize = 24.sp,
-            color = DeepEmerald
+            color = MaterialTheme.colorScheme.primary
         )
     }
 }
@@ -185,7 +183,7 @@ fun MushafBasmalah() {
         text = "بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ",
         fontFamily = UthmaniHafs,
         fontSize = 24.sp,
-        color = TextBlack,
+        color = MaterialTheme.colorScheme.onBackground,
         modifier = Modifier
             .fillMaxWidth()
             .padding(bottom = 12.dp),
@@ -215,7 +213,7 @@ fun MushafPageHeader(
                 text = "Juz $juzNumber",
                 style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.Bold,
-                color = DeepEmerald.copy(alpha = 0.7f)
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
             )
             // Right side: Surah Name & Bookmark
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -223,7 +221,7 @@ fun MushafPageHeader(
                     text = "سُورَة $surahName",
                     fontFamily = UthmaniHafs,
                     fontSize = 18.sp,
-                    color = DeepEmerald.copy(alpha = 0.7f),
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
                     modifier = Modifier.padding(end = 8.dp)
                 )
                 IconButton(
@@ -233,14 +231,14 @@ fun MushafPageHeader(
                     Icon(
                         imageVector = if (isBookmarked) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
                         contentDescription = "Bookmark Page",
-                        tint = if (isBookmarked) DeepEmerald else DeepEmerald.copy(alpha = 0.5f),
+                        tint = if (isBookmarked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
                         modifier = Modifier.size(20.dp)
                     )
                 }
             }
         }
         HorizontalDivider(
-            color = DeepEmerald.copy(alpha = 0.2f),
+            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
             thickness = 1.dp,
             modifier = Modifier.padding(top = 4.dp)
         )

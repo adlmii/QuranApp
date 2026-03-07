@@ -52,7 +52,7 @@ fun MonthNavigator(
                 Icon(
                     Icons.Default.ChevronLeft,
                     contentDescription = stringResource(R.string.content_desc_prev_month),
-                    tint = DeepEmerald,
+                    tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(28.dp)
                 )
             }
@@ -62,12 +62,12 @@ fun MonthNavigator(
                     text = "$monthName $year",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = DeepEmerald
+                    color = MaterialTheme.colorScheme.primary
                 )
                 Text(
                     text = "$hijriLabel $hijriYear",
                     style = MaterialTheme.typography.bodySmall,
-                    color = GoldAccent,
+                    color = MaterialTheme.colorScheme.secondary,
                     fontWeight = FontWeight.Medium
                 )
             }
@@ -76,7 +76,7 @@ fun MonthNavigator(
                 Icon(
                     Icons.Default.ChevronRight,
                     contentDescription = stringResource(R.string.content_desc_next_month),
-                    tint = DeepEmerald,
+                    tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(28.dp)
                 )
             }
@@ -114,7 +114,7 @@ fun DayHeaderRow() {
                     text = day,
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Bold,
-                    color = TextGray,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center
                 )
             }
@@ -166,8 +166,8 @@ fun CalendarCell(day: CalendarDay) {
     val bgModifier = when {
         day.isToday -> Modifier
             .clip(RoundedCornerShape(12.dp))
-            .border(2.dp, GoldAccent, RoundedCornerShape(12.dp))
-            .background(GoldAccent.copy(alpha = 0.08f))
+            .border(2.dp, MaterialTheme.colorScheme.secondary, RoundedCornerShape(12.dp))
+            .background(MaterialTheme.colorScheme.secondary.copy(alpha = 0.08f))
         else -> Modifier
             .clip(RoundedCornerShape(12.dp))
     }
@@ -186,7 +186,7 @@ fun CalendarCell(day: CalendarDay) {
             text = day.gregorianDay.toString(),
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = if (day.isToday) FontWeight.ExtraBold else FontWeight.SemiBold,
-            color = if (day.isToday) GoldAccent else DeepEmerald,
+            color = if (day.isToday) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.primary,
             fontSize = 14.sp,
             textAlign = TextAlign.Center
         )
@@ -195,7 +195,7 @@ fun CalendarCell(day: CalendarDay) {
         Text(
             text = day.hijriDay.toString(),
             style = MaterialTheme.typography.labelSmall,
-            color = if (day.isSpecialHijriMonth) GoldAccent.copy(alpha = 0.8f) else TextGray,
+            color = if (day.isSpecialHijriMonth) MaterialTheme.colorScheme.secondary.copy(alpha = 0.8f) else MaterialTheme.colorScheme.onSurfaceVariant,
             fontSize = 9.sp,
             fontWeight = FontWeight.Medium,
             textAlign = TextAlign.Center
@@ -208,7 +208,7 @@ fun CalendarCell(day: CalendarDay) {
                 modifier = Modifier
                     .size(4.dp)
                     .clip(CircleShape)
-                    .background(GoldAccent)
+                    .background(MaterialTheme.colorScheme.secondary)
             )
         }
     }
@@ -226,7 +226,7 @@ fun EventItem(
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = LightEmerald),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(
@@ -241,7 +241,7 @@ fun EventItem(
                 text = event.name,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.SemiBold,
-                color = DeepEmerald,
+                color = MaterialTheme.colorScheme.primary,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f)
@@ -253,14 +253,14 @@ fun EventItem(
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(8.dp))
-                    .background(GoldAccent.copy(alpha = 0.15f))
+                    .background(MaterialTheme.colorScheme.secondary.copy(alpha = 0.15f))
                     .padding(horizontal = 8.dp, vertical = 3.dp)
             ) {
                 Text(
                     text = "${event.hijriDay}",
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Bold,
-                    color = GoldAccent
+                    color = MaterialTheme.colorScheme.secondary
                 )
             }
         }

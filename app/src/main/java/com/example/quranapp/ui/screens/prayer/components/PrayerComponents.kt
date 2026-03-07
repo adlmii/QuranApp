@@ -63,7 +63,7 @@ fun ImsakSunriseBar(
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(16.dp))
-            .background(LightEmerald)
+            .background(MaterialTheme.colorScheme.primaryContainer)
             .padding(horizontal = 16.dp, vertical = 10.dp),
         contentAlignment = Alignment.Center
     ) {
@@ -71,7 +71,7 @@ fun ImsakSunriseBar(
             text = stringResource(R.string.imsak_sunrise_format, imsakTime, sunriseTime),
             style = MaterialTheme.typography.labelMedium,
             fontWeight = FontWeight.Medium,
-            color = DeepEmerald,
+            color = MaterialTheme.colorScheme.primary,
             textAlign = TextAlign.Center
         )
     }

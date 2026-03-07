@@ -39,26 +39,29 @@ private val LightColorScheme = lightColorScheme(
 )
 
 private val DarkColorScheme = darkColorScheme(
-    primary = MediumEmerald,
-    onPrimary = DeepEmeraldDark,
-    primaryContainer = DeepEmerald,
-    onPrimaryContainer = LightEmerald,
+    primary = DarkEmeraldPrimary,
+    onPrimary = DarkBackground,
+    primaryContainer = DarkEmeraldLight,
+    onPrimaryContainer = DarkEmeraldPrimary,
 
-    secondary = GoldAccent,
-    onSecondary = DeepEmeraldDark,
-    secondaryContainer = Color(0xFF8D6E63),
+    secondary = DarkGoldAccent,
+    onSecondary = DarkBackground,
+    secondaryContainer = Color(0xFF5C4A2A),
     onSecondaryContainer = GoldLight,
 
     tertiary = BrightEmerald,
-    onTertiary = DeepEmeraldDark,
+    onTertiary = DarkBackground,
 
-    background = Color(0xFF121212),
-    onBackground = Color(0xFFE0E0E0),
+    background = DarkBackground,
+    onBackground = DarkOnSurface,
 
-    surface = Color(0xFF1E1E1E),
-    onSurface = Color(0xFFE0E0E0),
-    surfaceVariant = Color(0xFF2C2C2C),
-    onSurfaceVariant = Color(0xFFB0B0B0)
+    surface = DarkSurface,
+    onSurface = DarkOnSurface,
+    surfaceVariant = DarkSurfaceVariant,
+    onSurfaceVariant = DarkOnSurfaceVariant,
+
+    outline = DarkDivider,
+    outlineVariant = DarkDivider
 )
 
 @Composable
@@ -75,7 +78,7 @@ fun QuranAppTheme(
         SideEffect {
             val window = (view.context as Activity).window
             if (darkTheme) {
-                window.statusBarColor = Color(0xFF121212).toArgb()
+                window.statusBarColor = DarkBackground.toArgb()
                 WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = false
             } else {
                 window.statusBarColor = CreamBackground.toArgb()

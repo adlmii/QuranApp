@@ -120,7 +120,7 @@ fun RecentSurahItem(
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = SandBackground),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
         elevation = CardDefaults.cardElevation(2.dp),
         onClick = onClick
     ) {
@@ -135,14 +135,14 @@ fun RecentSurahItem(
                 modifier = Modifier
                     .size(46.dp)
                     .clip(CircleShape)
-                    .background(DeepEmerald.copy(alpha = 0.1f)),
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = number.toString(),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = DeepEmerald
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
 
@@ -154,20 +154,20 @@ fun RecentSurahItem(
                     text = title,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = TextBlack
+                    color = MaterialTheme.colorScheme.onBackground
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = "${stringResource(R.string.label_ayah)} $ayah",
                         style = MaterialTheme.typography.bodySmall,
-                        color = TextGray
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(4.dp))
-                            .background(GoldAccent.copy(alpha = 0.2f))
+                            .background(MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f))
                             .padding(horizontal = 6.dp, vertical = 2.dp)
                     ) {
                         Text(

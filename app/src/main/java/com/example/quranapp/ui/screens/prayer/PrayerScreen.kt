@@ -26,7 +26,7 @@ import com.example.quranapp.ui.screens.prayer.components.ImsakSunriseBar
 import com.example.quranapp.ui.screens.prayer.components.MarkAllPrayedButton
 import com.example.quranapp.ui.screens.prayer.components.PrayerItem
 import com.example.quranapp.ui.screens.prayer.components.PrayerProgressCard
-import com.example.quranapp.ui.theme.CreamBackground
+import androidx.compose.material3.MaterialTheme
 import com.google.android.gms.location.LocationServices
 
 @Composable
@@ -82,10 +82,10 @@ fun PrayerScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(CreamBackground)
+            .background(MaterialTheme.colorScheme.background)
             .padding(horizontal = 20.dp)
     ) {
-        com.example.quranapp.ui.theme.SetStatusBarColor(CreamBackground)
+        com.example.quranapp.ui.theme.SetStatusBarColor(MaterialTheme.colorScheme.background)
 
         // ── Sticky Header ──
         Spacer(modifier = Modifier.height(24.dp))

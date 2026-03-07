@@ -25,14 +25,7 @@ import com.example.quranapp.data.model.AlMatsurat
 import com.example.quranapp.data.model.MatsuratType
 import com.example.quranapp.ui.components.AppCard
 import com.example.quranapp.ui.components.AppHeader
-import com.example.quranapp.ui.theme.CreamBackground
-import com.example.quranapp.ui.theme.DeepEmerald
 import com.example.quranapp.ui.theme.HeadlineQuran
-import com.example.quranapp.ui.theme.LightEmerald
-import com.example.quranapp.ui.theme.TextGray
-import com.example.quranapp.ui.theme.White
-import com.example.quranapp.ui.theme.TextBlack
-import com.example.quranapp.ui.theme.GoldAccent
 import com.example.quranapp.ui.theme.SetStatusBarColor
 
 @Composable
@@ -50,22 +43,22 @@ fun AlMatsuratScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(CreamBackground)
+            .background(MaterialTheme.colorScheme.background)
     ) {
-        SetStatusBarColor(CreamBackground)
+        SetStatusBarColor(MaterialTheme.colorScheme.background)
 
         AppHeader(
             title = stringResource(R.string.title_almatsurat),
             subtitle = if (type == MatsuratType.MORNING) stringResource(R.string.subtitle_dzikir_pagi) else stringResource(R.string.subtitle_dzikir_petang),
             onBackClick = { navController.popBackStack() },
-            backgroundColor = CreamBackground,
-            contentColor = DeepEmerald
+            backgroundColor = MaterialTheme.colorScheme.background,
+            contentColor = MaterialTheme.colorScheme.primary
         )
 
         // List
         if (uiState.isLoading) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = DeepEmerald)
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
             }
         } else {
             LazyColumn(
@@ -97,7 +90,7 @@ fun SlidingMatsuratCard(item: AlMatsurat) {
     AppCard(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(26.dp),
-        backgroundColor = White,
+        backgroundColor = MaterialTheme.colorScheme.surface,
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(
@@ -123,7 +116,7 @@ fun SlidingMatsuratCard(item: AlMatsurat) {
                         Text(
                             text = item.arabic,
                             style = HeadlineQuran.copy(lineHeight = 48.sp),
-                            color = TextBlack,
+                            color = MaterialTheme.colorScheme.onBackground,
                             textAlign = TextAlign.End,
                             modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp)
                         )
@@ -136,7 +129,7 @@ fun SlidingMatsuratCard(item: AlMatsurat) {
                             Text(
                                 text = item.translation ?: stringResource(R.string.label_no_translation),
                                 style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 26.sp),
-                                color = TextGray,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 textAlign = TextAlign.Center,
                                 modifier = Modifier.fillMaxWidth()
                             )
@@ -155,7 +148,7 @@ fun SlidingMatsuratCard(item: AlMatsurat) {
                 horizontalArrangement = Arrangement.Center
             ) {
                 repeat(2) { iteration ->
-                    val color = if (pagerState.currentPage == iteration) DeepEmerald else LightEmerald
+                    val color = if (pagerState.currentPage == iteration) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primaryContainer
                     val width = if (pagerState.currentPage == iteration) 24.dp else 8.dp
                     Box(
                         modifier = Modifier
@@ -175,7 +168,7 @@ fun StaticMatsuratCard(item: AlMatsurat) {
     AppCard(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(26.dp),
-        backgroundColor = White,
+        backgroundColor = MaterialTheme.colorScheme.surface,
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(
@@ -189,7 +182,7 @@ fun StaticMatsuratCard(item: AlMatsurat) {
             Text(
                 text = item.arabic,
                 style = HeadlineQuran.copy(lineHeight = 48.sp),
-                color = TextBlack,
+                color = MaterialTheme.colorScheme.onBackground,
                 textAlign = TextAlign.End,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -200,7 +193,7 @@ fun StaticMatsuratCard(item: AlMatsurat) {
                 Text(
                     text = item.translation,
                     style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 24.sp),
-                    color = TextGray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -214,21 +207,21 @@ fun MatsuratHeader(item: AlMatsurat) {
             text = item.title,
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
-            color = DeepEmerald,
+            color = MaterialTheme.colorScheme.primary,
             modifier = Modifier.weight(1f)
         )
 
         if (item.count > 1) {
             Surface(
                 shape = RoundedCornerShape(50),
-                color = GoldAccent.copy(alpha = 0.15f),
-                border = androidx.compose.foundation.BorderStroke(1.dp, GoldAccent.copy(alpha = 0.5f))
+                color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.15f),
+                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f))
             ) {
                 Box(modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)) {
                     Text(
                         text = "${item.count}x",
                         style = MaterialTheme.typography.labelSmall,
-                        color = Color(0xFFD4AF37), // Darker Gold for text
+                        color = MaterialTheme.colorScheme.secondary, // Gold
                         fontWeight = FontWeight.Bold
                     )
                 }

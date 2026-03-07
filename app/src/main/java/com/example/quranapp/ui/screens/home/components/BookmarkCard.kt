@@ -32,7 +32,7 @@ fun BookmarkCard(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(DeepEmerald)
+                .background(MaterialTheme.colorScheme.primary)
         ) {
             Row(
                 modifier = Modifier
@@ -43,7 +43,7 @@ fun BookmarkCard(
                 Icon(
                     imageVector = Icons.Default.Bookmark,
                     contentDescription = null,
-                    tint = GoldAccent,
+                    tint = MaterialTheme.colorScheme.secondary,
                     modifier = Modifier.size(20.dp)
                 )
                 Spacer(modifier = Modifier.width(14.dp))

@@ -19,6 +19,7 @@ class PrayerNotificationReceiver : BroadcastReceiver() {
 
     companion object {
         const val CHANNEL_ID = "prayer_notifications"
+        const val PRAYER_NOW_CHANNEL_ID = "prayer_now_notifications"
     }
 
     override fun onReceive(context: Context, intent: Intent) {
@@ -33,6 +34,9 @@ class PrayerNotificationReceiver : BroadcastReceiver() {
         } else {
             handlePrayerNotification(localizedContext, intent)
         }
+
+        // Refresh prayer widget with latest data
+        com.example.quranapp.widget.PrayerWidgetProvider.updateAll(context)
     }
 
     private fun handlePrayerNotification(context: Context, intent: Intent) {
@@ -160,8 +164,8 @@ class PrayerNotificationReceiver : BroadcastReceiver() {
         }
     }
 
-    // 3-pulse vibration: delay, vib, pause, vib, pause, vib
-    private val PRAYER_VIBRATION_PATTERN = longArrayOf(0, 400, 200, 400, 200, 400)
+    // 3-pulse long vibration: delay, vib, pause, vib, pause, vib
+    private val PRAYER_VIBRATION_PATTERN = longArrayOf(0, 800, 300, 800, 300, 800)
 
     private fun showNotification(
         context: Context,
@@ -184,7 +188,10 @@ class PrayerNotificationReceiver : BroadcastReceiver() {
             android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
         )
 
-        val builder = NotificationCompat.Builder(context, CHANNEL_ID)
+        // Use the vibration channel only for actual prayer NOW notifications
+        val channelId = if (withVibration) PRAYER_NOW_CHANNEL_ID else CHANNEL_ID
+
+        val builder = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentTitle(title)
             .setContentText(body)
@@ -204,19 +211,31 @@ class PrayerNotificationReceiver : BroadcastReceiver() {
 
     private fun createNotificationChannel(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
+            val notificationManager =
+                context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+            // General reminders channel — NO vibration
+            val generalChannel = NotificationChannel(
                 CHANNEL_ID,
                 context.getString(R.string.notif_channel_name),
                 NotificationManager.IMPORTANCE_HIGH
             ).apply {
                 description = context.getString(R.string.notif_channel_desc)
+                enableVibration(false)
+            }
+            notificationManager.createNotificationChannel(generalChannel)
+
+            // Prayer NOW channel — WITH long 3-pulse vibration
+            val prayerNowChannel = NotificationChannel(
+                PRAYER_NOW_CHANNEL_ID,
+                "Waktu Sholat",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "Notifikasi saat waktu sholat tiba"
                 enableVibration(true)
                 vibrationPattern = PRAYER_VIBRATION_PATTERN
             }
-
-            val notificationManager =
-                context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
+            notificationManager.createNotificationChannel(prayerNowChannel)
         }
     }
 }

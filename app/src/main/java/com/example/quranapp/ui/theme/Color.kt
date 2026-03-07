@@ -56,3 +56,20 @@ val SageGradient = Brush.linearGradient(
 // Qibla specific
 val QiblaActive = GoldAccent
 val CompassShadow = Color(0x40000000)
+
+// ─────────────────────────────────────────────
+// Dark Mode Palette (Emerald-tinted)
+// ─────────────────────────────────────────────
+val DarkBackground       = Color(0xFF0A1A17)   // Very deep emerald-black
+val DarkSurface          = Color(0xFF12261F)   // Dark emerald card surface
+val DarkSurfaceVariant   = Color(0xFF1A3229)   // Slightly lighter surface
+val DarkEmeraldPrimary   = Color(0xFF5AC8B8)   // Vibrant emerald for dark
+val DarkEmeraldLight     = Color(0xFF1F4A3F)   // Muted emerald container
+val DarkOnSurface        = Color(0xFFE8F5E9)   // Warm greenish white
+val DarkOnSurfaceVariant = Color(0xFF9DB5AD)   // Muted sage text
+val DarkDivider          = Color(0xFF2A4A40)   // Subtle emerald divider
+val DarkGoldAccent       = Color(0xFFE8C55A)   // Warmer gold for dark
+
+val DarkEmeraldGradient = Brush.linearGradient(
+    colors = listOf(Color(0xFF0D2B23), Color(0xFF0A1A17))
+)

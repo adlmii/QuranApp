@@ -32,16 +32,16 @@ fun SettingsScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(CreamBackground)
+            .background(MaterialTheme.colorScheme.background)
     ) {
-        SetStatusBarColor(CreamBackground)
+        SetStatusBarColor(MaterialTheme.colorScheme.background)
 
         // Header
         AppHeader(
             title = stringResource(R.string.title_settings_global),
             onBackClick = { navController.popBackStack() },
-            backgroundColor = CreamBackground,
-            contentColor = DeepEmerald
+            backgroundColor = MaterialTheme.colorScheme.background,
+            contentColor = MaterialTheme.colorScheme.primary
         )
 
         // Content
@@ -64,12 +64,12 @@ fun SettingsScreen(
                         text = stringResource(R.string.label_quran_target),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
-                        color = TextBlack
+                        color = MaterialTheme.colorScheme.onBackground
                     )
                     Text(
                         text = stringResource(R.string.desc_quran_target),
                         style = MaterialTheme.typography.bodySmall,
-                        color = TextGray
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     
                     // Target Options
@@ -89,10 +89,10 @@ fun SettingsScreen(
                                 },
                                 modifier = Modifier.weight(1f),
                                 colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = DeepEmerald,
-                                    selectedLabelColor = White,
-                                    containerColor = LightEmerald.copy(alpha = 0.5f),
-                                    labelColor = TextGray
+                                    selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
+                                    labelColor = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             )
                         }
@@ -111,7 +111,7 @@ fun SettingsScreen(
                         text = stringResource(R.string.label_app_language),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
-                        color = TextBlack
+                        color = MaterialTheme.colorScheme.onBackground
                     )
 
                     Column(
@@ -159,7 +159,7 @@ fun SettingsScreen(
                         text = stringResource(R.string.label_app_theme),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
-                        color = TextBlack
+                        color = MaterialTheme.colorScheme.onBackground
                     )
 
                     // Theme Options
@@ -197,13 +197,13 @@ fun SettingsScreen(
                     Text(
                         text = stringResource(R.string.label_version),
                         style = MaterialTheme.typography.bodyMedium,
-                        color = TextBlack
+                        color = MaterialTheme.colorScheme.onBackground
                     )
                     Text(
                         text = stringResource(R.string.app_version_val),
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Medium,
-                        color = DeepEmerald
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
             }
@@ -218,7 +218,7 @@ private fun SettingsCategoryCard(
 ) {
     AppCard(
         modifier = Modifier.fillMaxWidth(),
-        backgroundColor = White,
+        backgroundColor = MaterialTheme.colorScheme.surface,
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         shape = RoundedCornerShape(20.dp)
     ) {
@@ -232,9 +232,9 @@ private fun SettingsCategoryCard(
                 text = title,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                color = DeepEmerald
+                color = MaterialTheme.colorScheme.primary
             )
-            HorizontalDivider(color = DividerColor)
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             content()
         }
     }
@@ -250,7 +250,7 @@ private fun LanguageOption(
         modifier = Modifier
             .fillMaxWidth()
             .background(
-                if (selected) LightEmerald.copy(alpha = 0.3f) else Color.Transparent,
+                if (selected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f) else Color.Transparent,
                 shape = RoundedCornerShape(12.dp)
             )
             .padding(vertical = 12.dp, horizontal = 16.dp),
@@ -260,14 +260,14 @@ private fun LanguageOption(
         Text(
             text = label,
             style = MaterialTheme.typography.bodyMedium,
-            color = if (selected) DeepEmerald else TextBlack,
+            color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
             fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal
         )
         RadioButton(
             selected = selected,
             onClick = onClick,
             colors = RadioButtonDefaults.colors(
-                selectedColor = DeepEmerald
+                selectedColor = MaterialTheme.colorScheme.primary
             )
         )
     }
@@ -283,7 +283,7 @@ private fun ThemeOption(
         modifier = Modifier
             .fillMaxWidth()
             .background(
-                if (selected) LightEmerald.copy(alpha = 0.3f) else Color.Transparent,
+                if (selected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f) else Color.Transparent,
                 shape = RoundedCornerShape(12.dp)
             )
             .padding(vertical = 12.dp, horizontal = 16.dp),
@@ -293,14 +293,14 @@ private fun ThemeOption(
         Text(
             text = label,
             style = MaterialTheme.typography.bodyMedium,
-            color = if (selected) DeepEmerald else TextBlack,
+            color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
             fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal
         )
         RadioButton(
             selected = selected,
             onClick = onClick,
             colors = RadioButtonDefaults.colors(
-                selectedColor = DeepEmerald
+                selectedColor = MaterialTheme.colorScheme.primary
             )
         )
     }

@@ -70,19 +70,19 @@ fun QiblaScreen(
             AppHeader(
                 title = stringResource(R.string.title_qibla_finder),
                 onBackClick = { navController.popBackStack() },
-                backgroundColor = CreamBackground,
-                contentColor = DeepEmerald
+                backgroundColor = MaterialTheme.colorScheme.background,
+                contentColor = MaterialTheme.colorScheme.primary
             )
         },
-        containerColor = CreamBackground
+        containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
-        SetStatusBarColor(CreamBackground)
+        SetStatusBarColor(MaterialTheme.colorScheme.background)
         
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(CreamBackground),
+                .background(MaterialTheme.colorScheme.background),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(20.dp))
@@ -94,13 +94,17 @@ fun QiblaScreen(
                 Text(
                     text = if (isAligned) stringResource(R.string.qibla_aligned) else stringResource(R.string.qibla_rotate_phone),
                     style = MaterialTheme.typography.titleMedium,
-                    color = if (isAligned) DeepEmerald else TextGray,
+                    color = if (isAligned) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = FontWeight.SemiBold
                 )
                 
                 Spacer(modifier = Modifier.height(40.dp))
 
                 // COMPASS CONTAINER
+                // Extract colors for use in Canvas (non-@Composable scope)
+                val outerRingColor = MaterialTheme.colorScheme.primaryContainer
+                val innerFillColor = MaterialTheme.colorScheme.background
+
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
@@ -109,12 +113,12 @@ fun QiblaScreen(
                     // 1. Static Outer Ring (Does NOT rotate) - Decoration
                     Canvas(modifier = Modifier.fillMaxSize()) {
                         drawCircle(
-                            color = LightEmerald,
+                            color = outerRingColor,
                             radius = size.minDimension / 2,
                             style = Stroke(width = 2.dp.toPx())
                         )
                         drawCircle(
-                            color = CreamBackground,
+                            color = innerFillColor,
                             radius = size.minDimension / 2 - 10.dp.toPx()
                         )
                     }
@@ -128,8 +132,8 @@ fun QiblaScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         CompassDial(
-                            primaryColor = DeepEmerald,
-                            secondaryColor = GoldAccent
+                            primaryColor = MaterialTheme.colorScheme.primary,
+                            secondaryColor = MaterialTheme.colorScheme.secondary
                         )
                         
                         // 3. Qibla Indicator (Kaaba)
@@ -166,7 +170,7 @@ fun QiblaScreen(
                         modifier = Modifier
                             .size(16.dp)
                             .clip(CircleShape)
-                            .background(DeepEmerald)
+                            .background(MaterialTheme.colorScheme.primary)
                             .align(Alignment.Center)
                     )
                 }
@@ -311,10 +315,10 @@ fun InfoCard(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 24.dp),
-        colors = CardDefaults.cardColors(containerColor = White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
         shape = RoundedCornerShape(26.dp),
-        border = if (isAligned) androidx.compose.foundation.BorderStroke(2.dp, GoldAccent) else null
+        border = if (isAligned) androidx.compose.foundation.BorderStroke(2.dp, MaterialTheme.colorScheme.secondary) else null
     ) {
         Row(
             modifier = Modifier.padding(24.dp),
@@ -325,13 +329,13 @@ fun InfoCard(
                 Text(
                     text = stringResource(R.string.label_qibla_direction),
                     style = MaterialTheme.typography.labelMedium,
-                    color = TextGray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = "${qiblaBearing.toInt()}${stringResource(R.string.unit_degree)}",
                     style = MaterialTheme.typography.headlineMedium,
-                    color = if (isAligned) GoldAccent else DeepEmerald,
+                    color = if (isAligned) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -340,7 +344,7 @@ fun InfoCard(
                 modifier = Modifier
                     .height(40.dp)
                     .width(1.dp)
-                    .background(LightEmerald)
+                    .background(MaterialTheme.colorScheme.primaryContainer)
             )
             
             Column(
@@ -350,13 +354,13 @@ fun InfoCard(
                 Text(
                     text = stringResource(R.string.label_current_heading),
                     style = MaterialTheme.typography.labelMedium,
-                    color = TextGray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = "${currentHeading.toInt()}${stringResource(R.string.unit_degree)}",
                     style = MaterialTheme.typography.headlineMedium,
-                    color = DeepEmerald,
+                    color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Normal
                 )
             }
@@ -371,11 +375,11 @@ fun PermissionRequestUI() {
             Icon(
                 imageVector = Icons.Default.LocationOn,
                 contentDescription = null,
-                tint = TextGray,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(48.dp)
             )
             Spacer(modifier = Modifier.height(16.dp))
-            Text(stringResource(R.string.permission_location_required), color = TextGray)
+            Text(stringResource(R.string.permission_location_required), color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }

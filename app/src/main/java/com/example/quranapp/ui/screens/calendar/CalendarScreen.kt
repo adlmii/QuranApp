@@ -29,13 +29,13 @@ fun CalendarScreen(
             AppHeader(
                 title = stringResource(R.string.title_islamic_calendar),
                 onBackClick = { navController.popBackStack() },
-                backgroundColor = CreamBackground,
-                contentColor = DeepEmerald
+                backgroundColor = MaterialTheme.colorScheme.background,
+                contentColor = MaterialTheme.colorScheme.primary
             )
         },
-        containerColor = CreamBackground
+        containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
-        SetStatusBarColor(CreamBackground)
+        SetStatusBarColor(MaterialTheme.colorScheme.background)
 
         LazyColumn(
             modifier = Modifier
@@ -62,7 +62,7 @@ fun CalendarScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = White),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
                     CalendarGrid(

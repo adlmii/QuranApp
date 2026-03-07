@@ -53,7 +53,7 @@ fun QuranSettingsSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = CreamBackground,
+        containerColor = MaterialTheme.colorScheme.background,
         dragHandle = null,
         shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
         tonalElevation = 0.dp
@@ -71,7 +71,7 @@ fun QuranSettingsSheet(
                     .width(40.dp)
                     .height(4.dp)
                     .clip(RoundedCornerShape(50))
-                    .background(TextGray.copy(alpha = 0.25f))
+                    .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.25f))
             )
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -86,11 +86,11 @@ fun QuranSettingsSheet(
                     text = stringResource(R.string.settings_title),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
-                    color = DeepEmerald
+                    color = MaterialTheme.colorScheme.primary
                 )
                 Surface(
                     shape = CircleShape,
-                    color = LightEmerald,
+                    color = MaterialTheme.colorScheme.primaryContainer,
                     modifier = Modifier
                         .size(36.dp)
                         .clickable { onDismiss() }
@@ -99,7 +99,7 @@ fun QuranSettingsSheet(
                         Icon(
                             imageVector = Icons.Rounded.Close,
                             contentDescription = "Close",
-                            tint = DeepEmerald,
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(18.dp)
                         )
                     }
@@ -116,7 +116,7 @@ fun QuranSettingsSheet(
                 style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 0.8.sp,
-                color = DeepEmerald.copy(alpha = 0.7f),
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
                 modifier = Modifier.padding(bottom = 12.dp, start = 4.dp)
             )
 
@@ -125,7 +125,7 @@ fun QuranSettingsSheet(
                     .fillMaxWidth()
                     .height(56.dp)
                     .clip(RoundedCornerShape(16.dp))
-                    .background(LightEmerald)
+                    .background(MaterialTheme.colorScheme.primaryContainer)
                     .padding(4.dp)
             ) {
                 // Sliding indicator
@@ -175,14 +175,14 @@ fun QuranSettingsSheet(
                 style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 0.8.sp,
-                color = DeepEmerald.copy(alpha = 0.7f),
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
                 modifier = Modifier.padding(bottom = 12.dp, start = 4.dp)
             )
 
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
-                color = White,
+                color = MaterialTheme.colorScheme.surface,
                 shadowElevation = 1.dp
             ) {
                 Row(
@@ -199,12 +199,12 @@ fun QuranSettingsSheet(
                             Text(
                                 text = stringResource(R.string.hint_go_to_ayah, totalAyahs),
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = TextGray.copy(alpha = 0.5f)
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                             )
                         },
                         textStyle = MaterialTheme.typography.bodyLarge.copy(
                             fontWeight = FontWeight.Medium,
-                            color = TextBlack
+                            color = MaterialTheme.colorScheme.onBackground
                         ),
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Number,
@@ -226,14 +226,14 @@ fun QuranSettingsSheet(
                             unfocusedContainerColor = Color.Transparent,
                             focusedIndicatorColor = Color.Transparent,
                             unfocusedIndicatorColor = Color.Transparent,
-                            cursorColor = DeepEmerald
+                            cursorColor = MaterialTheme.colorScheme.primary
                         )
                     )
 
                     // Go button
                     Surface(
                         shape = RoundedCornerShape(12.dp),
-                        color = DeepEmerald,
+                        color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier
                             .size(40.dp)
                             .clickable {
@@ -265,7 +265,7 @@ fun QuranSettingsSheet(
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
-                color = White,
+                color = MaterialTheme.colorScheme.surface,
                 shadowElevation = 1.dp
             ) {
                 Column(
@@ -276,7 +276,7 @@ fun QuranSettingsSheet(
                     Text(
                         text = "بِسْمِ ٱللَّهِ",
                         style = HeadlineQuran.copy(fontSize = arabicFontSize.sp),
-                        color = DeepEmerald,
+                        color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier
                             .heightIn(min = 56.dp)
                             .padding(vertical = 4.dp),
@@ -292,7 +292,7 @@ fun QuranSettingsSheet(
                             text = "ع",
                             style = MaterialTheme.typography.bodySmall,
                             fontWeight = FontWeight.Bold,
-                            color = TextGray.copy(alpha = 0.6f)
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                         )
 
                         Slider(
@@ -304,9 +304,9 @@ fun QuranSettingsSheet(
                                 .weight(1f)
                                 .padding(horizontal = 12.dp),
                             colors = SliderDefaults.colors(
-                                thumbColor = DeepEmerald,
-                                activeTrackColor = MediumEmerald,
-                                inactiveTrackColor = LightEmerald,
+                                thumbColor = MaterialTheme.colorScheme.primary,
+                                activeTrackColor = MaterialTheme.colorScheme.tertiary,
+                                inactiveTrackColor = MaterialTheme.colorScheme.primaryContainer,
                                 inactiveTickColor = Color.Transparent,
                                 activeTickColor = Color.Transparent
                             ),
@@ -315,7 +315,7 @@ fun QuranSettingsSheet(
                                     modifier = Modifier
                                         .size(22.dp)
                                         .clip(CircleShape)
-                                        .background(DeepEmerald)
+                                        .background(MaterialTheme.colorScheme.primary)
                                 )
                             }
                         )
@@ -324,7 +324,7 @@ fun QuranSettingsSheet(
                             text = "ع",
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
-                            color = TextGray.copy(alpha = 0.6f)
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                         )
                     }
                 }
@@ -344,7 +344,7 @@ private fun ModeTab(
     onClick: () -> Unit
 ) {
     val contentColor by animateColorAsState(
-        targetValue = if (isSelected) White else TextGray,
+        targetValue = if (isSelected) White else MaterialTheme.colorScheme.onSurfaceVariant,
         animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
         label = "TabColor"
     )

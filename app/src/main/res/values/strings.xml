@@ -4,6 +4,7 @@
     <!-- Home & Prayer ViewModels -->
     <string name="label_calculating">Menghitung...</string>
     <string name="label_now">Sekarang</string>
+    <string name="widget_next_prayer">SHOLAT BERIKUTNYA</string>
     <string name="countdown_hours_mins">dalam %1$dj %2$dm</string>
     <string name="countdown_mins_secs">dalam %1$dm %2$dd</string>
     <string name="matsurat_pagi">Pagi</string>

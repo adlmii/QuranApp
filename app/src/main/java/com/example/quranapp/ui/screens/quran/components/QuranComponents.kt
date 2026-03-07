@@ -46,7 +46,7 @@ fun QuranTabSelector(
             .fillMaxWidth()
             .height(54.dp)
             .clip(RoundedCornerShape(26.dp))
-            .background(Color(0xFFF0F4F4)) // Very light emerald/gray
+            .background(MaterialTheme.colorScheme.surfaceVariant) // Light emerald/gray
             .padding(4.dp)
     ) {
         val tabWidth = maxWidth / 2
@@ -93,7 +93,7 @@ fun QuranTabSelector(
 @Composable
 fun TabButton(text: String, isSelected: Boolean, modifier: Modifier, onClick: () -> Unit) {
     val textColor by animateColorAsState(
-        targetValue = if (isSelected) White else TextGray,
+        targetValue = if (isSelected) White else MaterialTheme.colorScheme.onSurfaceVariant,
         animationSpec = tween(durationMillis = 300), 
         label = "TabTextColor"
     )
@@ -129,7 +129,7 @@ fun SurahItem(
         modifier = Modifier.fillMaxWidth(),
         onClick = onClick,
         shape = RoundedCornerShape(18.dp),
-        backgroundColor = White,
+        backgroundColor = MaterialTheme.colorScheme.surface,
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
@@ -143,15 +143,15 @@ fun SurahItem(
                 modifier = Modifier
                     .size(42.dp)
                     .clip(CircleShape)
-                    .border(1.dp, LightEmerald, CircleShape)
-                    .background(CreamBackground),
+                    .border(1.dp, MaterialTheme.colorScheme.primaryContainer, CircleShape)
+                    .background(MaterialTheme.colorScheme.background),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = surah.number.toString(),
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
-                    color = DeepEmerald
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
 
@@ -163,14 +163,14 @@ fun SurahItem(
                     text = surah.name,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = TextBlack
+                    color = MaterialTheme.colorScheme.onBackground
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = surah.englishName, 
                         style = MaterialTheme.typography.bodySmall,
-                        color = TextGray
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                 }
@@ -183,7 +183,7 @@ fun SurahItem(
                 text = surah.arabicName.replace("سُورَةُ", "").trim(),
                 style = MaterialTheme.typography.headlineSmall.copy(
                     fontFamily = UthmaniHafs,
-                    color = DeepEmerald
+                    color = MaterialTheme.colorScheme.primary
                 ),
                 textAlign = TextAlign.End
             )
@@ -204,7 +204,7 @@ fun JuzSurahCard(
         modifier = Modifier.fillMaxWidth(),
         onClick = onClick,
         shape = RoundedCornerShape(18.dp),
-        backgroundColor = White,
+        backgroundColor = MaterialTheme.colorScheme.surface,
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
@@ -222,13 +222,13 @@ fun JuzSurahCard(
                     text = entry.surahName, // Assuming this is Latin name
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = TextBlack
+                    color = MaterialTheme.colorScheme.onBackground
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = "${stringResource(R.string.label_ayah)} ${entry.ayahRange}",
                     style = MaterialTheme.typography.bodySmall,
-                    color = TextGray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
@@ -239,7 +239,7 @@ fun JuzSurahCard(
                 text = entry.arabicName.replace("سُورَةُ", "").trim(),
                 style = MaterialTheme.typography.headlineSmall.copy(
                     fontFamily = UthmaniHafs,
-                    color = DeepEmerald
+                    color = MaterialTheme.colorScheme.primary
                 ),
                 textAlign = TextAlign.End
             )
@@ -331,7 +331,7 @@ fun AyahSearchResultItem(
         modifier = Modifier.fillMaxWidth(),
         onClick = onClick,
         shape = RoundedCornerShape(18.dp),
-        backgroundColor = White,
+        backgroundColor = MaterialTheme.colorScheme.surface,
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(
@@ -345,14 +345,14 @@ fun AyahSearchResultItem(
                     modifier = Modifier
                         .size(28.dp)
                         .clip(CircleShape)
-                        .background(LightEmerald),
+                        .background(MaterialTheme.colorScheme.primaryContainer),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = surahNumber.toString(),
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Bold,
-                        color = DeepEmerald
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
                 Spacer(modifier = Modifier.width(10.dp))
@@ -360,7 +360,7 @@ fun AyahSearchResultItem(
                     text = "$surahName : $ayahNumber",
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.SemiBold,
-                    color = DeepEmerald
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
 
@@ -379,7 +379,7 @@ fun AyahSearchResultItem(
                 Text(
                     text = snippet,
                     style = MaterialTheme.typography.bodySmall,
-                    color = TextGray,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 2,
                     overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                 )

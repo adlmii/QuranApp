@@ -94,6 +94,9 @@ fun QuranDetailScreen(
         viewModel.loadSurah(surahNumber)
     }
 
+    // Guard: prevent auto-save before initial scroll completes
+    var hasInitiallyScrolled by remember { mutableStateOf(false) }
+
     // Scroll to initial ayah after content loads
     LaunchedEffect(uiState.surahDetail) {
         val ayahs = uiState.surahDetail?.ayahs ?: return@LaunchedEffect
@@ -104,11 +107,13 @@ fun QuranDetailScreen(
             val targetIndex = (initialAyah - 1 + headerOffset).coerceIn(0, ayahs.size - 1 + headerOffset)
             listState.scrollToItem(targetIndex, scrollOffset = 0)
         }
+        hasInitiallyScrolled = true
     }
 
-    // Auto-save scroll position with debounce
+    // Auto-save scroll position with debounce (only after initial scroll)
     val firstVisibleItem by remember { derivedStateOf { listState.firstVisibleItemIndex } }
     LaunchedEffect(firstVisibleItem) {
+        if (!hasInitiallyScrolled) return@LaunchedEffect
         // Debounce: wait 500ms before saving to avoid excessive writes
         delay(500)
         val ayahs = uiState.surahDetail?.ayahs ?: return@LaunchedEffect
@@ -189,9 +194,9 @@ fun QuranDetailScreen(
                 targetMinutes = uiState.targetMinutes,
                 onSettingsClick = { showSettings = true }
             )
-            SetStatusBarColor(CreamBackground)
+            SetStatusBarColor(MaterialTheme.colorScheme.background)
         },
-        containerColor = CreamBackground
+        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         Box(
             modifier = Modifier
@@ -206,14 +211,14 @@ fun QuranDetailScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(4.dp),
-                        color = Color(0xFFD4AF37), // Gold
-                        trackColor = Color(0xFFE0E0E0)
+                        color = MaterialTheme.colorScheme.secondary, // Gold
+                        trackColor = MaterialTheme.colorScheme.outlineVariant
                     )
                 }
 
                 if (uiState.isLoading) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(color = DeepEmerald)
+                        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                     }
                 } else if (uiState.error != null) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -348,7 +353,7 @@ fun QuranDetailScreen(
                                                         textDirection = TextDirection.Rtl
                                                     ),
                                                     textAlign = TextAlign.Justify,
-                                                    color = TextBlack,
+                                                    color = MaterialTheme.colorScheme.onBackground,
                                                     modifier = Modifier.fillMaxWidth()
                                                 )
                                             }
@@ -359,7 +364,7 @@ fun QuranDetailScreen(
                                         modifier = Modifier.fillMaxSize(),
                                         contentAlignment = Alignment.Center
                                     ) {
-                                        CircularProgressIndicator(color = DeepEmerald)
+                                        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                                     }
                                 }
                             }
@@ -400,7 +405,7 @@ fun QuranDetailScreen(
                                                     letterSpacing = 3.sp
                                                 ), 
                                                 textAlign = TextAlign.Center,
-                                                color = DeepEmerald
+                                                color = MaterialTheme.colorScheme.primary
                                             )
                                         }
                                     }
@@ -459,22 +464,22 @@ fun DetailHeader(
         title = title,
         subtitle = subtitle,
         onBackClick = onBack,
-        backgroundColor = CreamBackground,
-        contentColor = DeepEmerald,
+        backgroundColor = MaterialTheme.colorScheme.background,
+        contentColor = MaterialTheme.colorScheme.primary,
         actions = {
             // Session Indicator
             Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(end = 8.dp)) {
                 CircularProgressIndicator(
                     progress = { sessionProgress / targetMinutes.toFloat() },
                     modifier = Modifier.size(24.dp),
-                    color = GoldAccent,
-                    trackColor = DeepEmerald.copy(alpha = 0.1f),
+                    color = MaterialTheme.colorScheme.secondary,
+                    trackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
                     strokeWidth = 3.dp
                 )
                 Text(
                     text = "$sessionProgress",
                     style = MaterialTheme.typography.labelSmall,
-                    color = DeepEmerald,
+                    color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold,
                     fontSize = 10.sp
                 )
@@ -485,7 +490,7 @@ fun DetailHeader(
                 Icon(
                     imageVector = Icons.Default.Settings,
                     contentDescription = "Settings",
-                    tint = DeepEmerald
+                    tint = MaterialTheme.colorScheme.primary
                 )
             }
         }
@@ -513,9 +518,9 @@ fun AyahItem(
         ) {
             Surface(
                 shape = RoundedCornerShape(50),
-                color = LightEmerald.copy(alpha = 0.5f),
+                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
                 modifier = Modifier.wrapContentSize(),
-                border = androidx.compose.foundation.BorderStroke(1.dp, MediumEmerald.copy(alpha = 0.3f))
+                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary.copy(alpha = 0.3f))
             ) {
                 Row(
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
@@ -524,7 +529,7 @@ fun AyahItem(
                     Text(
                         text = "$surahNumber:${ayah.number}",
                         style = MaterialTheme.typography.labelSmall,
-                        color = DeepEmerald,
+                        color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -539,7 +544,7 @@ fun AyahItem(
                 Icon(
                     imageVector = if (isBookmarked) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
                     contentDescription = "Bookmark",
-                    tint = if (isBookmarked) DeepEmerald else TextGray.copy(alpha = 0.6f),
+                    tint = if (isBookmarked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -554,7 +559,7 @@ fun AyahItem(
                 fontSize = arabicFontSize.sp,
                 lineHeight = (arabicFontSize * 1.8f).sp
             ),
-            color = TextBlack,
+            color = MaterialTheme.colorScheme.onBackground,
             textAlign = TextAlign.End,
             modifier = Modifier.fillMaxWidth()
         )
@@ -568,13 +573,13 @@ fun AyahItem(
                 lineHeight = 26.sp,
                 fontWeight = FontWeight.Normal
             ),
-            color = TextGray,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Start,
             modifier = Modifier.fillMaxWidth()
         )
     }
     HorizontalDivider(
-        color = DividerColor, 
+        color = MaterialTheme.colorScheme.outlineVariant, 
         thickness = 1.dp, 
         modifier = Modifier.padding(top = 24.dp)
     )
@@ -588,11 +593,11 @@ fun SurahNavigationCard(
 ) {
     Surface(
         shape = RoundedCornerShape(16.dp),
-        color = LightEmerald.copy(alpha = 0.4f),
+        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
-        border = androidx.compose.foundation.BorderStroke(1.dp, MediumEmerald.copy(alpha = 0.3f))
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary.copy(alpha = 0.3f))
     ) {
         Row(
             modifier = Modifier
@@ -603,19 +608,19 @@ fun SurahNavigationCard(
             Text(
                 text = "$label ",
                 style = MaterialTheme.typography.bodyMedium,
-                color = DeepEmerald
+                color = MaterialTheme.colorScheme.primary
             )
             Text(
                 text = surahName,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Bold,
-                color = DeepEmerald
+                color = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = "→",
                 style = MaterialTheme.typography.titleMedium,
-                color = DeepEmerald
+                color = MaterialTheme.colorScheme.primary
             )
         }
     }
